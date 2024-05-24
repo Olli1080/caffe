@@ -41,8 +41,8 @@ void MVNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   int dim = bottom[0]->count() / num;
 
   // subtract mean
-  caffe_cpu_gemv<Dtype>(CblasNoTrans, num, dim, 1. / dim, bottom_data,
-      sum_multiplier_.cpu_data(), 0., mean_.mutable_cpu_data());  // EX
+  caffe_cpu_gemv<Dtype>(CblasNoTrans, num, dim, static_cast<Dtype>(1. / dim), bottom_data,
+      sum_multiplier_.cpu_data(), Dtype(0.), mean_.mutable_cpu_data());  // EX
   caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num, dim, 1, -1.,
       mean_.cpu_data(), sum_multiplier_.cpu_data(), 0.,
       temp_.mutable_cpu_data());
@@ -52,8 +52,8 @@ void MVNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     // compute variance using var(X) = E((X-EX)^2)
     caffe_powx(bottom[0]->count(), top_data, Dtype(2),
         temp_.mutable_cpu_data());  // (X-EX)^2
-    caffe_cpu_gemv<Dtype>(CblasNoTrans, num, dim, 1. / dim, temp_.cpu_data(),
-        sum_multiplier_.cpu_data(), 0.,
+    caffe_cpu_gemv<Dtype>(CblasNoTrans, num, dim, static_cast<Dtype>(1. / dim), temp_.cpu_data(),
+        sum_multiplier_.cpu_data(), Dtype(0.),
         variance_.mutable_cpu_data());  // E((X-EX)^2)
 
     // normalize variance
@@ -114,8 +114,8 @@ void MVNLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
     caffe_div(temp_.count(), bottom_diff, temp_.cpu_data(), bottom_diff);
   } else {
-    caffe_cpu_gemv<Dtype>(CblasNoTrans, num, dim, 1. / dim, top_diff,
-      sum_multiplier_.cpu_data(), 0., mean_.mutable_cpu_data());
+    caffe_cpu_gemv<Dtype>(CblasNoTrans, num, dim, static_cast<Dtype>(1. / dim), top_diff,
+      sum_multiplier_.cpu_data(), Dtype(0.), mean_.mutable_cpu_data());
     caffe_cpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, num, dim, 1, -1.,
       mean_.cpu_data(), sum_multiplier_.cpu_data(), 0.,
       temp_.mutable_cpu_data());

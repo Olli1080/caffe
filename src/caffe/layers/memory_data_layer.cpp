@@ -34,7 +34,7 @@ template <typename Dtype>
 void MemoryDataLayer<Dtype>::AddDatumVector(const vector<Datum>& datum_vector) {
   CHECK(!has_new_data_) <<
       "Can't add data until current data has been consumed.";
-  size_t num = datum_vector.size();
+  int num = static_cast<int>(datum_vector.size());
   CHECK_GT(num, 0) << "There is no datum to add.";
   CHECK_EQ(num % batch_size_, 0) <<
       "The added data must be a multiple of the batch size.";
@@ -45,7 +45,7 @@ void MemoryDataLayer<Dtype>::AddDatumVector(const vector<Datum>& datum_vector) {
   // Copy Labels
   Dtype* top_label = added_label_.mutable_cpu_data();
   for (int item_id = 0; item_id < num; ++item_id) {
-    top_label[item_id] = datum_vector[item_id].label();
+    top_label[item_id] = static_cast<Dtype>(datum_vector[item_id].label());
   }
   // num_images == batch_size_
   Dtype* top_data = added_data_.mutable_cpu_data();
@@ -57,7 +57,7 @@ void MemoryDataLayer<Dtype>::AddDatumVector(const vector<Datum>& datum_vector) {
 template <typename Dtype>
 void MemoryDataLayer<Dtype>::AddMatVector(const vector<cv::Mat>& mat_vector,
     const vector<int>& labels) {
-  size_t num = mat_vector.size();
+  int num = static_cast<int>(mat_vector.size());
   CHECK(!has_new_data_) <<
       "Can't add mat until current data has been consumed.";
   CHECK_GT(num, 0) << "There is no mat to add";

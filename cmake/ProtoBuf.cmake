@@ -72,13 +72,21 @@ function(caffe_protobuf_generate_cpp_py output_dir srcs_var hdrs_var python_var)
     list(APPEND ${hdrs_var} "${output_dir}/${fil_we}.pb.h")
     list(APPEND ${python_var} "${output_dir}/${fil_we}_pb2.py")
 
+
+    set(output_dir_opt --cpp_out=dllexport_decl=CAFFE_EXPORT:${output_dir})
+    if(MSVC)
+      # Remove PROTOBUF_CONSTEXPR otherwise nvcc will fail to compile caffe.pb.h; not the case since cuda 11.3
+      set(_proto_h ${output_dir}/${fil_we}.pb.h)
+      set(_const_expr_cmd COMMAND powershell -NoProfile -Exec ByPass -Command "cp  '${_proto_h}' '${_proto_h}.tmp'\; (get-content '${_proto_h}.tmp').replace('constexpr', 'const') | Set-Content '${_proto_h}'\; rm '${_proto_h}.tmp'")
+    endif()
     add_custom_command(
       OUTPUT "${output_dir}/${fil_we}.pb.cc"
              "${output_dir}/${fil_we}.pb.h"
              "${output_dir}/${fil_we}_pb2.py"
       COMMAND ${CMAKE_COMMAND} -E make_directory "${output_dir}"
-      COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} --cpp_out    ${output_dir} ${_protoc_include} ${abs_fil}
-      COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} --python_out ${PROJECT_BINARY_DIR}/include --proto_path ${PROJECT_SOURCE_DIR}/src ${_protoc_include} ${abs_fil}
+      COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} ${output_dir_opt} ${_protoc_include} ${abs_fil}
+      COMMAND ${PROTOBUF_PROTOC_EXECUTABLE} --python_out ${output_dir} ${_protoc_include} ${abs_fil}
+      ${_const_expr_cmd}
       DEPENDS ${abs_fil}
       COMMENT "Running C++/Python protocol buffer compiler on ${fil}" VERBATIM )
   endforeach()

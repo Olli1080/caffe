@@ -115,7 +115,7 @@ TYPED_TEST(InfogainLossLayerTest, TestInfogainLoss) {
         loss -= H[gt*this->num_labels_ + l] *
           log(std::max(
             prob[i*this->num_labels_*this->inner_ + l*this->inner_ + j],
-            Dtype(kLOG_THRESHOLD)));
+            static_cast<Dtype>(kLOG_THRESHOLD)));
       }
     }
   }

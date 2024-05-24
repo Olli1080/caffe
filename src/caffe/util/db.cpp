@@ -4,10 +4,17 @@
 
 #include <string>
 
+#if (defined(USE_LEVELDB) || defined(USE_LMDB))
+#define USE_ANY_DB
+#endif
+
 namespace caffe { namespace db {
 
 DB* GetDB(DataParameter::DB backend) {
-  switch (backend) {
+#ifdef USE_ANY_DB
+  switch (backend)
+#endif
+  {
 #ifdef USE_LEVELDB
   case DataParameter_DB_LEVELDB:
     return new LevelDB();
@@ -16,7 +23,9 @@ DB* GetDB(DataParameter::DB backend) {
   case DataParameter_DB_LMDB:
     return new LMDB();
 #endif  // USE_LMDB
+#ifdef USE_ANY_DB
   default:
+#endif
     LOG(FATAL) << "Unknown database backend";
     return NULL;
   }

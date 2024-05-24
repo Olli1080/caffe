@@ -36,7 +36,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   RecurrentInputBlobNames(&recur_input_names);
   vector<string> recur_output_names;
   RecurrentOutputBlobNames(&recur_output_names);
-  const int num_recur_blobs = recur_input_names.size();
+  const int num_recur_blobs = static_cast<int>(recur_input_names.size());
   CHECK_EQ(num_recur_blobs, recur_output_names.size());
 
   // If provided, bottom[2] is a static input to the recurrent net.
@@ -173,7 +173,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // Check that the last output_names.size() layers are the pseudo-losses;
   // set last_layer_index so that we don't actually run these layers.
   const vector<string>& layer_names = unrolled_net_->layer_names();
-  last_layer_index_ = layer_names.size() - 1 - pseudo_losses.size();
+  last_layer_index_ = static_cast<int>(layer_names.size() - 1 - pseudo_losses.size());
   for (int i = last_layer_index_ + 1, j = 0; i < layer_names.size(); ++i, ++j) {
     CHECK_EQ(layer_names[i], pseudo_losses[j]);
   }
@@ -226,7 +226,7 @@ void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     top[i]->ShareDiff(*output_blobs_[i]);
   }
   if (expose_hidden_) {
-    const int top_offset = output_blobs_.size();
+    const int top_offset = static_cast<int>(output_blobs_.size());
     for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
       top[i]->ReshapeLike(*recur_output_blobs_[j]);
     }
@@ -267,7 +267,7 @@ void RecurrentLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   unrolled_net_->ForwardTo(last_layer_index_);
 
   if (expose_hidden_) {
-    const int top_offset = output_blobs_.size();
+    const int top_offset = static_cast<int>(output_blobs_.size());
     for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
       top[i]->ShareData(*recur_output_blobs_[j]);
     }

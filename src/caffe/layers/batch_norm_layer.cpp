@@ -106,7 +106,7 @@ void BatchNormLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   } else {
     // compute mean
     caffe_cpu_gemv<Dtype>(CblasNoTrans, channels_ * num, spatial_dim,
-        1. / (num * spatial_dim), bottom_data,
+        static_cast<Dtype>(1. / (num * spatial_dim)), bottom_data,
         spatial_sum_multiplier_.cpu_data(), 0.,
         num_by_chans_.mutable_cpu_data());
     caffe_cpu_gemv<Dtype>(CblasTrans, num, channels_, 1.,
@@ -127,7 +127,7 @@ void BatchNormLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     caffe_sqr<Dtype>(top[0]->count(), top_data,
                      temp_.mutable_cpu_data());  // (X-EX)^2
     caffe_cpu_gemv<Dtype>(CblasNoTrans, channels_ * num, spatial_dim,
-        1. / (num * spatial_dim), temp_.cpu_data(),
+        static_cast<Dtype>(1. / (num * spatial_dim)), temp_.cpu_data(),
         spatial_sum_multiplier_.cpu_data(), 0.,
         num_by_chans_.mutable_cpu_data());
     caffe_cpu_gemv<Dtype>(CblasTrans, num, channels_, 1.,

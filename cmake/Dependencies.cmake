@@ -5,13 +5,13 @@ set(Caffe_DEFINITIONS "")
 set(Caffe_COMPILE_OPTIONS "")
 
 # ---[ Boost
-find_package(Boost 1.54 REQUIRED COMPONENTS system thread filesystem)
+find_package(Boost 1.80 REQUIRED COMPONENTS system thread filesystem)
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
 
 # ---[ Threads
-find_package(Threads REQUIRED)
-list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
+#find_package(Threads REQUIRED)
+#list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
 
 # ---[ OpenMP
 if(USE_OPENMP)
@@ -30,14 +30,16 @@ if(USE_OPENMP)
 endif()
 
 # ---[ Google-glog
-include("cmake/External/glog.cmake")
+find_package(glog CONFIG REQUIRED)
+#include("cmake/External/glog.cmake")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GLOG_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${GLOG_LIBRARIES})
+list(APPEND Caffe_LINKER_LIBS PUBLIC glog::glog)
 
 # ---[ Google-gflags
-include("cmake/External/gflags.cmake")
+find_package(gflags CONFIG REQUIRED)
+#include("cmake/External/gflags.cmake")
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GFLAGS_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${GFLAGS_LIBRARIES})
+list(APPEND Caffe_LINKER_LIBS PUBLIC gflags::gflags)
 
 # ---[ Google-protobuf
 include(cmake/ProtoBuf.cmake)
@@ -82,16 +84,37 @@ if(USE_LEVELDB)
 endif()
 
 # ---[ CUDA
-include(cmake/Cuda.cmake)
-if(NOT HAVE_CUDA)
-  if(CPU_ONLY)
-    message(STATUS "-- CUDA is disabled. Building without it...")
-  else()
-    message(WARNING "-- CUDA is not detected by cmake. Building without it...")
-  endif()
-
+#include(cmake/Cuda.cmake)
+if (CPU_ONLY)
+  message(STATUS "-- CUDA is disabled. Building without it...")
   list(APPEND Caffe_DEFINITIONS PUBLIC -DCPU_ONLY)
+else()
+  find_package(CUDA)
+  find_package(CUDNN)
+  
+  if(NOT CUDA_FOUND OR NOT CUDNN_FOUND)
+    message(FATAL_ERROR "-- CUDA and/or cudnn are/is not detected by cmake. But was enabled. ERROR")
+  endif()
+  
+  list(APPEND Caffe_LINKER_LIBS ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_curand_LIBRARY})
+  list(APPEND Caffe_LINKER_LIBS CuDNN::CuDNN)
+  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${CUDNN_INCLUDE_DIRS})
 endif()
+
+#find_package(CUDA)
+#find_package(CUDNN)
+#if(NOT CUDA_FOUND OR NOT CUDNN_FOUND)
+#  if(CPU_ONLY)
+#    message(STATUS "-- CUDA is disabled. Building without it...")
+#  else()
+#    message(FATAL_ERROR "-- CUDA and/or cudnn are/is not detected by cmake. But was enabled. ERROR")
+#  endif()
+#  list(APPEND Caffe_DEFINITIONS PUBLIC -DCPU_ONLY)
+#elseif(NOT CPU_ONLY)
+#  list(APPEND Caffe_LINKER_LIBS ${CUDA_LIBRARIES} ${CUDA_CUBLAS_LIBRARIES} ${CUDA_curand_LIBRARY})
+#  list(APPEND Caffe_LINKER_LIBS CuDNN::CuDNN)
+#  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${CUDNN_INCLUDE_DIRS})
+#endif()
 
 if(USE_NCCL)
   find_package(NCCL REQUIRED)

@@ -39,7 +39,7 @@ class RecurrentLayer : public Layer<Dtype> {
     if (this->layer_param_.recurrent_param().expose_hidden()) {
       vector<string> inputs;
       this->RecurrentInputBlobNames(&inputs);
-      min_bottoms += inputs.size();
+      min_bottoms += static_cast<int>(inputs.size());
     }
     return min_bottoms;
   }
@@ -49,7 +49,7 @@ class RecurrentLayer : public Layer<Dtype> {
     if (this->layer_param_.recurrent_param().expose_hidden()) {
       vector<string> outputs;
       this->RecurrentOutputBlobNames(&outputs);
-      num_tops += outputs.size();
+      num_tops += static_cast<int>(outputs.size());
     }
     return num_tops;
   }

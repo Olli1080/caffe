@@ -153,7 +153,7 @@ void InfogainLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
         loss -= infogain_mat[label_value * num_labels_ + l] *
           log(std::max(
                 prob_data[i * inner_num_*num_labels_ + l * inner_num_ + j],
-                Dtype(kLOG_THRESHOLD)));
+                static_cast<Dtype>(kLOG_THRESHOLD)));
       }
       ++count;
     }

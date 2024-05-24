@@ -2,6 +2,15 @@
 # Defines global Caffe_LINK flag, This flag is required to prevent linker from excluding
 # some objects which are not addressed directly but are registered via static constructors
 macro(caffe_set_caffe_link)
+  if(MSVC AND CMAKE_GENERATOR MATCHES Ninja)
+    foreach(_suffix "" ${CMAKE_CONFIGURATION_TYPES})
+      if(NOT _suffix STREQUAL "")
+        string(TOUPPER _${_suffix} _suffix)
+      endif()
+      set(CMAKE_CXX_FLAGS${_suffix} "${CMAKE_CXX_FLAGS${_suffix}} /FS")
+      set(CMAKE_C_FLAGS${_suffix} "${CMAKE_C_FLAGS${_suffix}} /FS")
+    endforeach()
+  endif()
   if(BUILD_SHARED_LIBS)
     set(Caffe_LINK caffe)
   else()
@@ -9,6 +18,8 @@ macro(caffe_set_caffe_link)
       set(Caffe_LINK -Wl,-force_load caffe)
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
       set(Caffe_LINK -Wl,--whole-archive caffe -Wl,--no-whole-archive)
+    elseif(MSVC)
+      set(Caffe_LINK caffe -WHOLEARCHIVE:$<TARGET_FILE_NAME:caffe>)
     endif()
   endif()
 endmacro()
@@ -52,6 +63,9 @@ endfunction()
 #   caffe_pickup_caffe_sources(<root>)
 function(caffe_pickup_caffe_sources root)
   # put all files in source groups (visible as subfolder in many IDEs)
+  set(caffe_export_hdr ${PROJECT_BINARY_DIR}/caffe/export.hpp)
+  set_source_files_properties(${caffe_export_hdr} ${caffe_symbols_hdr} PROPERTIES GENERATED TRUE)
+
   caffe_source_group("Include"        GLOB "${root}/include/caffe/*.h*")
   caffe_source_group("Include\\Util"  GLOB "${root}/include/caffe/util/*.h*")
   caffe_source_group("Include"        GLOB "${PROJECT_BINARY_DIR}/caffe_config.h*")
@@ -76,7 +90,10 @@ function(caffe_pickup_caffe_sources root)
   list(REMOVE_ITEM  srcs ${test_srcs})
 
   # adding headers to make the visible in some IDEs (Qt, VS, Xcode)
-  list(APPEND srcs ${hdrs} ${PROJECT_BINARY_DIR}/caffe_config.h)
+  list(APPEND srcs ${hdrs}
+                   ${PROJECT_BINARY_DIR}/caffe_config.h
+                   ${caffe_export_hdr}
+  )
   list(APPEND test_srcs ${test_hdrs})
 
   # collect cuda files
@@ -99,6 +116,7 @@ function(caffe_pickup_caffe_sources root)
   set(cuda ${cuda} PARENT_SCOPE)
   set(test_srcs ${test_srcs} PARENT_SCOPE)
   set(test_cuda ${test_cuda} PARENT_SCOPE)
+  set(caffe_export_hdr ${caffe_export_hdr} PARENT_SCOPE)
 endfunction()
 
 ################################################################################################
@@ -170,5 +188,28 @@ function(caffe_leave_only_selected_tests file_list)
     endif()
   endforeach()
   set(${file_list} ${result} PARENT_SCOPE)
+endfunction()
+
+################################################################################################
+# Collect compiler definitions from caffe dependenies imported targets
+# Usage:
+#   caffe_collect_compile_definitions(output_variable <caffe_dependencies_list>)
+function(caffe_collect_compile_definitions OUT_VARIABLE)
+  foreach(__lib ${ARGN})
+    if(TARGET ${__lib})
+      get_target_property(__interface_compile_definitions ${__lib} INTERFACE_COMPILE_DEFINITIONS)
+      if(__interface_compile_definitions)
+        foreach(__def ${__interface_compile_definitions})
+          if(NOT "${__def}" MATCHES "-D.*")
+            set(__def "-D${__def}")
+          endif()
+          list(APPEND __compile_definitions ${__def})
+        endforeach()
+      endif()
+    endif()
+  endforeach()
+  if(__compile_definitions)
+    set(${OUT_VARIABLE} ${__compile_definitions} PARENT_SCOPE)
+  endif()
 endfunction()
 

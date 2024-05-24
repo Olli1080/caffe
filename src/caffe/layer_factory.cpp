@@ -3,11 +3,12 @@
 #ifdef WITH_PYTHON_LAYER
 #include <boost/python.hpp>
 #endif
-#include <string>
+//#include <string>
 
 #include "caffe/layer.hpp"
 #include "caffe/layer_factory.hpp"
 #include "caffe/layers/clip_layer.hpp"
+#include "caffe/layers/heatmaps_from_vec_layer.hpp"
 #include "caffe/layers/conv_layer.hpp"
 #include "caffe/layers/deconv_layer.hpp"
 #include "caffe/layers/lrn_layer.hpp"

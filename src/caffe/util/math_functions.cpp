@@ -183,7 +183,7 @@ void caffe_powx<float>(const int n, const float* a, const float b,
 template <>
 void caffe_powx<double>(const int n, const double* a, const double b,
     double* y) {
-  vdPowx(n, a, b, y);
+  vdPowx(n, a, static_cast<float>(b), y);
 }
 
 template <>

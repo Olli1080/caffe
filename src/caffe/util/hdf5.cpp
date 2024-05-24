@@ -60,7 +60,7 @@ void hdf5_load_nd_dataset_helper(
 
   vector<int> blob_dims(dims.size());
   for (int i = 0; i < dims.size(); ++i) {
-    blob_dims[i] = dims[i];
+    blob_dims[i] = static_cast<int>(dims[i]);
   }
 
   if (reshape) {
@@ -190,7 +190,7 @@ int hdf5_get_num_links(hid_t loc_id) {
   H5G_info_t info;
   herr_t status = H5Gget_info(loc_id, &info);
   CHECK_GE(status, 0) << "Error while counting HDF5 links.";
-  return info.nlinks;
+  return static_cast<int>(info.nlinks);
 }
 
 string hdf5_get_name_by_idx(hid_t loc_id, int idx) {

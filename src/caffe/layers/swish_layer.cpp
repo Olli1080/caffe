@@ -52,8 +52,8 @@ void SwishLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     Dtype beta = this->layer_param_.swish_param().beta();
     for (int i = 0; i < count; ++i) {
       const Dtype swish_x = top_data[i];
-      bottom_diff[i] = top_diff[i] * (beta * swish_x + sigmoid_output_data[i]
-          * (1. - beta * swish_x));
+      bottom_diff[i] = static_cast<Dtype>(top_diff[i] * (beta * swish_x + sigmoid_output_data[i]
+          * (1. - beta * swish_x)));
     }
   }
 }

@@ -10,7 +10,7 @@ void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   ConvolutionParameter conv_param = this->layer_param_.convolution_param();
   force_nd_im2col_ = conv_param.force_nd_im2col();
-  const int input_num_dims = bottom[0]->shape().size();
+  const int input_num_dims = static_cast<int>(bottom[0]->shape().size());
   channel_axis_ = bottom[0]->CanonicalAxisIndex(conv_param.axis());
   const int first_spatial_dim = channel_axis_ + 1;
   num_spatial_axes_ = input_num_dims - first_spatial_dim;

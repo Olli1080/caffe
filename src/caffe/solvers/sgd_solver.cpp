@@ -33,11 +33,11 @@ Dtype SGDSolver<Dtype>::GetLearningRate() {
     CHECK_GT(this->param_.stepsize(), 0);
     this->current_step_ = this->iter_ / this->param_.stepsize();
     CHECK_GE(this->param_.gamma(), 0);
-    rate = this->param_.base_lr() *
-        pow(this->param_.gamma(), this->current_step_);
+    rate = static_cast<Dtype>(this->param_.base_lr() *
+        pow(this->param_.gamma(), this->current_step_));
   } else if (lr_policy == "exp") {
     CHECK_GE(this->param_.gamma(), 0);
-    rate = this->param_.base_lr() * pow(this->param_.gamma(), this->iter_);
+    rate = static_cast<Dtype>(this->param_.base_lr() * pow(this->param_.gamma(), this->iter_));
   } else if (lr_policy == "inv") {
     CHECK_GE(this->param_.gamma(), 0);
     rate = this->param_.base_lr() *
@@ -51,8 +51,8 @@ Dtype SGDSolver<Dtype>::GetLearningRate() {
       this->iter_ << ", step = " << this->current_step_;
     }
     CHECK_GE(this->param_.gamma(), 0);
-    rate = this->param_.base_lr() *
-        pow(this->param_.gamma(), this->current_step_);
+    rate = static_cast<Dtype>(this->param_.base_lr() *
+        pow(this->param_.gamma(), this->current_step_));
   } else if (lr_policy == "poly") {
     rate = this->param_.base_lr() * pow(Dtype(1.) -
         (Dtype(this->iter_) / Dtype(this->param_.max_iter())),

@@ -49,7 +49,7 @@ void Blob<Dtype>::Reshape(const BlobShape& shape) {
   CHECK_LE(shape.dim_size(), kMaxBlobAxes);
   vector<int> shape_vec(shape.dim_size());
   for (int i = 0; i < shape.dim_size(); ++i) {
-    shape_vec[i] = shape.dim(i);
+    shape_vec[i] = static_cast<int>(shape.dim(i));
   }
   Reshape(shape_vec);
 }
@@ -424,7 +424,7 @@ bool Blob<Dtype>::ShapeEquals(const BlobProto& other) {
   }
   vector<int> other_shape(other.shape().dim_size());
   for (int i = 0; i < other.shape().dim_size(); ++i) {
-    other_shape[i] = other.shape().dim(i);
+    other_shape[i] = static_cast<int>(other.shape().dim(i));
   }
   return shape_ == other_shape;
 }
@@ -478,7 +478,7 @@ void Blob<Dtype>::FromProto(const BlobProto& proto, bool reshape) {
     } else {
       shape.resize(proto.shape().dim_size());
       for (int i = 0; i < proto.shape().dim_size(); ++i) {
-        shape[i] = proto.shape().dim(i);
+        shape[i] = static_cast<int>(proto.shape().dim(i));
       }
     }
     Reshape(shape);
@@ -490,27 +490,35 @@ void Blob<Dtype>::FromProto(const BlobProto& proto, bool reshape) {
   if (proto.double_data_size() > 0) {
     CHECK_EQ(count_, proto.double_data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = proto.double_data(i);
+      data_vec[i] = static_cast<Dtype>(proto.double_data(i));
     }
   } else {
     CHECK_EQ(count_, proto.data_size());
     for (int i = 0; i < count_; ++i) {
-      data_vec[i] = proto.data(i);
+      data_vec[i] = static_cast<Dtype>(proto.data(i));
     }
   }
   if (proto.double_diff_size() > 0) {
     CHECK_EQ(count_, proto.double_diff_size());
     Dtype* diff_vec = mutable_cpu_diff();
     for (int i = 0; i < count_; ++i) {
-      diff_vec[i] = proto.double_diff(i);
+      diff_vec[i] = static_cast<Dtype>(proto.double_diff(i));
     }
   } else if (proto.diff_size() > 0) {
     CHECK_EQ(count_, proto.diff_size());
     Dtype* diff_vec = mutable_cpu_diff();
     for (int i = 0; i < count_; ++i) {
-      diff_vec[i] = proto.diff(i);
+      diff_vec[i] = static_cast<Dtype>(proto.diff(i));
     }
   }
+}
+
+template <> void Blob<int>::ToProto(BlobProto* proto, bool write_diff) const {
+  NOT_IMPLEMENTED;
+}
+
+template <> void Blob<unsigned int>::ToProto(BlobProto* proto, bool write_diff) const {
+  NOT_IMPLEMENTED;
 }
 
 template <>

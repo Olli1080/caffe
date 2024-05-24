@@ -74,7 +74,7 @@ float Timer::MicroSeconds() {
       NO_GPU;
 #endif
   } else {
-    elapsed_microseconds_ = (stop_cpu_ - start_cpu_).total_microseconds();
+    elapsed_microseconds_ = static_cast<float>((stop_cpu_ - start_cpu_).total_microseconds());
   }
   return elapsed_microseconds_;
 }
@@ -96,13 +96,13 @@ float Timer::MilliSeconds() {
       NO_GPU;
 #endif
   } else {
-    elapsed_milliseconds_ = (stop_cpu_ - start_cpu_).total_milliseconds();
+    elapsed_milliseconds_ = static_cast<float>((stop_cpu_ - start_cpu_).total_milliseconds());
   }
   return elapsed_milliseconds_;
 }
 
 float Timer::Seconds() {
-  return MilliSeconds() / 1000.;
+  return MilliSeconds() / 1000.f;
 }
 
 void Timer::Init() {
@@ -148,8 +148,8 @@ float CPUTimer::MilliSeconds() {
   if (running()) {
     Stop();
   }
-  this->elapsed_milliseconds_ = (this->stop_cpu_ -
-                                this->start_cpu_).total_milliseconds();
+  this->elapsed_milliseconds_ = static_cast<float>((this->stop_cpu_ -
+                                this->start_cpu_).total_milliseconds());
   return this->elapsed_milliseconds_;
 }
 
@@ -161,8 +161,8 @@ float CPUTimer::MicroSeconds() {
   if (running()) {
     Stop();
   }
-  this->elapsed_microseconds_ = (this->stop_cpu_ -
-                                this->start_cpu_).total_microseconds();
+  this->elapsed_microseconds_ = static_cast<float>((this->stop_cpu_ -
+                                this->start_cpu_).total_microseconds());
   return this->elapsed_microseconds_;
 }
 

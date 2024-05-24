@@ -160,6 +160,7 @@ caffe::SolverAction::Enum GetRequestedAction(
     return caffe::SolverAction::NONE;
   }
   LOG(FATAL) << "Invalid signal effect \""<< flag_value << "\" was specified";
+  return caffe::SolverAction::NONE;
 }
 
 // Train / Finetune a model.
@@ -212,7 +213,7 @@ int train() {
     solver_param.set_device_id(gpus[0]);
     Caffe::SetDevice(gpus[0]);
     Caffe::set_mode(Caffe::GPU);
-    Caffe::set_solver_count(gpus.size());
+    Caffe::set_solver_count(static_cast<int>(gpus.size()));
   }
 
   caffe::SignalHandler signal_handler(
@@ -384,7 +385,7 @@ int time() {
     }
     forward_time += forward_timer.MicroSeconds();
     backward_timer.Start();
-    for (int i = layers.size() - 1; i >= 0; --i) {
+    for (int i = static_cast<int>(layers.size()) - 1; i >= 0; --i) {
       timer.Start();
       layers[i]->Backward(top_vecs[i], bottom_need_backward[i],
                           bottom_vecs[i]);

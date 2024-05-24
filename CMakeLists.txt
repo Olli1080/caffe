@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 2.8.7)
-if(POLICY CMP0046)
-  cmake_policy(SET CMP0046 NEW)
-endif()
-if(POLICY CMP0054)
-  cmake_policy(SET CMP0054 NEW)
-endif()
+cmake_minimum_required(VERSION 3.25.1)
+#if(POLICY CMP0046)
+#  cmake_policy(SET CMP0046 NEW)
+#endif()
+#if(POLICY CMP0054)
+#  cmake_policy(SET CMP0054 NEW)
+#endif()
 
 # ---[ Caffe project
 project(Caffe C CXX)
@@ -12,7 +12,11 @@ project(Caffe C CXX)
 # ---[ Caffe version
 set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
 set(CAFFE_TARGET_SOVERSION "1.0.0" CACHE STRING "Caffe soname version")
-add_definitions(-DCAFFE_VERSION=${CAFFE_TARGET_VERSION})
+add_compile_definitions(
+	CAFFE_VERSION=${CAFFE_TARGET_VERSION}
+	GLOG_NO_ABBREVIATED_SEVERITIES
+   NOMINMAX
+)
 
 # ---[ Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -25,6 +29,7 @@ include(cmake/Targets.cmake)
 include(cmake/Misc.cmake)
 include(cmake/Summary.cmake)
 include(cmake/ConfigGen.cmake)
+include(cmake/TargetResolvePrerequesites.cmake)
 
 # ---[ Options
 caffe_option(CPU_ONLY  "Build Caffe without CUDA support" OFF) # TODO: rename to USE_CUDA
@@ -48,6 +53,8 @@ caffe_option(USE_HDF5 "Build with hdf5" ON)
 # ---[ Dependencies
 include(cmake/Dependencies.cmake)
 
+set(CMAKE_CXX_STANDARD 17)
+#set(MSVC_TOOLSET_VERSION 143)
 # ---[ Flags
 if(UNIX OR APPLE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wall")
@@ -77,7 +84,7 @@ include_directories(${PROJECT_BINARY_DIR})
 # (cuda_compile() has per-call flags, but we set them here too for clarity)
 #
 # list(REMOVE_ITEM ...) invocations remove PRIVATE and PUBLIC keywords from collected definitions and include pathes
-if(HAVE_CUDA)
+if(NOT CPU_ONLY)
   # pass include pathes to cuda_include_directories()
   set(Caffe_ALL_INCLUDE_DIRS ${Caffe_INCLUDE_DIRS})
   list(REMOVE_ITEM Caffe_ALL_INCLUDE_DIRS PRIVATE PUBLIC)
@@ -102,8 +109,13 @@ add_subdirectory(docs)
 add_custom_target(lint COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/lint.cmake)
 
 # ---[ pytest target
-if(BUILD_python)
-  add_custom_target(pytest COMMAND python${python_version} -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
+if(BUILD_python AND HAVE_PYTHON)
+  if(UNIX)
+    set(python_executable python${python_version})
+  else()
+    set(python_executable ${PYTHON_EXECUTABLE})
+  endif()
+  add_custom_target(pytest COMMAND ${python_executable} -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
   add_dependencies(pytest pycaffe)
 endif()
 

@@ -8,7 +8,7 @@ namespace caffe {
 template <typename Dtype>
 void DummyDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const int num_top = top.size();
+  const int num_top = static_cast<int>(top.size());
   const DummyDataParameter& param = this->layer_param_.dummy_data_param();
   const int num_data_filler = param.data_filler_size();
   CHECK(num_data_filler == 0 || num_data_filler == 1 ||

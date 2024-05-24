@@ -11,7 +11,10 @@
 #include "caffe/layer_factory.hpp"
 #include "caffe/net.hpp"
 #include "caffe/parallel.hpp"
+#pragma warning(push)
+#pragma warning(disable : 4244)
 #include "caffe/proto/caffe.pb.h"
+#pragma warning(pop)
 #include "caffe/solver.hpp"
 #include "caffe/solver_factory.hpp"
 #include "caffe/util/benchmark.hpp"

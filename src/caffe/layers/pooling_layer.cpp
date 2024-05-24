@@ -267,8 +267,8 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         for (int ph = 0; ph < pooled_height_; ++ph) {
           for (int pw = 0; pw < pooled_width_; ++pw) {
             const int index = ph * pooled_width_ + pw;
-            const int bottom_index =
-                use_top_mask ? top_mask[index] : mask[index];
+            const int bottom_index = static_cast<int>(
+                use_top_mask ? top_mask[index] : mask[index]);
             bottom_diff[bottom_index] += top_diff[index];
           }
         }

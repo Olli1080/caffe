@@ -152,13 +152,13 @@ class XavierFiller : public Filler<Dtype> {
     int fan_out = blob->num_axes() > 1 ?
                   blob->count() / blob->shape(1) :
                   blob->count();
-    Dtype n = fan_in;  // default to fan_in
+    Dtype n = static_cast<Dtype>(fan_in);  // default to fan_in
     if (this->filler_param_.variance_norm() ==
         FillerParameter_VarianceNorm_AVERAGE) {
       n = (fan_in + fan_out) / Dtype(2);
     } else if (this->filler_param_.variance_norm() ==
         FillerParameter_VarianceNorm_FAN_OUT) {
-      n = fan_out;
+      n = static_cast<Dtype>(fan_out);
     }
     Dtype scale = sqrt(Dtype(3) / n);
     caffe_rng_uniform<Dtype>(blob->count(), -scale, scale,
@@ -197,13 +197,13 @@ class MSRAFiller : public Filler<Dtype> {
     int fan_out = blob->num_axes() > 1 ?
                   blob->count() / blob->shape(1) :
                   blob->count();
-    Dtype n = fan_in;  // default to fan_in
+    Dtype n = static_cast<Dtype>(fan_in);  // default to fan_in
     if (this->filler_param_.variance_norm() ==
         FillerParameter_VarianceNorm_AVERAGE) {
       n = (fan_in + fan_out) / Dtype(2);
     } else if (this->filler_param_.variance_norm() ==
         FillerParameter_VarianceNorm_FAN_OUT) {
-      n = fan_out;
+      n = static_cast<Dtype>(fan_out);
     }
     Dtype std = sqrt(Dtype(2) / n);
     caffe_rng_gaussian<Dtype>(blob->count(), Dtype(0), std,
@@ -255,11 +255,11 @@ class BilinearFiller : public Filler<Dtype> {
     CHECK_EQ(blob->num_axes(), 4) << "Blob must be 4 dim.";
     CHECK_EQ(blob->width(), blob->height()) << "Filter must be square";
     Dtype* data = blob->mutable_cpu_data();
-    int f = ceil(blob->width() / 2.);
-    Dtype c = (blob->width() - 1) / (2. * f);
+    int f = static_cast<int>(ceil(blob->width() / 2.));
+    Dtype c = static_cast<Dtype>((blob->width() - 1) / (2. * f));
     for (int i = 0; i < blob->count(); ++i) {
-      Dtype x = i % blob->width();
-      Dtype y = (i / blob->width()) % blob->height();
+      Dtype x = static_cast<Dtype>(i % blob->width());
+      Dtype y = static_cast<Dtype>((i / blob->width()) % blob->height());
       data[i] = (1 - fabs(x / f - c)) * (1 - fabs(y / f - c));
     }
     CHECK_EQ(this->filler_param_.sparse(), -1)

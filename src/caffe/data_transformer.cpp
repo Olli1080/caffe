@@ -184,7 +184,7 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const vector<Datum> & datum_vector,
                                        Blob<Dtype>* transformed_blob) {
-  const int datum_num = datum_vector.size();
+  const int datum_num = static_cast<int>(datum_vector.size());
   const int num = transformed_blob->num();
   const int channels = transformed_blob->channels();
   const int height = transformed_blob->height();
@@ -477,7 +477,7 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(const Datum& datum) {
 template<typename Dtype>
 vector<int> DataTransformer<Dtype>::InferBlobShape(
     const vector<Datum> & datum_vector) {
-  const int num = datum_vector.size();
+  const int num = static_cast<int>(datum_vector.size());
   CHECK_GT(num, 0) << "There is no datum to in the vector";
   // Use first datum in the vector to InferBlobShape.
   vector<int> shape = InferBlobShape(datum_vector[0]);

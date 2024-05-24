@@ -118,7 +118,7 @@ void DataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
     // Copy label.
     if (this->output_labels_) {
       Dtype* top_label = batch->label_.mutable_cpu_data();
-      top_label[item_id] = datum.label();
+      top_label[item_id] = static_cast<Dtype>(datum.label());
     }
     trans_time += timer.MicroSeconds();
     Next();

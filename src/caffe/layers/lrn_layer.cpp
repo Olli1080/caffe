@@ -47,8 +47,8 @@ void LRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     power_top_vec_.clear();
     power_top_vec_.push_back(&power_output_);
     LayerParameter power_param;
-    power_param.mutable_power_param()->set_power(-beta_);
-    power_param.mutable_power_param()->set_scale(alpha_);
+    power_param.mutable_power_param()->set_power(static_cast<float>(-beta_));
+    power_param.mutable_power_param()->set_scale(static_cast<float>(alpha_));
     power_param.mutable_power_param()->set_shift(Dtype(1));
     power_layer_.reset(new PowerLayer<Dtype>(power_param));
     power_layer_->SetUp(pool_top_vec_, power_top_vec_);
@@ -192,7 +192,7 @@ void LRNLayer<Dtype>::CrossChannelBackward_cpu(
   // We hack a little bit by using the diff() to store an additional result
   Dtype* accum_ratio_times_bottom = accum_ratio.mutable_cpu_diff();
   caffe_set(padded_ratio.count(), Dtype(0), padded_ratio_data);
-  Dtype cache_ratio_value = 2. * alpha_ * beta_ / size_;
+  Dtype cache_ratio_value = static_cast<Dtype>(2. * alpha_ * beta_ / size_);
 
   caffe_powx<Dtype>(scale_.count(), scale_data, -beta_, bottom_diff);
   caffe_mul<Dtype>(scale_.count(), top_diff, bottom_diff, bottom_diff);

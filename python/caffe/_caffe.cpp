@@ -59,9 +59,9 @@ void InitLogLevel(int level) {
   FLAGS_minloglevel = level;
   InitLog();
 }
-void InitLogLevelPipe(int level, bool stderr) {
+void InitLogLevelPipe(int level, bool use_stderr) {
   FLAGS_minloglevel = level;
-  FLAGS_logtostderr = stderr;
+  FLAGS_logtostderr = use_stderr;
   InitLog();
 }
 void Log(const string& s) {
@@ -194,6 +194,41 @@ void Net_SetInputArrays(Net<Dtype>* net, bp::object data_obj,
   md_layer->Reset(static_cast<Dtype*>(PyArray_DATA(data_arr)),
       static_cast<Dtype*>(PyArray_DATA(labels_arr)),
       PyArray_DIMS(data_arr)[0]);
+}
+
+void Net_SetLayerInput(Net<Dtype>* net, const string& layer, bp::object data_obj) {
+  // check that this network has an input MemoryDataLayer
+  shared_ptr<MemoryDataLayer<Dtype> > md_layer =
+    boost::dynamic_pointer_cast<MemoryDataLayer<Dtype> >(net->layer_by_name(layer));
+  if (!md_layer) {
+    throw std::runtime_error("set_layer_input may only be called on a MemoryDataLayer");
+  }
+
+  // check that we were passed appropriately-sized contiguous memory
+  PyArrayObject* data_arr =
+      reinterpret_cast<PyArrayObject*>(data_obj.ptr());
+	  
+  if (!(PyArray_FLAGS(data_arr) & NPY_ARRAY_C_CONTIGUOUS)) {
+    throw std::runtime_error("data must be C contiguous");
+  }
+  if (PyArray_TYPE(data_arr) != NPY_FLOAT32) {
+    throw std::runtime_error("data must be float32");
+  }
+  if (md_layer->width() == 1 && PyArray_NDIM(data_arr) != 1) {
+    throw std::runtime_error("data must be 1-d");
+  }
+  if (md_layer->width() != 1 && PyArray_NDIM(data_arr) != 2) {
+    throw std::runtime_error("data must be at least 2-d");
+		
+    if (PyArray_DIMS(data_arr)[1] != md_layer->width()) {
+      throw std::runtime_error("inner dimension of data is incorrect");
+    }
+   }
+
+	md_layer->set_batch_size(PyArray_DIMS(data_arr)[0]);
+	md_layer->Reset(static_cast<Dtype*>(PyArray_DATA(data_arr)),
+		static_cast<Dtype*>(PyArray_DATA(data_arr)),
+		PyArray_DIMS(data_arr)[0]);
 }
 
 Solver<Dtype>* GetSolverFromFile(const string& filename) {
@@ -439,6 +474,8 @@ BOOST_PYTHON_MODULE(_caffe) {
         bp::make_function(&Net<Dtype>::output_blob_indices,
         bp::return_value_policy<bp::copy_const_reference>()))
     .def("_set_input_arrays", &Net_SetInputArrays,
+        bp::with_custodian_and_ward<1, 2, bp::with_custodian_and_ward<1, 3> >())
+    .def("_set_layer_input", &Net_SetLayerInput,
         bp::with_custodian_and_ward<1, 2, bp::with_custodian_and_ward<1, 3> >())
     .def("save", &Net_Save)
     .def("save_hdf5", &Net_SaveHDF5)

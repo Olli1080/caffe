@@ -15,7 +15,7 @@ void ReshapeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const int top_num_axes = top_blob_shape.dim_size();
   constant_count_ = 1;
   for (int i = 0; i < top_num_axes; ++i) {
-    const int top_dim = top_blob_shape.dim(i);
+    const int top_dim = static_cast<int>(top_blob_shape.dim(i));
     if (top_dim == 0) {
       copy_axes_.push_back(i);
     } else if (top_dim == -1) {
@@ -53,7 +53,7 @@ void ReshapeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     top_shape[top_shape_index++] = bottom[0]->shape(i);
   }
   for (int i = 0; i < num_new_axes; ++i) {
-    top_shape[top_shape_index++] = top_blob_shape.dim(i);
+    top_shape[top_shape_index++] = static_cast<int>(top_blob_shape.dim(i));
   }
   for (int i = end_axis; i < bottom[0]->num_axes(); ++i) {
     top_shape[top_shape_index++] = bottom[0]->shape(i);

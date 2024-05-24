@@ -6,6 +6,10 @@
 
 #include "caffe/util/signal_handler.h"
 
+#ifndef SIGHUP
+#define SIGHUP SIGBREAK
+#endif
+
 namespace {
   static volatile sig_atomic_t got_sigint = false;
   static volatile sig_atomic_t got_sighup = false;
@@ -28,18 +32,10 @@ namespace {
     }
     already_hooked_up = true;
 
-    struct sigaction sa;
-    // Setup the handler
-    sa.sa_handler = &handle_signal;
-    // Restart the system call, if at all possible
-    sa.sa_flags = SA_RESTART;
-    // Block every signal during the handler
-    sigfillset(&sa.sa_mask);
-    // Intercept SIGHUP and SIGINT
-    if (sigaction(SIGHUP, &sa, NULL) == -1) {
+    if (std::signal(SIGHUP, handle_signal) == SIG_ERR) {
       LOG(FATAL) << "Cannot install SIGHUP handler.";
     }
-    if (sigaction(SIGINT, &sa, NULL) == -1) {
+    if (std::signal(SIGINT, handle_signal) == SIG_ERR) {
       LOG(FATAL) << "Cannot install SIGINT handler.";
     }
   }
@@ -47,18 +43,10 @@ namespace {
   // Set the signal handlers to the default.
   void UnhookHandler() {
     if (already_hooked_up) {
-      struct sigaction sa;
-      // Setup the sighup handler
-      sa.sa_handler = SIG_DFL;
-      // Restart the system call, if at all possible
-      sa.sa_flags = SA_RESTART;
-      // Block every signal during the handler
-      sigfillset(&sa.sa_mask);
-      // Intercept SIGHUP and SIGINT
-      if (sigaction(SIGHUP, &sa, NULL) == -1) {
+      if (std::signal(SIGHUP, handle_signal) == SIG_ERR) {
         LOG(FATAL) << "Cannot uninstall SIGHUP handler.";
       }
-      if (sigaction(SIGINT, &sa, NULL) == -1) {
+      if (std::signal(SIGINT, handle_signal) == SIG_ERR) {
         LOG(FATAL) << "Cannot uninstall SIGINT handler.";
       }
 

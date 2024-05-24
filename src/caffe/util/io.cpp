@@ -1,4 +1,3 @@
-#include <fcntl.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
@@ -9,11 +8,13 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #endif  // USE_OPENCV
 #include <stdint.h>
+#include <cstdio>
 
 #include <algorithm>
 #include <fstream>  // NOLINT(readability/streams)
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "caffe/common.hpp"
 #include "caffe/proto/caffe.pb.h"
@@ -25,6 +26,8 @@ namespace caffe {
 
 using google::protobuf::io::FileInputStream;
 using google::protobuf::io::FileOutputStream;
+using google::protobuf::io::IstreamInputStream;
+using google::protobuf::io::OstreamOutputStream;
 using google::protobuf::io::ZeroCopyInputStream;
 using google::protobuf::io::CodedInputStream;
 using google::protobuf::io::ZeroCopyOutputStream;
@@ -32,25 +35,48 @@ using google::protobuf::io::CodedOutputStream;
 using google::protobuf::Message;
 
 bool ReadProtoFromTextFile(const char* filename, Message* proto) {
-  int fd = open(filename, O_RDONLY);
+  /*auto fd = std::fopen(filename, O_RDONLY);
   CHECK_NE(fd, -1) << "File not found: " << filename;
-  FileInputStream* input = new FileInputStream(fd);
-  bool success = google::protobuf::TextFormat::Parse(input, proto);
-  delete input;
-  close(fd);
-  return success;
+  FileInputStream* input = new FileInputStream(fd);*/
+  auto fd = std::ifstream(filename);
+  CHECK_NE(fd.is_open(), false) << "File not found: " << filename;
+
+  auto input = std::make_unique<IstreamInputStream>(&fd);
+  return google::protobuf::TextFormat::Parse(input.get(), proto);
+  //bool success = google::protobuf::TextFormat::Parse(input, proto);
+  //delete input;
+  //std::fclose(fd);
+  //return success;
 }
 
 void WriteProtoToTextFile(const Message& proto, const char* filename) {
-  int fd = open(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+  auto fd = std::ofstream(filename, std::ios::trunc);
+  auto output = std::make_unique<OstreamOutputStream>(&fd);
+  CHECK(google::protobuf::TextFormat::Print(proto, output.get()));
+
+  /*auto fd = std::fopen(filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
   FileOutputStream* output = new FileOutputStream(fd);
   CHECK(google::protobuf::TextFormat::Print(proto, output));
   delete output;
-  close(fd);
+  std::fclose(fd);*/
 }
 
 bool ReadProtoFromBinaryFile(const char* filename, Message* proto) {
-  int fd = open(filename, O_RDONLY);
+  auto fd = std::ifstream(filename, std::ios::binary);
+  CHECK_NE(fd.is_open(), false) << "File not found: " << filename;
+
+  auto raw_input = std::make_unique<IstreamInputStream>(&fd);
+  auto coded_input = std::make_unique<CodedInputStream>(raw_input.get());
+
+  #if GOOGLE_PROTOBUF_VERSION >= 3002000
+  	coded_input->SetTotalBytesLimit(kProtoReadBytesLimit);
+  #else
+    coded_input->SetTotalBytesLimit(kProtoReadBytesLimit, 536870912);
+  #endif
+
+  return proto->ParseFromCodedStream(coded_input.get());
+/*
+  auto fd = std::fopen(filename, O_RDONLY);
   CHECK_NE(fd, -1) << "File not found: " << filename;
   ZeroCopyInputStream* raw_input = new FileInputStream(fd);
   CodedInputStream* coded_input = new CodedInputStream(raw_input);
@@ -60,8 +86,8 @@ bool ReadProtoFromBinaryFile(const char* filename, Message* proto) {
 
   delete coded_input;
   delete raw_input;
-  close(fd);
-  return success;
+  std::fclose(fd);
+  return success;*/
 }
 
 void WriteProtoToBinaryFile(const Message& proto, const char* filename) {
@@ -73,8 +99,8 @@ void WriteProtoToBinaryFile(const Message& proto, const char* filename) {
 cv::Mat ReadImageToCVMat(const string& filename,
     const int height, const int width, const bool is_color) {
   cv::Mat cv_img;
-  int cv_read_flag = (is_color ? CV_LOAD_IMAGE_COLOR :
-    CV_LOAD_IMAGE_GRAYSCALE);
+  int cv_read_flag = (is_color ? cv::IMREAD_COLOR :
+    cv::IMREAD_GRAYSCALE);
   cv::Mat cv_img_origin = cv::imread(filename, cv_read_flag);
   if (!cv_img_origin.data) {
     LOG(ERROR) << "Could not open or find file " << filename;
@@ -179,8 +205,8 @@ cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color) {
   CHECK(datum.encoded()) << "Datum not encoded";
   const string& data = datum.data();
   std::vector<char> vec_data(data.c_str(), data.c_str() + data.size());
-  int cv_read_flag = (is_color ? CV_LOAD_IMAGE_COLOR :
-    CV_LOAD_IMAGE_GRAYSCALE);
+  int cv_read_flag = (is_color ? cv::IMREAD_COLOR :
+    cv::IMREAD_GRAYSCALE);
   cv_img = cv::imdecode(vec_data, cv_read_flag);
   if (!cv_img.data) {
     LOG(ERROR) << "Could not decode datum ";

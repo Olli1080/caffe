@@ -63,15 +63,15 @@ class CropLayer : public Layer<Dtype> {
   // offsets, but this is problematic because of its variable length.
   // Since in the standard (N,C,W,H) case N,C are usually not cropped a speedup
   // could be achieved by not looping the application of the copy_kernel around
-  // these dimensions.
-  void crop_copy_gpu(const vector<Blob<Dtype>*>& bottom,
+  // these dimensions. //this is not used!
+  /*void crop_copy_gpu(const vector<Blob<Dtype>*>& bottom,
                 const vector<Blob<Dtype>*>& top,
                 const vector<int>& offsets,
                 vector<int> indices,
                 int cur_dim,
                 const Dtype* src_data,
                 Dtype* dest_data,
-                bool is_forward);
+                bool is_forward);*/
 };
 }  // namespace caffe
 

@@ -1,35 +1,25 @@
+include(FindPackageHandleStandardArgs)
 
+set(OPENBLAS_ROOT_DIR "" CACHE PATH "Folder contains OpenBlas")
 
-SET(Open_BLAS_INCLUDE_SEARCH_PATHS
-  /usr/include
-  /usr/include/openblas
-  /usr/include/openblas-base
-  /usr/local/include
-  /usr/local/include/openblas
-  /usr/local/include/openblas-base
-  /opt/OpenBLAS/include
-  $ENV{OpenBLAS_HOME}
-  $ENV{OpenBLAS_HOME}/include
-)
+find_path(OpenBLAS_INCLUDE_DIR cblas.h
+        PATHS ${OPENBLAS_ROOT_DIR}/include/openblas)
 
-SET(Open_BLAS_LIB_SEARCH_PATHS
-        /lib/
-        /lib/openblas-base
-        /lib64/
-        /usr/lib
-        /usr/lib/openblas-base
-        /usr/lib64
-        /usr/local/lib
-        /usr/local/lib64
-        /opt/OpenBLAS/lib
-        $ENV{OpenBLAS}cd
-        $ENV{OpenBLAS}/lib
-        $ENV{OpenBLAS_HOME}
-        $ENV{OpenBLAS_HOME}/lib
- )
+if(MSVC)
+    find_library(OPENBLAS_LIBRARY_RELEASE
+        NAMES openblas
+        PATHS ${OPENBLAS_ROOT_DIR}/lib ${OPENBLAS_ROOT_DIR}
+        PATH_SUFFIXES Release)
 
-FIND_PATH(OpenBLAS_INCLUDE_DIR NAMES cblas.h PATHS ${Open_BLAS_INCLUDE_SEARCH_PATHS})
-FIND_LIBRARY(OpenBLAS_LIB NAMES openblas PATHS ${Open_BLAS_LIB_SEARCH_PATHS})
+    find_library(OPENBLAS_LIBRARY_DEBUG
+        NAMES openblas
+        PATHS ${OPENBLAS_ROOT_DIR}/debug/lib ${OPENBLAS_ROOT_DIR}
+        PATH_SUFFIXES Debug)
+
+    set(OpenBLAS_LIB optimized ${OPENBLAS_LIBRARY_RELEASE} debug ${OPENBLAS_LIBRARY_DEBUG})
+else()
+    find_library(OpenBLAS_LIB openblas)
+endif()
 
 SET(OpenBLAS_FOUND ON)
 
@@ -56,9 +46,5 @@ ELSE (OpenBLAS_FOUND)
   ENDIF (OpenBLAS_FIND_REQUIRED)
 ENDIF (OpenBLAS_FOUND)
 
-MARK_AS_ADVANCED(
-    OpenBLAS_INCLUDE_DIR
-    OpenBLAS_LIB
-    OpenBLAS
-)
-
+mark_as_advanced(OPENBLAS_LIBRARY_DEBUG OPENBLAS_LIBRARY_RELEASE
+OpenBLAS_LIB OpenBLAS_INCLUDE_DIR OPENBLAS_ROOT_DIR)

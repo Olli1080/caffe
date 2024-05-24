@@ -16,6 +16,9 @@
 #include <utility>  // pair
 #include <vector>
 
+#ifdef _MSC_VER
+  #include "caffe/export.hpp"
+#endif
 #include "caffe/util/device_alternate.hpp"
 
 // Convert macro to string
@@ -34,8 +37,8 @@ namespace gflags = google;
 // Disable the copy and assignment operator for a class.
 #define DISABLE_COPY_AND_ASSIGN(classname) \
 private:\
-  classname(const classname&);\
-  classname& operator=(const classname&)
+  classname(const classname&) = delete;\
+  classname& operator=(const classname&) = delete;
 
 // Instantiate a class with float and double specifications.
 #define INSTANTIATE_CLASS(classname) \
@@ -83,7 +86,7 @@ using std::fstream;
 using std::ios;
 using std::isnan;
 using std::isinf;
-using std::iterator;
+//using std::iterator;
 using std::make_pair;
 using std::map;
 using std::ostringstream;

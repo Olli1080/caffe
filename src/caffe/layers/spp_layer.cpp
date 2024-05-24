@@ -17,11 +17,11 @@ template <typename Dtype>
 LayerParameter SPPLayer<Dtype>::GetPoolingParam(const int pyramid_level,
       const int bottom_h, const int bottom_w, const SPPParameter spp_param) {
   LayerParameter pooling_param;
-  int num_bins = pow(2, pyramid_level);
+  int num_bins = static_cast<int>(pow(2, pyramid_level));
 
   // find padding and kernel size so that the pooling is
   // performed across the entire image
-  int kernel_h = ceil(bottom_h / static_cast<double>(num_bins));
+  int kernel_h = static_cast<int>(ceil(bottom_h / static_cast<double>(num_bins)));
   // remainder_h is the min number of pixels that need to be padded before
   // entire image height is pooled over with the chosen kernel dimension
   int remainder_h = kernel_h * num_bins - bottom_h;
@@ -30,7 +30,7 @@ LayerParameter SPPLayer<Dtype>::GetPoolingParam(const int pyramid_level,
   int pad_h = (remainder_h + 1) / 2;
 
   // similar logic for width
-  int kernel_w = ceil(bottom_w / static_cast<double>(num_bins));
+  int kernel_w = static_cast<int>(ceil(bottom_w / static_cast<double>(num_bins)));
   int remainder_w = kernel_w * num_bins - bottom_w;
   int pad_w = (remainder_w + 1) / 2;
 

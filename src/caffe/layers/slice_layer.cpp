@@ -61,7 +61,7 @@ void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     CHECK_EQ(bottom_slice_axis % top.size(), 0)
         << "Number of top blobs (" << top.size() << ") should evenly "
         << "divide input slice axis (" << bottom_slice_axis << ")";
-    top_shape[slice_axis_] = bottom_slice_axis / top.size();
+    top_shape[slice_axis_] = bottom_slice_axis / static_cast<int>(top.size());
     for (int i = 0; i < top.size(); ++i) {
       top[i]->Reshape(top_shape);
       count += top[i]->count();

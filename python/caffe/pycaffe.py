@@ -267,7 +267,17 @@ def _Net_set_input_arrays(self, data, labels):
         labels = np.ascontiguousarray(labels[:, np.newaxis, np.newaxis,
                                              np.newaxis])
     return self._set_input_arrays(data, labels)
-
+ 
+def _Net_set_layer_input(self, layer_name, data):
+	"""
+	Resizes the layer such that batch_size * layer.width == data.size
+	Set input array of in-memory MemoryDataLayer layer_name
+	"""
+	if layer_name not in self.layer_dict:
+		raise ValueError("{} does not exist in net".format(layer_name))
+		
+	data = np.ascontiguousarray(data)
+	return self._set_layer_input(layer_name, data)
 
 def _Net_batch(self, blobs):
     """
@@ -338,6 +348,7 @@ Net.backward = _Net_backward
 Net.forward_all = _Net_forward_all
 Net.forward_backward_all = _Net_forward_backward_all
 Net.set_input_arrays = _Net_set_input_arrays
+Net.set_layer_input = _Net_set_layer_input
 Net._batch = _Net_batch
 Net.inputs = _Net_inputs
 Net.outputs = _Net_outputs

@@ -48,7 +48,7 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
   CHECK_GE(param_.average_loss(), 1) << "average_loss should be non-negative.";
   CheckSnapshotWritePermissions();
   if (param_.random_seed() >= 0) {
-    Caffe::set_random_seed(param_.random_seed() + Caffe::solver_rank());
+    Caffe::set_random_seed(static_cast<unsigned int>(param_.random_seed() + Caffe::solver_rank()));
   }
   // Scaffolding code
   InitTrainNet();
@@ -240,7 +240,7 @@ void Solver<Dtype>::Step(int iters) {
           << " (" << per_s << " iter/s, " << lapse << "s/"
           << param_.display() << " iters), loss = " << smoothed_loss_;
       iteration_timer_.Start();
-      iterations_last_ = iter_;
+      iterations_last_ = static_cast<float>(iter_);
       const vector<Blob<Dtype>*>& result = net_->output_blobs();
       int score_index = 0;
       for (int j = 0; j < result.size(); ++j) {
@@ -492,7 +492,7 @@ void Solver<Dtype>::UpdateSmoothedLoss(Dtype loss, int start_iter,
     int average_loss) {
   if (losses_.size() < average_loss) {
     losses_.push_back(loss);
-    int size = losses_.size();
+    int size = static_cast<int>(losses_.size());
     smoothed_loss_ = (smoothed_loss_ * (size - 1) + loss) / size;
   } else {
     int idx = (iter_ - start_iter) % average_loss;

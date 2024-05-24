@@ -100,7 +100,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
       AppendTop(param, layer_id, top_id, &available_blobs, &blob_name_to_idx);
       // Collect Input layer tops as Net inputs.
       if (layer_param.type() == "Input") {
-        const int blob_id = blobs_.size() - 1;
+        const int blob_id = static_cast<int>(blobs_.size()) - 1;
         net_input_blob_indices_.push_back(blob_id);
         net_input_blobs_.push_back(blobs_[blob_id].get());
       }
@@ -139,7 +139,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     LOG_IF(INFO, Caffe::root_solver())
         << "Memory required for data: " << memory_used_ * sizeof(Dtype);
     const int param_size = layer_param.param_size();
-    const int num_param_blobs = layers_[layer_id]->blobs().size();
+    const int num_param_blobs = static_cast<int>(layers_[layer_id]->blobs().size());
     CHECK_LE(param_size, num_param_blobs)
         << "Too many params specified for layer " << layer_param.name();
     ParamSpec default_param_spec;
@@ -170,7 +170,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
   // computation for the entire layer
   set<string> blobs_under_loss;
   set<string> blobs_skip_backp;
-  for (int layer_id = layers_.size() - 1; layer_id >= 0; --layer_id) {
+  for (int layer_id = static_cast<int>(layers_.size()) - 1; layer_id >= 0; --layer_id) {
     bool layer_contributes_loss = false;
     bool layer_skip_propagate_down = true;
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
@@ -246,10 +246,10 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     net_output_blobs_.push_back(blobs_[blob_name_to_idx[*it]].get());
     net_output_blob_indices_.push_back(blob_name_to_idx[*it]);
   }
-  for (size_t blob_id = 0; blob_id < blob_names_.size(); ++blob_id) {
+  for (int blob_id = 0; blob_id < blob_names_.size(); ++blob_id) {
     blob_names_index_[blob_names_[blob_id]] = blob_id;
   }
-  for (size_t layer_id = 0; layer_id < layer_names_.size(); ++layer_id) {
+  for (int layer_id = 0; layer_id < layer_names_.size(); ++layer_id) {
     layer_names_index_[layer_names_[layer_id]] = layer_id;
   }
   ShareWeights();
@@ -382,7 +382,7 @@ void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
       LOG(INFO) << layer_param->name() << " -> " << blob_name;
     }
     shared_ptr<Blob<Dtype> > blob_pointer(new Blob<Dtype>());
-    const int blob_id = blobs_.size();
+    const int blob_id = static_cast<int>(blobs_.size());
     blobs_.push_back(blob_pointer);
     blob_names_.push_back(blob_name);
     blob_need_backward_.push_back(false);
@@ -433,7 +433,7 @@ void Net<Dtype>::AppendParam(const NetParameter& param, const int layer_id,
     param_display_name << param_id;
     param_display_names_.push_back(param_display_name.str());
   }
-  const int net_param_id = params_.size();
+  const int net_param_id = static_cast<int>(params_.size());
   params_.push_back(layers_[layer_id]->blobs()[param_id]);
   param_id_vecs_[layer_id].push_back(net_param_id);
   param_layer_indices_.push_back(make_pair(layer_id, param_id));
@@ -449,7 +449,7 @@ void Net<Dtype>::AppendParam(const NetParameter& param, const int layer_id,
     if (param_name.size()) {
       param_names_index_[param_name] = net_param_id;
     }
-    const int learnable_param_id = learnable_params_.size();
+    const int learnable_param_id = static_cast<int>(learnable_params_.size());
     learnable_params_.push_back(params_[net_param_id].get());
     learnable_param_ids_.push_back(learnable_param_id);
     has_params_lr_.push_back(param_spec->has_lr_mult());
@@ -535,7 +535,7 @@ Dtype Net<Dtype>::ForwardFromTo(int start, int end) {
 
 template <typename Dtype>
 Dtype Net<Dtype>::ForwardFrom(int start) {
-  return ForwardFromTo(start, layers_.size() - 1);
+  return ForwardFromTo(start, static_cast<int>(layers_.size()) - 1);
 }
 
 template <typename Dtype>
@@ -546,9 +546,9 @@ Dtype Net<Dtype>::ForwardTo(int end) {
 template <typename Dtype>
 const vector<Blob<Dtype>*>& Net<Dtype>::Forward(Dtype* loss) {
   if (loss != NULL) {
-    *loss = ForwardFromTo(0, layers_.size() - 1);
+    *loss = ForwardFromTo(0, static_cast<int>(layers_.size()) - 1);
   } else {
-    ForwardFromTo(0, layers_.size() - 1);
+    ForwardFromTo(0, static_cast<int>(layers_.size()) - 1);
   }
   return net_output_blobs_;
 }
@@ -665,7 +665,7 @@ void Net<Dtype>::UpdateDebugInfo(const int param_id) {
 
 template <typename Dtype>
 void Net<Dtype>::ShareTrainedLayersWith(const Net* other) {
-  int num_source_layers = other->layers().size();
+  int num_source_layers = static_cast<int>(other->layers().size());
   for (int i = 0; i < num_source_layers; ++i) {
     Layer<Dtype>* source_layer = other->layers()[i].get();
     const string& source_layer_name = other->layer_names()[i];
@@ -702,12 +702,12 @@ void Net<Dtype>::BackwardFrom(int start) {
 
 template <typename Dtype>
 void Net<Dtype>::BackwardTo(int end) {
-  BackwardFromTo(layers_.size() - 1, end);
+  BackwardFromTo(static_cast<int>(layers_.size()) - 1, end);
 }
 
 template <typename Dtype>
 void Net<Dtype>::Backward() {
-  BackwardFromTo(layers_.size() - 1, 0);
+  BackwardFromTo(static_cast<int>(layers_.size()) - 1, 0);
   if (debug_info_) {
     Dtype asum_data = 0, asum_diff = 0, sumsq_data = 0, sumsq_diff = 0;
     for (int i = 0; i < learnable_params_.size(); ++i) {
@@ -884,7 +884,7 @@ void Net<Dtype>::ToHDF5(const string& filename, bool write_diff) const {
       CHECK_GE(layer_diff_hid, 0)
           << "Error saving weights to " << filename << ".";
     }
-    int num_params = layers_[layer_id]->blobs().size();
+    int num_params = static_cast<int>(layers_[layer_id]->blobs().size());
     for (int param_id = 0; param_id < num_params; ++param_id) {
       ostringstream dataset_name;
       dataset_name << param_id;

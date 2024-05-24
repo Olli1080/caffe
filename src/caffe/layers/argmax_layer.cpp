@@ -38,11 +38,11 @@ void ArgMaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   if (has_axis_) {
     // Produces max_ind or max_val per axis
     shape = bottom[0]->shape();
-    shape[axis_] = top_k_;
+    shape[axis_] = static_cast<int>(top_k_);
   } else {
     shape[0] = bottom[0]->shape(0);
     // Produces max_ind
-    shape[2] = top_k_;
+    shape[2] = static_cast<int>(top_k_);
     if (out_max_val_) {
       // Produces max_ind and max_val
       shape[1] = 2;
@@ -83,13 +83,13 @@ void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
             = bottom_data_vector[j].first;
         } else {
           // Produces max_ind and max_val
-          top_data[2 * i * top_k_ + j] = bottom_data_vector[j].second;
-          top_data[2 * i * top_k_ + top_k_ + j] = bottom_data_vector[j].first;
+          top_data[2 * i * top_k_ + j] = static_cast<Dtype>(bottom_data_vector[j].second);
+          top_data[2 * i * top_k_ + top_k_ + j] = static_cast<Dtype>(bottom_data_vector[j].first);
         }
       } else {
         // Produces max_ind per axis
         top_data[(i / axis_dist * top_k_ + j) * axis_dist + i % axis_dist]
-          = bottom_data_vector[j].second;
+          = static_cast<Dtype>(bottom_data_vector[j].second);
       }
     }
   }

@@ -10,6 +10,8 @@ TODO:
 #include <fstream>  // NOLINT(readability/streams)
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <random>
 
 #include "hdf5.h"
 #include "hdf5_hl.h"
@@ -19,6 +21,9 @@ TODO:
 #include "caffe/util/hdf5.hpp"
 
 namespace caffe {
+
+std::random_device rd;
+std::mt19937 g(rd());
 
 template <typename Dtype>
 HDF5DataLayer<Dtype>::~HDF5DataLayer<Dtype>() { }
@@ -62,7 +67,7 @@ void HDF5DataLayer<Dtype>::LoadHDF5FileData(const char* filename) {
 
   // Shuffle if needed.
   if (this->layer_param_.hdf5_data_param().shuffle()) {
-    std::random_shuffle(data_permutation_.begin(), data_permutation_.end());
+    std::shuffle(data_permutation_.begin(), data_permutation_.end(), g);
     DLOG(INFO) << "Successfully loaded " << hdf_blobs_[0]->shape(0)
                << " rows (shuffled)";
   } else {
@@ -90,7 +95,7 @@ void HDF5DataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     LOG(FATAL) << "Failed to open source file: " << source;
   }
   source_file.close();
-  num_files_ = hdf_filenames_.size();
+  num_files_ = static_cast<unsigned int>(hdf_filenames_.size());
   current_file_ = 0;
   LOG(INFO) << "Number of HDF5 files: " << num_files_;
   CHECK_GE(num_files_, 1) << "Must have at least 1 HDF5 filename listed in "
@@ -99,13 +104,13 @@ void HDF5DataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   file_permutation_.clear();
   file_permutation_.resize(num_files_);
   // Default to identity permutation.
-  for (int i = 0; i < num_files_; i++) {
+  for (unsigned int i = 0; i < num_files_; ++i) {
     file_permutation_[i] = i;
   }
 
   // Shuffle if needed.
   if (this->layer_param_.hdf5_data_param().shuffle()) {
-    std::random_shuffle(file_permutation_.begin(), file_permutation_.end());
+    std::shuffle(file_permutation_.begin(), file_permutation_.end(), g);
   }
 
   // Load the first HDF5 file and initialize the line counter.
@@ -144,8 +149,8 @@ void HDF5DataLayer<Dtype>::Next() {
       if (current_file_ == num_files_) {
         current_file_ = 0;
         if (this->layer_param_.hdf5_data_param().shuffle()) {
-          std::random_shuffle(file_permutation_.begin(),
-                              file_permutation_.end());
+          std::shuffle(file_permutation_.begin(),
+                              file_permutation_.end(), g);
         }
         DLOG(INFO) << "Looping around to first file.";
       }
@@ -154,7 +159,7 @@ void HDF5DataLayer<Dtype>::Next() {
     }
     current_row_ = 0;
     if (this->layer_param_.hdf5_data_param().shuffle())
-      std::random_shuffle(data_permutation_.begin(), data_permutation_.end());
+      std::shuffle(data_permutation_.begin(), data_permutation_.end(), g);
   }
   offset_++;
 }

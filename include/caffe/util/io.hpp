@@ -46,7 +46,7 @@ inline void MakeTempFilename(string* temp_filename) {
     temp_files_subpath = path_string;
   }
   *temp_filename =
-    (temp_files_subpath/caffe::format_int(next_temp_file++, 9)).string();
+    (temp_files_subpath/caffe::format_int(static_cast<int>(next_temp_file++), 9)).string();
 }
 
 bool ReadProtoFromTextFile(const char* filename, Message* proto);

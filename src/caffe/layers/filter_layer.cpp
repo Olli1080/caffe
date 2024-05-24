@@ -17,7 +17,7 @@ void FilterLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   // bottom[0...k-1] are the blobs to filter
   // bottom[last] is the "selector_blob"
-  int selector_index = bottom.size() - 1;
+  int selector_index = static_cast<int>(bottom.size()) - 1;
   for (int i = 1; i < bottom[selector_index]->num_axes(); ++i) {
     CHECK_EQ(bottom[selector_index]->shape(i), 1)
         << "Selector blob dimensions must be singletons (1), except the first";
@@ -41,7 +41,7 @@ void FilterLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     }
   }
   // only filtered items will be forwarded
-  int new_tops_num = indices_to_forward_.size();
+  int new_tops_num = static_cast<int>(indices_to_forward_.size());
   // init
   if (first_reshape_) {
     new_tops_num = bottom[0]->shape(0);
@@ -60,7 +60,7 @@ void FilterLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void FilterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  int new_tops_num = indices_to_forward_.size();
+  int new_tops_num = static_cast<int>(indices_to_forward_.size());
   // forward all filtered items for all bottoms but the Selector (bottom[last])
   for (int t = 0; t < top.size(); ++t) {
     const Dtype* bottom_data = bottom[t]->cpu_data();

@@ -69,7 +69,7 @@ void ContrastiveLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
       this->layer_param_.contrastive_loss_param().legacy_version();
   for (int i = 0; i < 2; ++i) {
     if (propagate_down[i]) {
-      const Dtype sign = (i == 0) ? 1 : -1;
+      const Dtype sign = static_cast<Dtype>((i == 0) ? 1 : -1);
       const Dtype alpha = sign * top[0]->cpu_diff()[0] /
           static_cast<Dtype>(bottom[i]->num());
       int num = bottom[i]->num();

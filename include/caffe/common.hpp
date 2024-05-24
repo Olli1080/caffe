@@ -46,6 +46,10 @@ private:\
   template class classname<float>; \
   template class classname<double>
 
+#define INSTANTIATE_CLASS_EXTERN(classname) \
+  extern template class classname<float>; \
+  extern template class classname<double>
+
 #define INSTANTIATE_LAYER_GPU_FORWARD(classname) \
   template void classname<float>::Forward_gpu( \
       const std::vector<Blob<float>*>& bottom, \
@@ -68,6 +72,34 @@ private:\
   INSTANTIATE_LAYER_GPU_FORWARD(classname); \
   INSTANTIATE_LAYER_GPU_BACKWARD(classname)
 
+#define INSTANTIATE_LAYER_GPU_FORWARD_EXTERN_NAMED(classname, funcname) \
+  extern template void classname<float>::funcname##_##gpu( \
+      const std::vector<Blob<float>*>& bottom, \
+      const std::vector<Blob<float>*>& top); \
+  extern template void classname<double>::funcname##_##gpu( \
+      const std::vector<Blob<double>*>& bottom, \
+      const std::vector<Blob<double>*>& top);
+
+#define INSTANTIATE_LAYER_GPU_BACKWARD_EXTERN_NAMED(classname, funcname) \
+  extern template void classname<float>::funcname##_##gpu( \
+      const std::vector<Blob<float>*>& top, \
+      const std::vector<bool>& propagate_down, \
+      const std::vector<Blob<float>*>& bottom); \
+  extern template void classname<double>::funcname##_##gpu( \
+      const std::vector<Blob<double>*>& top, \
+      const std::vector<bool>& propagate_down, \
+      const std::vector<Blob<double>*>& bottom);
+
+#define INSTANTIATE_LAYER_GPU_FORWARD_EXTERN(classname) \
+  INSTANTIATE_LAYER_GPU_FORWARD_EXTERN_NAMED(classname, Forward);
+
+#define INSTANTIATE_LAYER_GPU_BACKWARD_EXTERN(classname) \
+  INSTANTIATE_LAYER_GPU_BACKWARD_EXTERN_NAMED(classname, Backward);
+
+#define INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(classname) \
+  INSTANTIATE_LAYER_GPU_FORWARD_EXTERN_NAMED(classname, Forward); \
+  INSTANTIATE_LAYER_GPU_BACKWARD_EXTERN_NAMED(classname, Backward);
+
 // A simple macro to mark codes that are not implemented, so that when the code
 // is executed we will see a fatal log.
 #define NOT_IMPLEMENTED LOG(FATAL) << "Not Implemented Yet"
@@ -79,7 +111,7 @@ namespace caffe {
 
 // We will use the boost shared_ptr instead of the new C++11 one mainly
 // because cuda does not work (at least now) well with C++11 features.
-using boost::shared_ptr;
+using std::shared_ptr;
 
 // Common functions and classes from std that caffe often uses.
 using std::fstream;

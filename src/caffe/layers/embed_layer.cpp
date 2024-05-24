@@ -111,6 +111,8 @@ void EmbedLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(EmbedLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(EmbedLayer);
 #endif
 
 INSTANTIATE_CLASS(EmbedLayer);

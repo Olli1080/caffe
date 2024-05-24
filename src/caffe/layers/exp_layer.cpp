@@ -60,6 +60,8 @@ void ExpLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(ExpLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ExpLayer);
 #endif
 
 INSTANTIATE_CLASS(ExpLayer);

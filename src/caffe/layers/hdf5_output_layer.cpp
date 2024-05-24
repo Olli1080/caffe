@@ -67,6 +67,8 @@ void HDF5OutputLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(HDF5OutputLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(HDF5OutputLayer);
 #endif
 
 INSTANTIATE_CLASS(HDF5OutputLayer);

@@ -122,6 +122,8 @@ void LSTMUnitLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(LSTMUnitLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(LSTMUnitLayer);
 #endif
 
 INSTANTIATE_CLASS(LSTMUnitLayer);

@@ -37,6 +37,8 @@ void TanHLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(TanHLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(TanHLayer);
 #endif
 
 INSTANTIATE_CLASS(TanHLayer);

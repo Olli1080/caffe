@@ -39,6 +39,8 @@ void ELULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(ELULayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ELULayer);
 #endif
 
 INSTANTIATE_CLASS(ELULayer);

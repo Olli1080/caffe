@@ -113,6 +113,8 @@ void BiasLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(BiasLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(BiasLayer);
 #endif
 
 INSTANTIATE_CLASS(BiasLayer);

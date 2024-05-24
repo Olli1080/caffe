@@ -40,10 +40,10 @@ if(CUDA_FOUND)
   # it seems that using the OPTIONS argument like:
   # caffe_cuda_compile(cuda_objs ${cuda} OPTIONS ${__cuda_options})
   # does not work. Use add/remove_definitions instead.
-  caffe_cuda_compile(cuda_objs ${cuda})
+  #caffe_cuda_compile(cuda_objs ${cuda})
   # remove them
   remove_definitions(${__cuda_options})
-  list(APPEND srcs ${cuda_objs} ${cuda})
+  list(APPEND srcs ${cuda})
 endif()
 if(MSVC)
   list(APPEND Caffe_DEFINITIONS PUBLIC -DNO_STRICT)

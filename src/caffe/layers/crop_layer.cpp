@@ -144,6 +144,8 @@ void CropLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(CropLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CropLayer);
 #endif
 
 INSTANTIATE_CLASS(CropLayer);

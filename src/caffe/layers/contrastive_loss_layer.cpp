@@ -112,6 +112,8 @@ void ContrastiveLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(ContrastiveLossLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ContrastiveLossLayer);
 #endif
 
 INSTANTIATE_CLASS(ContrastiveLossLayer);

@@ -74,6 +74,8 @@ void ConvolutionLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(ConvolutionLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ConvolutionLayer);
 #endif
 
 INSTANTIATE_CLASS(ConvolutionLayer);

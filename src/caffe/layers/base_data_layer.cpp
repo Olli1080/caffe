@@ -128,6 +128,8 @@ void BasePrefetchingDataLayer<Dtype>::Forward_cpu(
 
 #ifdef CPU_ONLY
 STUB_GPU_FORWARD(BasePrefetchingDataLayer, Forward);
+#else
+INSTANTIATE_LAYER_GPU_FORWARD_EXTERN_NAMED(BasePrefetchingDataLayer, Forward);
 #endif
 
 INSTANTIATE_CLASS(BaseDataLayer);

@@ -60,6 +60,8 @@ void SwishLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(SwishLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(SwishLayer);
 #endif
 
 INSTANTIATE_CLASS(SwishLayer);

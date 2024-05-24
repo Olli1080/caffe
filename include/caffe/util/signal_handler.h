@@ -1,7 +1,6 @@
 #ifndef INCLUDE_CAFFE_UTIL_SIGNAL_HANDLER_H_
 #define INCLUDE_CAFFE_UTIL_SIGNAL_HANDLER_H_
 
-#include "caffe/proto/caffe.pb.h"
 #include "caffe/solver.hpp"
 
 namespace caffe {
@@ -12,7 +11,7 @@ class SignalHandler {
   SignalHandler(SolverAction::Enum SIGINT_action,
                 SolverAction::Enum SIGHUP_action);
   ~SignalHandler();
-  ActionCallback GetActionFunction();
+  ActionCallback GetActionFunction() const;
  private:
   SolverAction::Enum CheckForSignals() const;
   SolverAction::Enum SIGINT_action_;

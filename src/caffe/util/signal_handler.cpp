@@ -1,7 +1,5 @@
-#include <boost/bind.hpp>
 #include <glog/logging.h>
 
-#include <signal.h>
 #include <csignal>
 
 #include "caffe/util/signal_handler.h"
@@ -96,8 +94,9 @@ SolverAction::Enum SignalHandler::CheckForSignals() const {
 
 // Return the function that the solver can use to find out if a snapshot or
 // early exit is being requested.
-ActionCallback SignalHandler::GetActionFunction() {
-  return boost::bind(&SignalHandler::CheckForSignals, this);
+ActionCallback SignalHandler::GetActionFunction() const
+{
+  return [this] { return CheckForSignals(); };
 }
 
 }  // namespace caffe

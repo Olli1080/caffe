@@ -154,6 +154,8 @@ void EltwiseLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(EltwiseLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(EltwiseLayer);
 #endif
 
 INSTANTIATE_CLASS(EltwiseLayer);

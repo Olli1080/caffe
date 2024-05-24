@@ -150,6 +150,8 @@ void SoftmaxWithLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(SoftmaxWithLossLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(SoftmaxWithLossLayer);
 #endif
 
 INSTANTIATE_CLASS(SoftmaxWithLossLayer);

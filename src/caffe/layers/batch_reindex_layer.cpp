@@ -70,6 +70,8 @@ void BatchReindexLayer<Dtype>::Backward_cpu(
 
 #ifdef CPU_ONLY
 STUB_GPU(BatchReindexLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(BatchReindexLayer);
 #endif
 
 INSTANTIATE_CLASS(BatchReindexLayer);

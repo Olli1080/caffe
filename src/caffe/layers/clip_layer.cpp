@@ -43,6 +43,8 @@ void ClipLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(ClipLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ClipLayer);
 #endif
 
 INSTANTIATE_CLASS(ClipLayer);

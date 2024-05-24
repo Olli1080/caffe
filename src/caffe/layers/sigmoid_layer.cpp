@@ -39,6 +39,8 @@ void SigmoidLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(SigmoidLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(SigmoidLayer);
 #endif
 
 INSTANTIATE_CLASS(SigmoidLayer);

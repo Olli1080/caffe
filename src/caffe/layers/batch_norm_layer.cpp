@@ -244,6 +244,8 @@ void BatchNormLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(BatchNormLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(BatchNormLayer);
 #endif
 
 INSTANTIATE_CLASS(BatchNormLayer);

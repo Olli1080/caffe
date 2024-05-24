@@ -250,6 +250,10 @@ void LRNLayer<Dtype>::WithinChannelBackward(
 STUB_GPU(LRNLayer);
 STUB_GPU_FORWARD(LRNLayer, CrossChannelForward);
 STUB_GPU_BACKWARD(LRNLayer, CrossChannelBackward);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(LRNLayer);
+INSTANTIATE_LAYER_GPU_FORWARD_EXTERN_NAMED(LRNLayer, CrossChannelForward);
+INSTANTIATE_LAYER_GPU_BACKWARD_EXTERN_NAMED(LRNLayer, CrossChannelBackward);
 #endif
 
 INSTANTIATE_CLASS(LRNLayer);

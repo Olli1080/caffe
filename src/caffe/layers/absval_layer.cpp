@@ -36,6 +36,8 @@ void AbsValLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(AbsValLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(AbsValLayer);
 #endif
 
 INSTANTIATE_CLASS(AbsValLayer);

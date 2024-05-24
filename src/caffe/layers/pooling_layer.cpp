@@ -322,6 +322,8 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(PoolingLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(PoolingLayer);
 #endif
 
 INSTANTIATE_CLASS(PoolingLayer);

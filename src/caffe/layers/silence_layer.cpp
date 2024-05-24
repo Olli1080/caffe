@@ -18,6 +18,8 @@ void SilenceLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(SilenceLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(SilenceLayer);
 #endif
 
 INSTANTIATE_CLASS(SilenceLayer);

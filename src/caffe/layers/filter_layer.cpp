@@ -117,6 +117,8 @@ void FilterLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU(FilterLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(FilterLayer);
 #endif
 
 INSTANTIATE_CLASS(FilterLayer);

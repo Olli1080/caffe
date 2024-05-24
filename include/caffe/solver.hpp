@@ -1,6 +1,5 @@
 #ifndef CAFFE_SOLVER_HPP_
 #define CAFFE_SOLVER_HPP_
-#include <boost/function.hpp>
 #include <string>
 #include <vector>
 
@@ -30,7 +29,7 @@ namespace caffe {
 /**
  * @brief Type of a function that returns a Solver Action enumeration.
  */
-typedef boost::function<SolverAction::Enum()> ActionCallback;
+typedef std::function<SolverAction::Enum()> ActionCallback;
 
 /**
  * @brief An interface for classes that perform optimization on Net%s.
@@ -107,7 +106,7 @@ class Solver {
   virtual void SnapshotSolverState(const string& model_filename) = 0;
   virtual void RestoreSolverStateFromHDF5(const string& state_file) = 0;
   virtual void RestoreSolverStateFromBinaryProto(const string& state_file) = 0;
-  void DisplayOutputBlobs(const int net_id);
+  //void DisplayOutputBlobs(const int net_id);
   void UpdateSmoothedLoss(Dtype loss, int start_iter, int average_loss);
 
   SolverParameter param_;

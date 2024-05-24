@@ -184,6 +184,8 @@ void HDF5DataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
 #ifdef CPU_ONLY
 STUB_GPU_FORWARD(HDF5DataLayer, Forward);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(HDF5DataLayer);
 #endif
 
 INSTANTIATE_CLASS(HDF5DataLayer);

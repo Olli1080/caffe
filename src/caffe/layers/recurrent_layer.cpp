@@ -289,6 +289,8 @@ void RecurrentLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 
 #ifdef CPU_ONLY
 STUB_GPU_FORWARD(RecurrentLayer, Forward);
+#else
+INSTANTIATE_LAYER_GPU_FORWARD_EXTERN(RecurrentLayer);
 #endif
 
 INSTANTIATE_CLASS(RecurrentLayer);

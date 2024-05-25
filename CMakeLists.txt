@@ -87,10 +87,10 @@ include_directories(${PROJECT_BINARY_DIR})
 # list(REMOVE_ITEM ...) invocations remove PRIVATE and PUBLIC keywords from collected definitions and include pathes
 if(NOT CPU_ONLY)
   enable_language(CUDA)
-  # pass include pathes to cuda_include_directories()
+  # pass include paths to cuda_include_directories()
   set(Caffe_ALL_INCLUDE_DIRS ${Caffe_INCLUDE_DIRS})
   list(REMOVE_ITEM Caffe_ALL_INCLUDE_DIRS PRIVATE PUBLIC)
-  cuda_include_directories(${Caffe_INCLUDE_DIR} ${Caffe_SRC_DIR} ${Caffe_ALL_INCLUDE_DIRS})
+  #cuda_include_directories(${Caffe_INCLUDE_DIR} ${Caffe_SRC_DIR} ${Caffe_ALL_INCLUDE_DIRS})
 
   # add definitions to nvcc flags directly
   set(Caffe_ALL_DEFINITIONS ${Caffe_DEFINITIONS})

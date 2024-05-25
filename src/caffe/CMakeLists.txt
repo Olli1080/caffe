@@ -48,18 +48,7 @@ add_dependencies(caffeproto generate_proto)
 # creates 'test_srcs', 'srcs', 'test_cuda', 'cuda' lists
 caffe_pickup_caffe_sources(${PROJECT_SOURCE_DIR})
 
-if(CUDA_FOUND)
-  include(../../cmake/Cuda.cmake)
-  #set(__cuda_options ${Caffe_COMPILE_DEFS}
-  #                   ${Caffe_EXPORT_DEFINITION})
-  # add the required definitions
-  #add_definitions(${__cuda_options})
-  # it seems that using the OPTIONS argument like:
-  # caffe_cuda_compile(cuda_objs ${cuda} OPTIONS ${__cuda_options})
-  # does not work. Use add/remove_definitions instead.
-  #caffe_cuda_compile(cuda_objs ${cuda})
-  # remove them
-  #remove_definitions(${__cuda_options})
+if(CUDAToolkit_FOUND)
   list(APPEND srcs ${cuda})
 endif()
 if(MSVC)
@@ -89,7 +78,7 @@ if(MSVC AND BUILD_SHARED_LIBS)
   # See: https://blog.kitware.com/create-dlls-on-windows-without-declspec-using-new-cmake-export-all-feature/
   # and https://cmake.org/cmake/help/v3.5/prop_tgt/WINDOWS_EXPORT_ALL_SYMBOLS.html
   # for details.
-  set(IGNORED_LIBRARIES "/NODEFAULTLIB:LIBCMT.lib")
+  #set(IGNORED_LIBRARIES "/NODEFAULTLIB:LIBCMT.lib")
   #set_target_properties(caffe PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
   #set_target_properties(caffe PROPERTIES LINK_FLAGS ${IGNORED_LIBRARIES})
 endif()

@@ -190,7 +190,7 @@ endmacro()
 
 find_cuda_helper_libs(curand)  # cmake 2.8.7 compatibility which doesn't search for curand
 
-if(NOT CUDA_FOUND)
+if(NOT CUDAToolkit_FOUND)
   return()
 endif()
 

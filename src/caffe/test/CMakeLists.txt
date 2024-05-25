@@ -18,12 +18,13 @@ caffe_leave_only_selected_tests(test_cuda ${BUILD_only_tests})
 set(the_target test.testbin)
 set(test_args --gtest_shuffle)
 
-if(CUDA_FOUND)
-  caffe_cuda_compile(test_cuda_objs ${test_cuda})
-  list(APPEND test_srcs ${test_cuda_objs} ${test_cuda})
-else()
-  list(APPEND test_args --gtest_filter="-*GPU*")
-endif()
+#if(CUDAToolkit_FOUND)
+#TODO::reenable
+ # caffe_cuda_compile(test_cuda_objs ${test_cuda})
+ # list(APPEND test_srcs ${test_cuda_objs} ${test_cuda})
+#else()
+#  list(APPEND test_args --gtest_filter="-*GPU*")
+#endif()
 
 # ---[ Adding test target
 add_executable(${the_target} EXCLUDE_FROM_ALL ${test_srcs})

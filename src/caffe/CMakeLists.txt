@@ -1,6 +1,20 @@
 # generate protobuf sources
-file(GLOB proto_files proto/*.proto)
-caffe_protobuf_generate_cpp_py(${proto_gen_folder} proto_srcs proto_hdrs proto_python ${proto_files})
+add_subdirectory(proto)
+#file(GLOB proto_files *.proto)
+#protobuf_generate_cpp(proto_srcs proto_hdrs EXPORT_MACRO CAFFE_EXPORT ${proto_files})
+#protobuf_generate_python(proto_python ${proto_files})
+
+#SET_SOURCE_FILES_PROPERTIES(${proto_srcs} ${proto_hdrs} PROPERTIES GENERATED TRUE)
+#include_directories("${PROJECT_BINARY_DIR}/src")
+
+#foreach(genFile ${proto_srcs} ${proto_hdrs})
+#  cmake_path(GET genFile FILENAME fname)
+#  set(fname "${PROJECT_BINARY_DIR}/include/caffe/proto/${fname}")
+#  file(GENERATE OUTPUT "${fname}"
+#    INPUT "${genFile}"
+#  )
+#  SET_SOURCE_FILES_PROPERTIES(${fname} PROPERTIES GENERATED TRUE)
+#endforeach()     
 
 # collect any compile definitions from imported targets. This important so that
 # preprocessor macros such as GLOG_NO_ABBREVIATED_SEVERITIES are defined.
@@ -23,9 +37,12 @@ set(Caffe_EXPORT_DEFINITIONS PRIVATE ${Caffe_EXPORT_DEFINITION}
 # make caffeproto an object library so the symbols get exported on windows
 add_library(caffeproto OBJECT ${proto_hdrs} ${proto_srcs} ${proto_python})
 caffe_default_properties(caffeproto)
-target_include_directories(caffeproto PUBLIC ${PROTOBUF_INCLUDE_DIR})
+target_include_directories(caffeproto PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_compile_definitions(caffeproto ${Caffe_EXPORT_DEFINITIONS}
                                       PRIVATE ${Caffe_COMPILE_DEFS})
+target_link_libraries(caffeproto ${PROTOBUF_LIBRARY})
+add_dependencies(caffeproto generate_proto)
+#set_target_properties(caffeproto PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 # --[ Caffe library
 # creates 'test_srcs', 'srcs', 'test_cuda', 'cuda' lists
@@ -33,16 +50,16 @@ caffe_pickup_caffe_sources(${PROJECT_SOURCE_DIR})
 
 if(CUDA_FOUND)
   include(../../cmake/Cuda.cmake)
-  set(__cuda_options ${Caffe_COMPILE_DEFS}
-                     ${Caffe_EXPORT_DEFINITION})
+  #set(__cuda_options ${Caffe_COMPILE_DEFS}
+  #                   ${Caffe_EXPORT_DEFINITION})
   # add the required definitions
-  add_definitions(${__cuda_options})
+  #add_definitions(${__cuda_options})
   # it seems that using the OPTIONS argument like:
   # caffe_cuda_compile(cuda_objs ${cuda} OPTIONS ${__cuda_options})
   # does not work. Use add/remove_definitions instead.
   #caffe_cuda_compile(cuda_objs ${cuda})
   # remove them
-  remove_definitions(${__cuda_options})
+  #remove_definitions(${__cuda_options})
   list(APPEND srcs ${cuda})
 endif()
 if(MSVC)
@@ -54,7 +71,10 @@ target_link_libraries(caffe ${Caffe_LINKER_LIBS})
 target_include_directories(caffe ${Caffe_INCLUDE_DIRS}
                                  PUBLIC
                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
-                                 $<INSTALL_INTERFACE:include>)
+                                 $<INSTALL_INTERFACE:include>
+                                 PRIVATE
+                                 "${PROJECT_BINARY_DIR}/src"
+                                 )
 target_compile_definitions(caffe ${Caffe_DEFINITIONS} ${Caffe_EXPORT_DEFINITIONS})
 if(Caffe_COMPILE_OPTIONS)
   target_compile_options(caffe ${Caffe_COMPILE_OPTIONS})
@@ -70,8 +90,8 @@ if(MSVC AND BUILD_SHARED_LIBS)
   # and https://cmake.org/cmake/help/v3.5/prop_tgt/WINDOWS_EXPORT_ALL_SYMBOLS.html
   # for details.
   set(IGNORED_LIBRARIES "/NODEFAULTLIB:LIBCMT.lib")
-  set_target_properties(caffe PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-  set_target_properties(caffe PROPERTIES LINK_FLAGS ${IGNORED_LIBRARIES})
+  #set_target_properties(caffe PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+  #set_target_properties(caffe PROPERTIES LINK_FLAGS ${IGNORED_LIBRARIES})
 endif()
 if(MSVC AND USE_NCCL)
   add_dependencies(caffe nccl_external)
@@ -83,7 +103,7 @@ generate_export_header(caffe
                        EXPORT_FILE_NAME ${caffe_export_hdr})
 
 # ---[ Tests
- add_subdirectory(test)
+add_subdirectory(test)
 
 # ---[ Install
 install(DIRECTORY ${Caffe_INCLUDE_DIR}/caffe DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
@@ -100,4 +120,3 @@ endif()
 file(WRITE ${PROJECT_BINARY_DIR}/__init__.py)
 list(APPEND proto_python ${PROJECT_BINARY_DIR}/__init__.py)
 install(PROGRAMS ${proto_python} DESTINATION python/caffe/proto)
-

@@ -42,7 +42,9 @@ list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${GFLAGS_INCLUDE_DIRS})
 list(APPEND Caffe_LINKER_LIBS PUBLIC gflags::gflags)
 
 # ---[ Google-protobuf
-include(cmake/ProtoBuf.cmake)
+find_package(Protobuf REQUIRED)
+list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Protobuf_INCLUDE_DIRS})
+list(APPEND Caffe_LINKER_LIBS PUBLIC ${Protobuf_LIBRARIES})
 
 # ---[ HDF5
 find_package(HDF5 COMPONENTS HL REQUIRED)
@@ -170,45 +172,36 @@ endif()
 if(BUILD_python)
   if(NOT "${python_version}" VERSION_LESS "3.0.0")
     # use python3
-    find_package(PythonInterp 3.0)
-    find_package(PythonLibs 3.0)
-    find_package(NumPy 1.7.1)
-    # Find the matching boost python implementation
-    set(version ${PYTHONLIBS_VERSION_STRING})
+    find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m ensurepip)
+    execute_process(COMMAND ${Python3_EXECUTABLE} -m pip install numpy --no-warn-script-location)
 
-    STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
-    find_package(Boost 1.46 COMPONENTS "python-py${boost_py_version}")
-    set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${boost_py_version}_FOUND})
+    find_package(Python3 REQUIRED COMPONENTS NumPy)
+    find_package(Boost 1.80 REQUIRED COMPONENTS python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR})
 
-    while(NOT "${version}" STREQUAL "" AND NOT Boost_PYTHON_FOUND)
-      STRING( REGEX REPLACE "([0-9.]+).[0-9]+" "\\1" version ${version} )
-
-      STRING( REGEX REPLACE "[^0-9]" "" boost_py_version ${version} )
-      find_package(Boost 1.46 COMPONENTS "python-py${boost_py_version}")
-      set(Boost_PYTHON_FOUND ${Boost_PYTHON-PY${boost_py_version}_FOUND})
-
-      STRING( REGEX MATCHALL "([0-9.]+).[0-9]+" has_more_version ${version} )
-      if("${has_more_version}" STREQUAL "")
-        break()
-      endif()
-    endwhile()
-    if(NOT Boost_PYTHON_FOUND)
-      find_package(Boost 1.46 COMPONENTS python)
+    if(BUILD_python_layer)
+      list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
+      list(APPEND Caffe_LINKER_LIBS PRIVATE ${Python3_LIBRARIES})
     endif()
   else()
-    # disable Python 3 search
-    find_package(PythonInterp 2.7)
-    find_package(PythonLibs 2.7)
-    find_package(NumPy 1.7.1)
-    find_package(Boost 1.46 COMPONENTS python)
-  endif()
-  if(PYTHONLIBS_FOUND AND NUMPY_FOUND AND Boost_PYTHON_FOUND)
-    set(HAVE_PYTHON TRUE)
+    # use python2
+    find_package(Python2 REQUIRED COMPONENTS Interpreter Development)
+    execute_process(COMMAND ${Python2_EXECUTABLE} -m ensurepip)
+    execute_process(COMMAND ${Python2_EXECUTABLE} -m pip install numpy --no-warn-script-location)
+
+    find_package(Python2 REQUIRED COMPONENTS NumPy)
+    find_package(Boost 1.80 REQUIRED COMPONENTS python${Python2_VERSION_MAJOR}${Python2_VERSION_MINOR})
+
     if(BUILD_python_layer)
-      list(APPEND Caffe_DEFINITIONS PRIVATE -DWITH_PYTHON_LAYER)
-      list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${PYTHON_INCLUDE_DIRS} ${NUMPY_INCLUDE_DIR} PUBLIC ${Boost_INCLUDE_DIRS})
-      list(APPEND Caffe_LINKER_LIBS PRIVATE ${PYTHON_LIBRARIES} PUBLIC ${Boost_LIBRARIES})
+      list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Python2_INCLUDE_DIRS} ${Python2_NumPy_INCLUDE_DIRS})
+      list(APPEND Caffe_LINKER_LIBS PRIVATE ${Python2_LIBRARIES})
     endif()
+  endif()
+  if(BUILD_python_layer)
+    list(APPEND Caffe_DEFINITIONS PRIVATE -DWITH_PYTHON_LAYER)
+    list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
+    list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
+    #maybe only add Boost_<COMPONENT>_LIBRARY
   endif()
 endif()
 

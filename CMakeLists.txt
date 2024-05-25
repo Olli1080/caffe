@@ -37,7 +37,7 @@ caffe_option(USE_CUDNN "Build Caffe with cuDNN library support" ON IF NOT CPU_ON
 caffe_option(USE_NCCL "Build Caffe with NCCL library support" OFF)
 caffe_option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 caffe_option(BUILD_python "Build Python wrapper" ON)
-set(python_version "2" CACHE STRING "Specify which Python version to use")
+set(python_version "3" CACHE STRING "Specify which Python version to use")
 caffe_option(BUILD_matlab "Build Matlab wrapper" OFF IF UNIX OR APPLE)
 caffe_option(BUILD_docs   "Build documentation" ON IF UNIX OR APPLE)
 caffe_option(BUILD_python_layer "Build the Caffe Python layer" ON)
@@ -70,6 +70,7 @@ endif()
 # ---[ Warnings
 caffe_warnings_disable(CMAKE_CXX_FLAGS -Wno-sign-compare -Wno-uninitialized)
 
+
 # ---[ Config generation
 configure_file(cmake/Templates/caffe_config.h.in "${PROJECT_BINARY_DIR}/caffe_config.h")
 
@@ -95,6 +96,9 @@ if(NOT CPU_ONLY)
   set(Caffe_ALL_DEFINITIONS ${Caffe_DEFINITIONS})
   list(REMOVE_ITEM Caffe_ALL_DEFINITIONS PRIVATE PUBLIC)
   list(APPEND CUDA_NVCC_FLAGS ${Caffe_ALL_DEFINITIONS})
+
+  add_compile_options("$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/wd4506>")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=1394 -Xcudafe --diag_suppress=1388 ")
 endif()
 
 # ---[ Subdirectories
@@ -110,7 +114,7 @@ add_subdirectory(docs)
 add_custom_target(lint COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/lint.cmake)
 
 # ---[ pytest target
-if(BUILD_python AND HAVE_PYTHON)
+if(BUILD_python)
   if(UNIX)
     set(python_executable python${python_version})
   else()

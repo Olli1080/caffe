@@ -119,14 +119,10 @@ endif()
 
 # ---[ BLAS
 if(NOT APPLE)
-  set(BLAS "Atlas" CACHE STRING "Selected BLAS library")
-  set_property(CACHE BLAS PROPERTY STRINGS "Atlas;Open;MKL")
+  set(BLAS "Open" CACHE STRING "Selected BLAS library")
+  set_property(CACHE BLAS PROPERTY STRINGS "Open;MKL")
 
-  if(BLAS STREQUAL "Atlas" OR BLAS STREQUAL "atlas")
-    find_package(Atlas REQUIRED)
-    list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Atlas_INCLUDE_DIR})
-    list(APPEND Caffe_LINKER_LIBS PUBLIC ${Atlas_LIBRARIES})
-  elseif(BLAS STREQUAL "Open" OR BLAS STREQUAL "open")
+  if(BLAS STREQUAL "Open" OR BLAS STREQUAL "open")
     find_package(OpenBLAS REQUIRED)
     list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${OpenBLAS_INCLUDE_DIR})
     list(APPEND Caffe_LINKER_LIBS PUBLIC ${OpenBLAS_LIB})

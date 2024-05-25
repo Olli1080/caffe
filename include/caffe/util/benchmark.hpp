@@ -7,7 +7,7 @@
 
 namespace caffe {
 
-class Timer {
+class CAFFE_EXPORT Timer {
  public:
   Timer();
   virtual ~Timer();
@@ -37,7 +37,7 @@ class Timer {
   std::chrono::duration<float> elapsed_time_;
 };
 
-class CPUTimer : public Timer {
+class CAFFE_EXPORT CPUTimer : public Timer {
  public:
   explicit CPUTimer();
   ~CPUTimer() override = default;

@@ -1,3 +1,14 @@
+#include "caffe/util/io.hpp"
+
+#include <cstdint>
+#include <cstdio>
+
+#include <algorithm>
+#include <fstream>  // NOLINT(readability/streams)
+#include <string>
+#include <vector>
+#include <memory>
+
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
@@ -7,18 +18,9 @@
 #include <opencv2/highgui/highgui_c.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #endif  // USE_OPENCV
-#include <stdint.h>
-#include <cstdio>
-
-#include <algorithm>
-#include <fstream>  // NOLINT(readability/streams)
-#include <string>
-#include <vector>
-#include <memory>
 
 #include "caffe/common.hpp"
 #include "caffe/proto/caffe.pb.h"
-#include "caffe/util/io.hpp"
 
 const int kProtoReadBytesLimit = INT_MAX;  // Max size of 2 GB minus 1 byte.
 
@@ -170,14 +172,12 @@ bool ReadImageToDatum(const string& filename, const int label,
 
 bool ReadFileToDatum(const string& filename, const int label,
     Datum* datum) {
-  std::streampos size;
-
   fstream file(filename.c_str(), ios::in|ios::binary|ios::ate);
   if (file.is_open()) {
-    size = file.tellg();
+	const std::streampos size = file.tellg();
     std::string buffer(size, ' ');
     file.seekg(0, ios::beg);
-    file.read(&buffer[0], size);
+    file.read(buffer.data(), size);
     file.close();
     datum->set_data(buffer);
     datum->set_label(label);

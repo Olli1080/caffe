@@ -133,7 +133,7 @@ void GlobalInit(int* pargc, char*** pargv);
 
 // A singleton class to hold common caffe stuff, such as the handler that
 // caffe is going to use for cublas, curand, etc.
-class Caffe {
+class CAFFE_EXPORT Caffe {
  public:
   ~Caffe();
 

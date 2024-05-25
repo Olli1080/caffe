@@ -5,15 +5,15 @@ endif()
 
 file(GLOB_RECURSE python_srcs ${PROJECT_SOURCE_DIR}/python/*.cpp)
 
-add_library(pycaffe SHARED ${python_srcs})
+add_library(pycaffe ${python_srcs})
 caffe_default_properties(pycaffe)
 set_target_properties(pycaffe PROPERTIES PREFIX "" OUTPUT_NAME "_caffe")
 if(Python3_FOUND)
   target_include_directories(pycaffe PUBLIC ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
-  target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${Python3_LIBRARIES})
+  target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${Python3_LIBRARIES} caffe)
 elseif(Python2_FOUND)
   target_include_directories(pycaffe PUBLIC ${Python2_INCLUDE_DIRS} ${Python2_NumPy_INCLUDE_DIRS})
-  target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${Python2_LIBRARIES})
+  target_link_libraries(pycaffe PUBLIC ${Caffe_LINK} ${Python2_LIBRARIES} caffe)
 endif()
 
 if(UNIX OR APPLE)

@@ -38,7 +38,7 @@ typedef std::function<SolverAction::Enum()> ActionCallback;
  * given the current state of the Net parameters.
  */
 template <typename Dtype>
-class Solver {
+class CAFFE_EXPORT Solver {
  public:
   explicit Solver(const SolverParameter& param);
   explicit Solver(const string& param_file);

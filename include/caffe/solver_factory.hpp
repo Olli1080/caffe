@@ -51,7 +51,7 @@ template <typename Dtype>
 class Solver;
 
 template <typename Dtype>
-class SolverRegistry {
+class CAFFE_EXPORT SolverRegistry {
  public:
   typedef Solver<Dtype>* (*Creator)(const SolverParameter&);
   typedef std::map<string, Creator> CreatorRegistry;
@@ -75,7 +75,7 @@ class SolverRegistry {
 };
 
 template <typename Dtype>
-class SolverRegisterer {
+class CAFFE_EXPORT SolverRegisterer {
  public:
   SolverRegisterer(const string& type,
                    Solver<Dtype>* (*creator)(const SolverParameter&));
@@ -96,4 +96,4 @@ class SolverRegisterer {
 
 }  // namespace caffe
 
-#endif  // CAFFE_SOLVER_FACTORY_H_
+#endif  // CAFFE_SOLVER_FACTORY_H_

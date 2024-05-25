@@ -13,7 +13,7 @@ namespace caffe {
  *        stochastic gradient descent (SGD) with momentum.
  */
 template <typename Dtype>
-class SGDSolver : public Solver<Dtype> {
+class CAFFE_EXPORT SGDSolver : public Solver<Dtype> {
  public:
   explicit SGDSolver(const SolverParameter& param)
       : Solver<Dtype>(param) { PreSolve(); }
@@ -47,7 +47,7 @@ class SGDSolver : public Solver<Dtype> {
 };
 
 template <typename Dtype>
-class NesterovSolver : public SGDSolver<Dtype> {
+class CAFFE_EXPORT NesterovSolver : public SGDSolver<Dtype> {
  public:
   explicit NesterovSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) {}
@@ -62,7 +62,7 @@ class NesterovSolver : public SGDSolver<Dtype> {
 };
 
 template <typename Dtype>
-class AdaGradSolver : public SGDSolver<Dtype> {
+class CAFFE_EXPORT AdaGradSolver : public SGDSolver<Dtype> {
  public:
   explicit AdaGradSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { constructor_sanity_check(); }
@@ -82,7 +82,7 @@ class AdaGradSolver : public SGDSolver<Dtype> {
 
 
 template <typename Dtype>
-class RMSPropSolver : public SGDSolver<Dtype> {
+class CAFFE_EXPORT RMSPropSolver : public SGDSolver<Dtype> {
  public:
   explicit RMSPropSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { constructor_sanity_check(); }
@@ -105,7 +105,7 @@ class RMSPropSolver : public SGDSolver<Dtype> {
 };
 
 template <typename Dtype>
-class AdaDeltaSolver : public SGDSolver<Dtype> {
+class CAFFE_EXPORT AdaDeltaSolver : public SGDSolver<Dtype> {
  public:
   explicit AdaDeltaSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { AdaDeltaPreSolve(); }
@@ -129,7 +129,7 @@ class AdaDeltaSolver : public SGDSolver<Dtype> {
  *     arXiv preprint arXiv:1412.6980v8 (2014).
  */
 template <typename Dtype>
-class AdamSolver : public SGDSolver<Dtype> {
+class CAFFE_EXPORT AdamSolver : public SGDSolver<Dtype> {
  public:
   explicit AdamSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { AdamPreSolve();}

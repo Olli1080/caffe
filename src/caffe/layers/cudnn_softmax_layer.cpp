@@ -39,6 +39,11 @@ CuDNNSoftmaxLayer<Dtype>::~CuDNNSoftmaxLayer() {
   cudnnDestroyTensorDescriptor(top_desc_);
   cudnnDestroy(handle_);
 }
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNSoftmaxLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNSoftmaxLayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNSoftmaxLayer);
 

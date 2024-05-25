@@ -77,13 +77,13 @@ Blob<Dtype>::Blob(const vector<int>& shape)
 template <typename Dtype>
 const int* Blob<Dtype>::gpu_shape() const {
   CHECK(shape_data_);
-  return (const int*)shape_data_->gpu_data();
+  return static_cast<const int*>(shape_data_->gpu_data());
 }
 
 template <typename Dtype>
-const Dtype* Blob<Dtype>::cpu_data() const {
+const Dtype* Blob<Dtype>::cpu_data() const{
   CHECK(data_);
-  return (const Dtype*)data_->cpu_data();
+  return static_cast<const Dtype*>(data_->cpu_data());
 }
 
 template <typename Dtype>
@@ -101,7 +101,7 @@ void Blob<Dtype>::set_cpu_data(Dtype* data) {
 template <typename Dtype>
 const Dtype* Blob<Dtype>::gpu_data() const {
   CHECK(data_);
-  return (const Dtype*)data_->gpu_data();
+  return static_cast<const Dtype*>(data_->gpu_data());
 }
 
 template <typename Dtype>
@@ -119,13 +119,13 @@ void Blob<Dtype>::set_gpu_data(Dtype* data) {
 template <typename Dtype>
 const Dtype* Blob<Dtype>::cpu_diff() const {
   CHECK(diff_);
-  return (const Dtype*)diff_->cpu_data();
+  return static_cast<const Dtype*>(diff_->cpu_data());
 }
 
 template <typename Dtype>
 const Dtype* Blob<Dtype>::gpu_diff() const {
   CHECK(diff_);
-  return (const Dtype*)diff_->gpu_data();
+  return static_cast<const Dtype*>(diff_->gpu_data());
 }
 
 template <typename Dtype>

@@ -24,18 +24,19 @@ class ImageDataLayer : public BasePrefetchingDataLayer<Dtype> {
  public:
   explicit ImageDataLayer(const LayerParameter& param)
       : BasePrefetchingDataLayer<Dtype>(param) {}
-  virtual ~ImageDataLayer();
-  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "ImageData"; }
-  virtual inline int ExactNumBottomBlobs() const { return 0; }
-  virtual inline int ExactNumTopBlobs() const { return 2; }
+  ~ImageDataLayer() override;
+  void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                      const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] const char* type() const override { return "ImageData"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 2; }
 
  protected:
   shared_ptr<Caffe::RNG> prefetch_rng_;
   virtual void ShuffleImages();
-  virtual void load_batch(Batch<Dtype>* batch);
+  void load_batch(Batch<Dtype>* batch) override;
 
   vector<std::pair<std::string, int> > lines_;
   int lines_id_;

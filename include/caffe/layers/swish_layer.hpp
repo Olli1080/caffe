@@ -33,12 +33,13 @@ class SwishLayer : public NeuronLayer<Dtype> {
         sigmoid_layer_(new SigmoidLayer<Dtype>(param)),
         sigmoid_input_(new Blob<Dtype>()),
         sigmoid_output_(new Blob<Dtype>()) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "Swish"; }
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
+
+  inline const char* type() const override { return "Swish"; }
 
  protected:
   /**
@@ -51,10 +52,10 @@ class SwishLayer : public NeuronLayer<Dtype> {
    *        y = x \sigma (\beta x)
    *      @f$.
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the sigmoid inputs.
@@ -74,10 +75,10 @@ class SwishLayer : public NeuronLayer<Dtype> {
    *              \sigma (\beta x)(1 - \beta y))
    *      @f$ if propagate_down[0]
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   /// The internal SigmoidLayer
   shared_ptr<SigmoidLayer<Dtype> > sigmoid_layer_;

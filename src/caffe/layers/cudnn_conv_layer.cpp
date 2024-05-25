@@ -34,7 +34,7 @@ void CuDNNConvolutionLayer<Dtype>::LayerSetUp(
 
   // workspace data
   workspaceSizeInBytes = 0;
-  workspaceData = NULL;
+  workspaceData = nullptr;
   workspace = new void*[this->group_ * CUDNN_STREAMS_PER_GROUP];
 
   for (size_t i = 0; i < bottom.size(); ++i) {
@@ -52,7 +52,7 @@ void CuDNNConvolutionLayer<Dtype>::LayerSetUp(
     CUDA_CHECK(cudaStreamCreate(&stream_[g]));
     CUDNN_CHECK(cudnnCreate(&handle_[g]));
     CUDNN_CHECK(cudnnSetStream(handle_[g], stream_[g]));
-    workspace[g] = NULL;
+    workspace[g] = nullptr;
   }
 
   // Set the indexing parameters.
@@ -111,9 +111,6 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
   std::vector<cudnnConvolutionBwdDataAlgoPerf_t>
   bwd_data_v(std::max(nbwd_data, 1));
 
-  cudnnConvolutionFwdAlgoPerf_t       fwd_perf;
-  cudnnConvolutionBwdFilterAlgoPerf_t bwd_filter_perf;
-  cudnnConvolutionBwdDataAlgoPerf_t   bwd_data_perf;
   int count = 0;
   // choose forward and backward algorithms + workspace(s)
   CUDNN_CHECK(cudnnGetConvolutionForwardAlgorithm_v7(handle_[0],
@@ -123,8 +120,8 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
     top_descs_[index],
     fwd_v.size(), &count, &fwd_v[0]));
 
-  fwd_perf = cudnn::findFirstSuitableAlgorithm(fwd_v,
-               count, workspace_limit_bytes);
+  cudnnConvolutionFwdAlgoPerf_t fwd_perf = cudnn::findFirstSuitableAlgorithm(fwd_v,
+      count, workspace_limit_bytes);
   fwd_algo_[index] =fwd_perf.algo;
   workspace_fwd_sizes_[index] = fwd_perf.memory;
 
@@ -138,8 +135,8 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
         &count,
         &bwd_filter_v[0]));
 
-  bwd_filter_perf = cudnn::findFirstSuitableAlgorithm(bwd_filter_v,
-                                count, workspace_limit_bytes);
+  cudnnConvolutionBwdFilterAlgoPerf_t bwd_filter_perf = cudnn::findFirstSuitableAlgorithm(bwd_filter_v,
+	  count, workspace_limit_bytes);
   bwd_filter_algo_[index] = bwd_filter_perf.algo;
   workspace_bwd_filter_sizes_[index] = bwd_filter_perf.memory;
 
@@ -149,8 +146,8 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
         bottom_descs_[index],
         bwd_data_v.size(), &count, &bwd_data_v[0]));
 
-  bwd_data_perf = cudnn::findFirstSuitableAlgorithm(bwd_data_v,
-                            count, workspace_limit_bytes);
+  cudnnConvolutionBwdDataAlgoPerf_t bwd_data_perf = cudnn::findFirstSuitableAlgorithm(bwd_data_v,
+	  count, workspace_limit_bytes);
   bwd_data_algo_[index] = bwd_data_perf.algo;
   workspace_bwd_data_sizes_[index] = bwd_data_perf.memory;
 
@@ -310,16 +307,16 @@ void CuDNNConvolutionLayer<Dtype>::Reshape(
 
       // NULL out all workspace pointers
       for (int g = 0; g < (this->group_ * CUDNN_STREAMS_PER_GROUP); g++) {
-        workspace[g] = NULL;
+        workspace[g] = nullptr;
       }
       // NULL out underlying data
-      workspaceData = NULL;
+      workspaceData = nullptr;
       workspaceSizeInBytes = 0;
     }
 
     // if we succeed in the allocation, set pointer aliases for workspaces
     for (int g = 0; g < (this->group_ * CUDNN_STREAMS_PER_GROUP); g++) {
-      workspace[g] = reinterpret_cast<char *>(workspaceData) + g*max_workspace;
+      workspace[g] = static_cast<char*>(workspaceData) + g*max_workspace;
     }
   }
 
@@ -361,6 +358,12 @@ CuDNNConvolutionLayer<Dtype>::~CuDNNConvolutionLayer() {
   delete [] workspace_bwd_data_sizes_;
   delete [] workspace_bwd_filter_sizes_;
 }
+
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNConvolutionLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNConvolutionLayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNConvolutionLayer);
 

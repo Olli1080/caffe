@@ -50,30 +50,31 @@ class InfogainLossLayer : public LossLayer<Dtype> {
  public:
   explicit InfogainLossLayer(const LayerParameter& param)
       : LossLayer<Dtype>(param), infogain_() {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
 
   // InfogainLossLayer takes 2-3 bottom Blobs; if there are 3 the third should
   // be the infogain matrix.  (Otherwise the infogain matrix is loaded from a
   // file specified by LayerParameter.)
-  virtual inline int ExactNumBottomBlobs() const { return -1; }
-  virtual inline int MinBottomBlobs() const { return 2; }
-  virtual inline int MaxBottomBlobs() const { return 3; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return -1; }
+  [[nodiscard]] int MinBottomBlobs() const override { return 2; }
+  [[nodiscard]] int MaxBottomBlobs() const override { return 3; }
 
   // InfogainLossLayer computes softmax prob internally.
   // optional second "top" outputs the softmax prob
-  virtual inline int ExactNumTopBlobs() const { return -1; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline int MaxTopBlobs() const { return 2; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return -1; }
+  [[nodiscard]] int MinTopBlobs() const override { return 1; }
+  [[nodiscard]] int MaxTopBlobs() const override { return 2; }
 
-  virtual inline const char* type() const { return "InfogainLoss"; }
+  [[nodiscard]] const char* type() const override { return "InfogainLoss"; }
 
  protected:
   /// @copydoc InfogainLossLayer
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the infogain loss error gradient w.r.t. the predictions.
@@ -107,8 +108,8 @@ class InfogainLossLayer : public LossLayer<Dtype> {
    *      (\b optional) the information gain matrix -- ignored as its error
    *      gradient computation is not implemented.
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   /// Read the normalization mode parameter and compute the normalizer based
   /// on the blob size.  If normalization_mode is VALID, the count of valid

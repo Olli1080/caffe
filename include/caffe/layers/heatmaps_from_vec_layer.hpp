@@ -22,20 +22,20 @@ class HeatmapsFromVecLayer : public Layer<Dtype> {
 	 explicit HeatmapsFromVecLayer(const LayerParameter& param) 
 		 : Layer<Dtype>(param) {}
 
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-	  const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-	  const vector<Blob<Dtype>*>& top);
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
 
-  virtual inline const char* type() const { return "HeatmapsFromVec"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  [[nodiscard]] const char* type() const override { return "HeatmapsFromVec"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
 
  protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   float fx_; // focal length x
   float fy_; // focal length y

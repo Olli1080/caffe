@@ -38,6 +38,11 @@ CuDNNTanHLayer<Dtype>::~CuDNNTanHLayer() {
   cudnnDestroyTensorDescriptor(this->top_desc_);
   cudnnDestroy(this->handle_);
 }
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNTanHLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNTanHLayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNTanHLayer);
 

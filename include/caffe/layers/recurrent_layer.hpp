@@ -27,14 +27,17 @@ class RecurrentLayer : public Layer<Dtype> {
  public:
   explicit RecurrentLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
   virtual void Reset();
 
-  virtual inline const char* type() const { return "Recurrent"; }
-  virtual inline int MinBottomBlobs() const {
+  [[nodiscard]] const char* type() const override { return "Recurrent"; }
+
+  [[nodiscard]] int MinBottomBlobs() const override
+  {
     int min_bottoms = 2;
     if (this->layer_param_.recurrent_param().expose_hidden()) {
       vector<string> inputs;
@@ -43,8 +46,11 @@ class RecurrentLayer : public Layer<Dtype> {
     }
     return min_bottoms;
   }
-  virtual inline int MaxBottomBlobs() const { return MinBottomBlobs() + 1; }
-  virtual inline int ExactNumTopBlobs() const {
+
+  [[nodiscard]] int MaxBottomBlobs() const override { return MinBottomBlobs() + 1; }
+
+  [[nodiscard]] int ExactNumTopBlobs() const override
+  {
     int num_tops = 1;
     if (this->layer_param_.recurrent_param().expose_hidden()) {
       vector<string> outputs;
@@ -54,7 +60,8 @@ class RecurrentLayer : public Layer<Dtype> {
     return num_tops;
   }
 
-  virtual inline bool AllowForceBackward(const int bottom_index) const {
+  [[nodiscard]] bool AllowForceBackward(const int bottom_index) const override
+  {
     // Can't propagate to sequence continuation indicators.
     return bottom_index != 1;
   }
@@ -140,12 +147,12 @@ class RecurrentLayer : public Layer<Dtype> {
    *      Refer to documentation for particular RecurrentLayer implementations
    *      (such as RNNLayer and LSTMLayer) for the definition of @f$ y @f$.
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   /// @brief A Net to implement the Recurrent functionality.
   shared_ptr<Net<Dtype> > unrolled_net_;

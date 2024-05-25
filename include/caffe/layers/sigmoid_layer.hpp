@@ -20,12 +20,12 @@ namespace caffe {
  * The ReLULayer is often a better choice for this reason.
  */
 template <typename Dtype>
-class SigmoidLayer : public NeuronLayer<Dtype> {
+class CAFFE_EXPORT SigmoidLayer : public NeuronLayer<Dtype> {
  public:
   explicit SigmoidLayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
 
-  virtual inline const char* type() const { return "Sigmoid"; }
+  [[nodiscard]] const char* type() const override { return "Sigmoid"; }
 
  protected:
   /**
@@ -38,10 +38,10 @@ class SigmoidLayer : public NeuronLayer<Dtype> {
    *        y = (1 + \exp(-x))^{-1}
    *      @f$
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the sigmoid inputs.
@@ -60,10 +60,10 @@ class SigmoidLayer : public NeuronLayer<Dtype> {
    *            = \frac{\partial E}{\partial y} y (1 - y)
    *      @f$ if propagate_down[0]
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 };
 
 }  // namespace caffe

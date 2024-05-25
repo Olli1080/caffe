@@ -29,10 +29,11 @@ class ExpLayer : public NeuronLayer<Dtype> {
    */
   explicit ExpLayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "Exp"; }
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] const char* type() const override { return "Exp"; }
 
  protected:
   /**
@@ -45,10 +46,10 @@ class ExpLayer : public NeuronLayer<Dtype> {
    *        y = \gamma ^ {\alpha x + \beta}
    *      @f$
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the exp inputs.
@@ -67,10 +68,10 @@ class ExpLayer : public NeuronLayer<Dtype> {
    *            \frac{\partial E}{\partial y} y \alpha \log_e(gamma)
    *      @f$ if propagate_down[0]
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   Dtype inner_scale_, outer_scale_;
 };

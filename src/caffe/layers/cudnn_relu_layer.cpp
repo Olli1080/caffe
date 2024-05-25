@@ -39,6 +39,11 @@ CuDNNReLULayer<Dtype>::~CuDNNReLULayer() {
   cudnnDestroyActivationDescriptor(this->activ_desc_);
   cudnnDestroy(this->handle_);
 }
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNReLULayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNReLULayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNReLULayer);
 

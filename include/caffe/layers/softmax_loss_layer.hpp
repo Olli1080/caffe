@@ -53,21 +53,22 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
     */
   explicit SoftmaxWithLossLayer(const LayerParameter& param)
       : LossLayer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "SoftmaxWithLoss"; }
-  virtual inline int ExactNumTopBlobs() const { return -1; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline int MaxTopBlobs() const { return 2; }
+   void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+   void Reshape(const vector<Blob<Dtype>*>& bottom,
+                const vector<Blob<Dtype>*>& top) override;
+
+   [[nodiscard]] const char* type() const override { return "SoftmaxWithLoss"; }
+   [[nodiscard]] int ExactNumTopBlobs() const override { return -1; }
+   [[nodiscard]] int MinTopBlobs() const override { return 1; }
+   [[nodiscard]] int MaxTopBlobs() const override { return 2; }
 
  protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+   void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                    const vector<Blob<Dtype>*>& top) override;
+   void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                    const vector<Blob<Dtype>*>& top) override;
   /**
    * @brief Computes the softmax loss error gradient w.r.t. the predictions.
    *
@@ -95,10 +96,10 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
    *   -# @f$ (N \times 1 \times 1 \times 1) @f$
    *      the labels -- ignored as we can't compute their error gradients
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+   void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+   void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   /// Read the normalization mode parameter and compute the normalizer based
   /// on the blob size.  If normalization_mode is VALID, the count of valid

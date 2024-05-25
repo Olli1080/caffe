@@ -22,12 +22,13 @@ class BatchReindexLayer : public Layer<Dtype> {
  public:
   explicit BatchReindexLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "BatchReindex"; }
-  virtual inline int ExactNumBottomBlobs() const { return 2; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] const char* type() const override { return "BatchReindex"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 2; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
 
  protected:
   /**
@@ -42,10 +43,10 @@ class BatchReindexLayer : public Layer<Dtype> {
    *        y = x_1[x_2]
    *      @f$
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the reordered input.
@@ -62,15 +63,16 @@ class BatchReindexLayer : public Layer<Dtype> {
    *   - This layer cannot backprop to x_2, i.e. propagate_down[1] must be
    *     false.
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
  private:
   struct pair_sort_first {
     bool operator()(const std::pair<int, int> &left,
-                    const std::pair<int, int> &right) {
+                    const std::pair<int, int> &right) const
+    {
       return left.first < right.first;
     }
   };

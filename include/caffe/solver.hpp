@@ -50,7 +50,7 @@ class CAFFE_EXPORT Solver {
   // that the solver uses to see what action it should take (e.g. snapshot or
   // exit training early).
   void SetActionFunction(ActionCallback func);
-  SolverAction::Enum GetRequestedAction();
+  SolverAction::Enum GetRequestedAction() const;
   // The main entry of the solver function. In default, iter will be zero. Pass
   // in a non-zero iter number to resume training for a pre-trained net.
   virtual void Solve(const char* resume_file = NULL);

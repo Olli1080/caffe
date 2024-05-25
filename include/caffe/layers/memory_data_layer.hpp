@@ -21,12 +21,13 @@ class CAFFE_EXPORT MemoryDataLayer : public BaseDataLayer<Dtype> {
  public:
   explicit MemoryDataLayer(const LayerParameter& param)
       : BaseDataLayer<Dtype>(param), has_new_data_(false) {}
-  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "MemoryData"; }
-  virtual inline int ExactNumBottomBlobs() const { return 0; }
-  virtual inline int ExactNumTopBlobs() const { return 2; }
+  void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                      const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] const char* type() const override { return "MemoryData"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 2; }
 
   virtual void AddDatumVector(const vector<Datum>& datum_vector);
 #ifdef USE_OPENCV
@@ -39,14 +40,14 @@ class CAFFE_EXPORT MemoryDataLayer : public BaseDataLayer<Dtype> {
   void Reset(Dtype* data, Dtype* label, int n);
   void set_batch_size(int new_size);
 
-  int batch_size() { return batch_size_; }
-  int channels() { return channels_; }
-  int height() { return height_; }
-  int width() { return width_; }
+  [[nodiscard]] int batch_size() const { return batch_size_; }
+  [[nodiscard]] int channels() const { return channels_; }
+  [[nodiscard]] int height() const { return height_; }
+  [[nodiscard]] int width() const { return width_; }
 
  protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   int batch_size_, channels_, height_, width_, size_;
   Dtype* data_;

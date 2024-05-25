@@ -9,7 +9,7 @@
 
 namespace caffe {
 
-const double kLOG_THRESHOLD = 1e-20;
+constexpr double kLOG_THRESHOLD = 1e-20;
 
 /**
  * @brief An interface for Layer%s that take two Blob%s as input -- usually
@@ -24,12 +24,13 @@ class LossLayer : public Layer<Dtype> {
  public:
   explicit LossLayer(const LayerParameter& param)
      : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(
-      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(
-      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
 
-  virtual inline int ExactNumBottomBlobs() const { return 2; }
+  void LayerSetUp(
+      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) override;
+  void Reshape(
+      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 2; }
 
   /**
    * @brief For convenience and backwards compatibility, instruct the Net to
@@ -37,13 +38,14 @@ class LossLayer : public Layer<Dtype> {
    *        they output their singleton loss, (even if the user didn't specify
    *        one in the prototxt, etc.).
    */
-  virtual inline bool AutoTopBlobs() const { return true; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  [[nodiscard]] bool AutoTopBlobs() const override { return true; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
   /**
    * We usually cannot backpropagate to the labels; ignore force_backward for
    * these inputs.
    */
-  virtual inline bool AllowForceBackward(const int bottom_index) const {
+  [[nodiscard]] bool AllowForceBackward(const int bottom_index) const override
+  {
     return bottom_index != 1;
   }
 };

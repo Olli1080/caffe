@@ -32,7 +32,7 @@ class ELULayer : public NeuronLayer<Dtype> {
   explicit ELULayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
 
-  virtual inline const char* type() const { return "ELU"; }
+  [[nodiscard]] const char* type() const override { return "ELU"; }
 
  protected:
   /**
@@ -49,10 +49,10 @@ class ELULayer : public NeuronLayer<Dtype> {
    *        \end{array} \right.
    *      @f$.  
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the ELU inputs.
@@ -74,10 +74,10 @@ class ELULayer : public NeuronLayer<Dtype> {
    *        \end{array} \right.
    *      @f$ if propagate_down[0].
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 };
 
 

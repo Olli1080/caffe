@@ -25,8 +25,8 @@ class CAFFE_EXPORT Net {
  public:
   explicit Net(const NetParameter& param);
   explicit Net(const string& param_file, Phase phase,
-      const int level = 0, const vector<string>* stages = NULL);
-  virtual ~Net() {}
+		int level = 0, const vector<string>* stages = nullptr);
+  virtual ~Net() = default;
 
   /// @brief Initialize a network with a NetParameter.
   void Init(const NetParameter& param);
@@ -35,9 +35,9 @@ class CAFFE_EXPORT Net {
    * @brief Run Forward and return the result.
    *
    */
-  const vector<Blob<Dtype>*>& Forward(Dtype* loss = NULL);
+  const vector<Blob<Dtype>*>& Forward(Dtype* loss = nullptr);
   /// @brief DEPRECATED; use Forward() instead.
-  const vector<Blob<Dtype>*>& ForwardPrefilled(Dtype* loss = NULL) {
+  const vector<Blob<Dtype>*>& ForwardPrefilled(Dtype* loss = nullptr) {
     LOG_EVERY_N(WARNING, 1000) << "DEPRECATED: ForwardPrefilled() "
         << "will be removed in a future version. Use Forward().";
     return Forward(loss);
@@ -56,7 +56,7 @@ class CAFFE_EXPORT Net {
   Dtype ForwardTo(int end);
   /// @brief DEPRECATED; set input blobs then use Forward() instead.
   const vector<Blob<Dtype>*>& Forward(const vector<Blob<Dtype>* > & bottom,
-      Dtype* loss = NULL);
+      Dtype* loss = nullptr);
 
   /**
    * @brief Zeroes out the diffs of all net parameters.
@@ -120,98 +120,111 @@ class CAFFE_EXPORT Net {
   void ToHDF5(const string& filename, bool write_diff = false) const;
 
   /// @brief returns the network name.
-  inline const string& name() const { return name_; }
+  [[nodiscard]] const string& name() const { return name_; }
   /// @brief returns the layer names
-  inline const vector<string>& layer_names() const { return layer_names_; }
+  [[nodiscard]] const vector<string>& layer_names() const { return layer_names_; }
   /// @brief returns the blob names
-  inline const vector<string>& blob_names() const { return blob_names_; }
+  [[nodiscard]] const vector<string>& blob_names() const { return blob_names_; }
   /// @brief returns the blobs
-  inline const vector<shared_ptr<Blob<Dtype> > >& blobs() const {
+  [[nodiscard]] const vector<shared_ptr<Blob<Dtype> > >& blobs() const {
     return blobs_;
   }
   /// @brief returns the layers
-  inline const vector<shared_ptr<Layer<Dtype> > >& layers() const {
+  [[nodiscard]] const vector<shared_ptr<Layer<Dtype> > >& layers() const {
     return layers_;
   }
   /// @brief returns the phase: TRAIN or TEST
-  inline Phase phase() const { return phase_; }
+  [[nodiscard]] Phase phase() const { return phase_; }
   /**
    * @brief returns the bottom vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
    */
-  inline const vector<vector<Blob<Dtype>*> >& bottom_vecs() const {
+  [[nodiscard]] const vector<vector<Blob<Dtype>*> >& bottom_vecs() const {
     return bottom_vecs_;
   }
   /**
    * @brief returns the top vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
    */
-  inline const vector<vector<Blob<Dtype>*> >& top_vecs() const {
+  [[nodiscard]] const vector<vector<Blob<Dtype>*> >& top_vecs() const {
     return top_vecs_;
   }
   /// @brief returns the ids of the top blobs of layer i
-  inline const vector<int> & top_ids(int i) const {
+  [[nodiscard]] const vector<int> & top_ids(int i) const {
     CHECK_GE(i, 0) << "Invalid layer id";
     CHECK_LT(i, top_id_vecs_.size()) << "Invalid layer id";
     return top_id_vecs_[i];
   }
   /// @brief returns the ids of the bottom blobs of layer i
-  inline const vector<int> & bottom_ids(int i) const {
+  [[nodiscard]] const vector<int> & bottom_ids(int i) const {
     CHECK_GE(i, 0) << "Invalid layer id";
     CHECK_LT(i, bottom_id_vecs_.size()) << "Invalid layer id";
     return bottom_id_vecs_[i];
   }
-  inline const vector<vector<bool> >& bottom_need_backward() const {
+
+  [[nodiscard]] const vector<vector<bool> >& bottom_need_backward() const {
     return bottom_need_backward_;
   }
-  inline const vector<Dtype>& blob_loss_weights() const {
+
+  [[nodiscard]] const vector<Dtype>& blob_loss_weights() const {
     return blob_loss_weights_;
   }
-  inline const vector<bool>& layer_need_backward() const {
+
+  [[nodiscard]] const vector<bool>& layer_need_backward() const {
     return layer_need_backward_;
   }
   /// @brief returns the parameters
-  inline const vector<shared_ptr<Blob<Dtype> > >& params() const {
+  [[nodiscard]] const vector<shared_ptr<Blob<Dtype> > >& params() const {
     return params_;
   }
-  inline const vector<Blob<Dtype>*>& learnable_params() const {
+
+  [[nodiscard]] const vector<Blob<Dtype>*>& learnable_params() const {
     return learnable_params_;
   }
   /// @brief returns the learnable parameter learning rate multipliers
-  inline const vector<float>& params_lr() const { return params_lr_; }
-  inline const vector<bool>& has_params_lr() const { return has_params_lr_; }
+  [[nodiscard]] const vector<float>& params_lr() const { return params_lr_; }
+  [[nodiscard]] const vector<bool>& has_params_lr() const { return has_params_lr_; }
   /// @brief returns the learnable parameter decay multipliers
-  inline const vector<float>& params_weight_decay() const {
+  [[nodiscard]] const vector<float>& params_weight_decay() const {
     return params_weight_decay_;
   }
-  inline const vector<bool>& has_params_decay() const {
+
+  [[nodiscard]] const vector<bool>& has_params_decay() const {
     return has_params_decay_;
   }
-  const map<string, int>& param_names_index() const {
+
+  [[nodiscard]] const map<string, int>& param_names_index() const {
     return param_names_index_;
   }
-  inline const vector<int>& param_owners() const { return param_owners_; }
-  inline const vector<string>& param_display_names() const {
+
+  [[nodiscard]] const vector<int>& param_owners() const { return param_owners_; }
+
+  [[nodiscard]] const vector<string>& param_display_names() const {
     return param_display_names_;
   }
   /// @brief Input and output blob numbers
-  inline int num_inputs() const { return static_cast<int>(net_input_blobs_.size()); }
-  inline int num_outputs() const { return static_cast<int>(net_output_blobs_.size()); }
-  inline const vector<Blob<Dtype>*>& input_blobs() const {
+  [[nodiscard]] int num_inputs() const { return static_cast<int>(net_input_blobs_.size()); }
+  [[nodiscard]] int num_outputs() const { return static_cast<int>(net_output_blobs_.size()); }
+
+  [[nodiscard]] const vector<Blob<Dtype>*>& input_blobs() const {
     return net_input_blobs_;
   }
-  inline const vector<Blob<Dtype>*>& output_blobs() const {
+
+  [[nodiscard]] const vector<Blob<Dtype>*>& output_blobs() const {
     return net_output_blobs_;
   }
-  inline const vector<int>& input_blob_indices() const {
+
+  [[nodiscard]] const vector<int>& input_blob_indices() const {
     return net_input_blob_indices_;
   }
-  inline const vector<int>& output_blob_indices() const {
+
+  [[nodiscard]] const vector<int>& output_blob_indices() const {
     return net_output_blob_indices_;
   }
-  bool has_blob(const string& blob_name) const;
-  const shared_ptr<Blob<Dtype> > blob_by_name(const string& blob_name) const;
-  bool has_layer(const string& layer_name) const;
+
+  [[nodiscard]] bool has_blob(const string& blob_name) const;
+  shared_ptr<Blob<Dtype> > blob_by_name(const string& blob_name) const;
+  [[nodiscard]] bool has_layer(const string& layer_name) const;
   const shared_ptr<Layer<Dtype> > layer_by_name(const string& layer_name) const;
 
   void set_debug_info(const bool value) { debug_info_ = value; }
@@ -235,19 +248,23 @@ class CAFFE_EXPORT Net {
     template <typename T>
     friend class Net;
   };
-  const vector<Callback*>& before_forward() const { return before_forward_; }
+
+  [[nodiscard]] const vector<Callback*>& before_forward() const { return before_forward_; }
   void add_before_forward(Callback* value) {
     before_forward_.push_back(value);
   }
-  const vector<Callback*>& after_forward() const { return after_forward_; }
+
+  [[nodiscard]] const vector<Callback*>& after_forward() const { return after_forward_; }
   void add_after_forward(Callback* value) {
     after_forward_.push_back(value);
   }
-  const vector<Callback*>& before_backward() const { return before_backward_; }
+
+  [[nodiscard]] const vector<Callback*>& before_backward() const { return before_backward_; }
   void add_before_backward(Callback* value) {
     before_backward_.push_back(value);
   }
-  const vector<Callback*>& after_backward() const { return after_backward_; }
+
+  [[nodiscard]] const vector<Callback*>& after_backward() const { return after_backward_; }
   void add_after_backward(Callback* value) {
     after_backward_.push_back(value);
   }
@@ -255,23 +272,23 @@ class CAFFE_EXPORT Net {
  protected:
   // Helpers for Init.
   /// @brief Append a new top blob to the net.
-  void AppendTop(const NetParameter& param, const int layer_id,
-                 const int top_id, set<string>* available_blobs,
+  void AppendTop(const NetParameter& param, int layer_id,
+                 int top_id, set<string>* available_blobs,
                  map<string, int>* blob_name_to_idx);
   /// @brief Append a new bottom blob to the net.
-  int AppendBottom(const NetParameter& param, const int layer_id,
-                   const int bottom_id, set<string>* available_blobs,
+  int AppendBottom(const NetParameter& param, int layer_id,
+                   int bottom_id, set<string>* available_blobs,
                    map<string, int>* blob_name_to_idx);
   /// @brief Append a new parameter blob to the net.
-  void AppendParam(const NetParameter& param, const int layer_id,
-                   const int param_id);
+  void AppendParam(const NetParameter& param, int layer_id,
+                   int param_id);
 
   /// @brief Helper for displaying debug info in Forward.
-  void ForwardDebugInfo(const int layer_id);
+  void ForwardDebugInfo(int layer_id);
   /// @brief Helper for displaying debug info in Backward.
-  void BackwardDebugInfo(const int layer_id);
+  void BackwardDebugInfo(int layer_id);
   /// @brief Helper for displaying debug info in Update.
-  void UpdateDebugInfo(const int param_id);
+  void UpdateDebugInfo(int param_id);
 
   /// @brief The network name
   string name_;

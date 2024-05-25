@@ -50,14 +50,14 @@ class LSTMLayer : public RecurrentLayer<Dtype> {
   explicit LSTMLayer(const LayerParameter& param)
       : RecurrentLayer<Dtype>(param) {}
 
-  virtual inline const char* type() const { return "LSTM"; }
+  [[nodiscard]] const char* type() const override { return "LSTM"; }
 
  protected:
-  virtual void FillUnrolledNet(NetParameter* net_param) const;
-  virtual void RecurrentInputBlobNames(vector<string>* names) const;
-  virtual void RecurrentOutputBlobNames(vector<string>* names) const;
-  virtual void RecurrentInputShapes(vector<BlobShape>* shapes) const;
-  virtual void OutputBlobNames(vector<string>* names) const;
+  void FillUnrolledNet(NetParameter* net_param) const override;
+  void RecurrentInputBlobNames(vector<string>* names) const override;
+  void RecurrentOutputBlobNames(vector<string>* names) const override;
+  void RecurrentInputShapes(vector<BlobShape>* shapes) const override;
+  void OutputBlobNames(vector<string>* names) const override;
 };
 
 /**
@@ -70,14 +70,16 @@ class LSTMUnitLayer : public Layer<Dtype> {
  public:
   explicit LSTMUnitLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "LSTMUnit"; }
-  virtual inline int ExactNumBottomBlobs() const { return 3; }
-  virtual inline int ExactNumTopBlobs() const { return 2; }
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
 
-  virtual inline bool AllowForceBackward(const int bottom_index) const {
+  [[nodiscard]] const char* type() const override { return "LSTMUnit"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 3; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 2; }
+
+  [[nodiscard]] bool AllowForceBackward(const int bottom_index) const override
+  {
     // Can't propagate to sequence continuation indicators.
     return bottom_index != 2;
   }
@@ -103,10 +105,10 @@ class LSTMUnitLayer : public Layer<Dtype> {
    *      the updated hidden state @f$ h_t @f$, computed as:
    *          h_t := o_t .* \tanh[c_t]
    */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the LSTMUnit inputs.
@@ -139,10 +141,10 @@ class LSTMUnitLayer : public Layer<Dtype> {
    *      the gradient w.r.t. the sequence continuation indicators
    *      @f$ \delta_t @f$ is currently not computed.
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   /// @brief The hidden and output dimension.
   int hidden_dim_;

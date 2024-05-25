@@ -19,11 +19,12 @@ class CAFFE_EXPORT SGDSolver : public Solver<Dtype> {
       : Solver<Dtype>(param) { PreSolve(); }
   explicit SGDSolver(const string& param_file)
       : Solver<Dtype>(param_file) { PreSolve(); }
-  virtual inline const char* type() const { return "SGD"; }
+
+  inline const char* type() const override { return "SGD"; }
 
   const vector<shared_ptr<Blob<Dtype> > >& history() { return history_; }
 
-  virtual void ApplyUpdate();
+  void ApplyUpdate() override;
   Dtype GetLearningRate();
 
  protected:
@@ -32,11 +33,11 @@ class CAFFE_EXPORT SGDSolver : public Solver<Dtype> {
   virtual void Regularize(int param_id);
   virtual void ComputeUpdateValue(int param_id, Dtype rate);
   virtual void ClipGradients();
-  virtual void SnapshotSolverState(const string& model_filename);
+  void SnapshotSolverState(const string& model_filename) override;
   virtual void SnapshotSolverStateToBinaryProto(const string& model_filename);
   virtual void SnapshotSolverStateToHDF5(const string& model_filename);
-  virtual void RestoreSolverStateFromHDF5(const string& state_file);
-  virtual void RestoreSolverStateFromBinaryProto(const string& state_file);
+  void RestoreSolverStateFromHDF5(const string& state_file) override;
+  void RestoreSolverStateFromBinaryProto(const string& state_file) override;
   // history maintains the historical momentum data.
   // update maintains update related data and is not needed in snapshots.
   // temp maintains other information that might be needed in computation
@@ -53,10 +54,11 @@ class CAFFE_EXPORT NesterovSolver : public SGDSolver<Dtype> {
       : SGDSolver<Dtype>(param) {}
   explicit NesterovSolver(const string& param_file)
       : SGDSolver<Dtype>(param_file) {}
-  virtual inline const char* type() const { return "Nesterov"; }
+
+  inline const char* type() const override { return "Nesterov"; }
 
  protected:
-  virtual void ComputeUpdateValue(int param_id, Dtype rate);
+  void ComputeUpdateValue(int param_id, Dtype rate) override;
 
   DISABLE_COPY_AND_ASSIGN(NesterovSolver);
 };
@@ -68,10 +70,11 @@ class CAFFE_EXPORT AdaGradSolver : public SGDSolver<Dtype> {
       : SGDSolver<Dtype>(param) { constructor_sanity_check(); }
   explicit AdaGradSolver(const string& param_file)
       : SGDSolver<Dtype>(param_file) { constructor_sanity_check(); }
-  virtual inline const char* type() const { return "AdaGrad"; }
+
+  inline const char* type() const override { return "AdaGrad"; }
 
  protected:
-  virtual void ComputeUpdateValue(int param_id, Dtype rate);
+  void ComputeUpdateValue(int param_id, Dtype rate) override;
   void constructor_sanity_check() {
     CHECK_EQ(0, this->param_.momentum())
         << "Momentum cannot be used with AdaGrad.";
@@ -88,10 +91,11 @@ class CAFFE_EXPORT RMSPropSolver : public SGDSolver<Dtype> {
       : SGDSolver<Dtype>(param) { constructor_sanity_check(); }
   explicit RMSPropSolver(const string& param_file)
       : SGDSolver<Dtype>(param_file) { constructor_sanity_check(); }
-  virtual inline const char* type() const { return "RMSProp"; }
+
+  inline const char* type() const override { return "RMSProp"; }
 
  protected:
-  virtual void ComputeUpdateValue(int param_id, Dtype rate);
+  void ComputeUpdateValue(int param_id, Dtype rate) override;
   void constructor_sanity_check() {
     CHECK_EQ(0, this->param_.momentum())
         << "Momentum cannot be used with RMSProp.";
@@ -111,11 +115,12 @@ class CAFFE_EXPORT AdaDeltaSolver : public SGDSolver<Dtype> {
       : SGDSolver<Dtype>(param) { AdaDeltaPreSolve(); }
   explicit AdaDeltaSolver(const string& param_file)
       : SGDSolver<Dtype>(param_file) { AdaDeltaPreSolve(); }
-  virtual inline const char* type() const { return "AdaDelta"; }
+
+  inline const char* type() const override { return "AdaDelta"; }
 
  protected:
   void AdaDeltaPreSolve();
-  virtual void ComputeUpdateValue(int param_id, Dtype rate);
+  void ComputeUpdateValue(int param_id, Dtype rate) override;
 
   DISABLE_COPY_AND_ASSIGN(AdaDeltaSolver);
 };
@@ -135,11 +140,12 @@ class CAFFE_EXPORT AdamSolver : public SGDSolver<Dtype> {
       : SGDSolver<Dtype>(param) { AdamPreSolve();}
   explicit AdamSolver(const string& param_file)
       : SGDSolver<Dtype>(param_file) { AdamPreSolve(); }
-  virtual inline const char* type() const { return "Adam"; }
+
+  inline const char* type() const override { return "Adam"; }
 
  protected:
   void AdamPreSolve();
-  virtual void ComputeUpdateValue(int param_id, Dtype rate);
+  void ComputeUpdateValue(int param_id, Dtype rate) override;
 
   DISABLE_COPY_AND_ASSIGN(AdamSolver);
 };

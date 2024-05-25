@@ -15,18 +15,19 @@ namespace caffe {
  *        ConvolutionLayer and DeconvolutionLayer.
  */
 template <typename Dtype>
-class BaseConvolutionLayer : public Layer<Dtype> {
+class CAFFE_EXPORT BaseConvolutionLayer : public Layer<Dtype> {
  public:
   explicit BaseConvolutionLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline int MinBottomBlobs() const { return 1; }
-  virtual inline int MinTopBlobs() const { return 1; }
-  virtual inline bool EqualNumBottomTopBlobs() const { return true; }
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] int MinBottomBlobs() const override { return 1; }
+  [[nodiscard]] int MinTopBlobs() const override { return 1; }
+  [[nodiscard]] bool EqualNumBottomTopBlobs() const override { return true; }
 
  protected:
   // Helper functions that abstract away the column buffer and gemm arguments.
@@ -35,8 +36,8 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   void forward_cpu_gemm(const Dtype* input, const Dtype* weights,
       Dtype* output, bool skip_im2col = false);
   void forward_cpu_bias(Dtype* output, const Dtype* bias);
-  void backward_cpu_gemm(const Dtype* input, const Dtype* weights,
-      Dtype* output);
+  void backward_cpu_gemm(const Dtype* output,
+      const Dtype* weights, Dtype* input);
   void weight_cpu_gemm(const Dtype* input, const Dtype* output, Dtype*
       weights);
   void backward_cpu_bias(Dtype* bias, const Dtype* input);
@@ -45,15 +46,15 @@ class BaseConvolutionLayer : public Layer<Dtype> {
   void forward_gpu_gemm(const Dtype* col_input, const Dtype* weights,
       Dtype* output, bool skip_im2col = false);
   void forward_gpu_bias(Dtype* output, const Dtype* bias);
-  void backward_gpu_gemm(const Dtype* input, const Dtype* weights,
-      Dtype* col_output);
+  void backward_gpu_gemm(const Dtype* output, const Dtype* weights, Dtype* input);
   void weight_gpu_gemm(const Dtype* col_input, const Dtype* output, Dtype*
       weights);
   void backward_gpu_bias(Dtype* bias, const Dtype* input);
 #endif
 
   /// @brief The spatial dimensions of the input.
-  inline int input_shape(int i) {
+  [[nodiscard]] int input_shape(int i) const
+  {
     return (*bottom_shape_)[channel_axis_ + i];
   }
   // reverse_dimensions should return true iff we are implementing deconv, so
@@ -95,7 +96,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
 
  private:
   // wrap im2col/col2im so we don't have to remember the (long) argument lists
-  inline void conv_im2col_cpu(const Dtype* data, Dtype* col_buff) {
+  void conv_im2col_cpu(const Dtype* data, Dtype* col_buff) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       im2col_cpu(data, conv_in_channels_,
           conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],
@@ -109,7 +110,8 @@ class BaseConvolutionLayer : public Layer<Dtype> {
           pad_.cpu_data(), stride_.cpu_data(), dilation_.cpu_data(), col_buff);
     }
   }
-  inline void conv_col2im_cpu(const Dtype* col_buff, Dtype* data) {
+
+  void conv_col2im_cpu(const Dtype* col_buff, Dtype* data) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       col2im_cpu(col_buff, conv_in_channels_,
           conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],
@@ -124,7 +126,7 @@ class BaseConvolutionLayer : public Layer<Dtype> {
     }
   }
 #ifndef CPU_ONLY
-  inline void conv_im2col_gpu(const Dtype* data, Dtype* col_buff) {
+  void conv_im2col_gpu(const Dtype* data, Dtype* col_buff) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       im2col_gpu(data, conv_in_channels_,
           conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],
@@ -139,7 +141,8 @@ class BaseConvolutionLayer : public Layer<Dtype> {
           stride_.gpu_data(), dilation_.gpu_data(), col_buff);
     }
   }
-  inline void conv_col2im_gpu(const Dtype* col_buff, Dtype* data) {
+
+  void conv_col2im_gpu(const Dtype* col_buff, Dtype* data) {
     if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
       col2im_gpu(col_buff, conv_in_channels_,
           conv_input_shape_.cpu_data()[1], conv_input_shape_.cpu_data()[2],

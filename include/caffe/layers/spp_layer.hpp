@@ -20,24 +20,25 @@ class SPPLayer : public Layer<Dtype> {
  public:
   explicit SPPLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "SPP"; }
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] const char* type() const override { return "SPP"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
 
  protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
   // calculates the kernel and stride dimensions for the pooling layer,
   // returns a correctly configured LayerParameter for a PoolingLayer
-  virtual LayerParameter GetPoolingParam(const int pyramid_level,
-      const int bottom_h, const int bottom_w, const SPPParameter spp_param);
+  virtual LayerParameter GetPoolingParam(int pyramid_level,
+                                         int bottom_h, int bottom_w, SPPParameter spp_param);
 
   int pyramid_height_;
   int bottom_h_, bottom_w_;

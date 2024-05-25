@@ -22,24 +22,25 @@ namespace caffe {
  * parallelism across groups and backward parallelism across gradients.
 */
 template <typename Dtype>
-class CuDNNDeconvolutionLayer : public DeconvolutionLayer<Dtype> {
+class CAFFE_EXPORT CuDNNDeconvolutionLayer : public DeconvolutionLayer<Dtype> {
  public:
   explicit CuDNNDeconvolutionLayer(const LayerParameter& param)
     : DeconvolutionLayer<Dtype>(param),
       handles_setup_(false),
       shapes_ready_(false) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                          const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-                       const vector<Blob<Dtype>*>& top);
-  virtual ~CuDNNDeconvolutionLayer();
+
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
+  ~CuDNNDeconvolutionLayer() override;
 
  protected:
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                           const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                            const vector<bool>& propagate_down,
-                            const vector<Blob<Dtype>*>& bottom);
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down,
+                    const vector<Blob<Dtype>*>& bottom) override;
 
   void findOptimalAlgorithm(int index, size_t workspace_limit_bytes);
   void getWorkSpaces(int index);

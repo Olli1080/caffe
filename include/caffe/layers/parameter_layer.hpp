@@ -12,8 +12,10 @@ class ParameterLayer : public Layer<Dtype> {
  public:
   explicit ParameterLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override
+  {
     if (this->blobs_.size() > 0) {
       LOG(INFO) << "Skipping parameter initialization";
     } else {
@@ -23,20 +25,24 @@ class ParameterLayer : public Layer<Dtype> {
     }
     top[0]->Reshape(this->layer_param_.parameter_param().shape());
   }
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) { }
-  virtual inline const char* type() const { return "Parameter"; }
-  virtual inline int ExactNumBottomBlobs() const { return 0; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override { }
+
+  [[nodiscard]] const char* type() const override { return "Parameter"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
 
  protected:
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override
+  {
     top[0]->ShareData(*(this->blobs_[0]));
     top[0]->ShareDiff(*(this->blobs_[0]));
   }
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom)
+
+  void Backward_cpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override
   { }
 };
 

@@ -46,6 +46,11 @@ CuDNNLRNLayer<Dtype>::~CuDNNLRNLayer() {
   // destroy LRN handle
   cudnnDestroy(handle_);
 }
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNLRNLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNLRNLayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNLRNLayer);
 

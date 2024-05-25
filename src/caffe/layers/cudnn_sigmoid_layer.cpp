@@ -39,6 +39,11 @@ CuDNNSigmoidLayer<Dtype>::~CuDNNSigmoidLayer() {
   cudnnDestroyTensorDescriptor(this->top_desc_);
   cudnnDestroy(this->handle_);
 }
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNSigmoidLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNSigmoidLayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNSigmoidLayer);
 

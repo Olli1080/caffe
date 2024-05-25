@@ -13,24 +13,25 @@ namespace caffe {
 
 #ifdef USE_CUDNN
 template <typename Dtype>
-class CuDNNLRNLayer : public LRNLayer<Dtype> {
+class CAFFE_EXPORT CuDNNLRNLayer : public LRNLayer<Dtype> {
  public:
   explicit CuDNNLRNLayer(const LayerParameter& param)
       : LRNLayer<Dtype>(param), handles_setup_(false) {}
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual ~CuDNNLRNLayer();
+
+  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                  const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
+  ~CuDNNLRNLayer() override;
 
  protected:
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+                   const vector<Blob<Dtype>*>& top) override;
+  void Backward_gpu(const vector<Blob<Dtype>*>& top,
+                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
   bool handles_setup_;
-  cudnnHandle_t             handle_;
+  cudnnHandle_t handle_;
   cudnnLRNDescriptor_t norm_desc_;
   cudnnTensorDescriptor_t bottom_desc_, top_desc_;
 

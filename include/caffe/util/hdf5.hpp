@@ -1,6 +1,7 @@
-#ifdef USE_HDF5
 #ifndef CAFFE_UTIL_HDF5_H_
 #define CAFFE_UTIL_HDF5_H_
+
+#ifdef USE_HDF5
 
 #include <string>
 

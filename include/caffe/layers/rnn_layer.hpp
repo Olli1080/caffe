@@ -32,14 +32,14 @@ class RNNLayer : public RecurrentLayer<Dtype> {
   explicit RNNLayer(const LayerParameter& param)
       : RecurrentLayer<Dtype>(param) {}
 
-  virtual inline const char* type() const { return "RNN"; }
+  [[nodiscard]] const char* type() const override { return "RNN"; }
 
  protected:
-  virtual void FillUnrolledNet(NetParameter* net_param) const;
-  virtual void RecurrentInputBlobNames(vector<string>* names) const;
-  virtual void RecurrentOutputBlobNames(vector<string>* names) const;
-  virtual void RecurrentInputShapes(vector<BlobShape>* shapes) const;
-  virtual void OutputBlobNames(vector<string>* names) const;
+  void FillUnrolledNet(NetParameter* net_param) const override;
+  void RecurrentInputBlobNames(vector<string>* names) const override;
+  void RecurrentOutputBlobNames(vector<string>* names) const override;
+  void RecurrentInputShapes(vector<BlobShape>* shapes) const override;
+  void OutputBlobNames(vector<string>* names) const override;
 };
 
 }  // namespace caffe

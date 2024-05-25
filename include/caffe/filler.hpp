@@ -19,7 +19,7 @@ template <typename Dtype>
 class Filler {
  public:
   explicit Filler(const FillerParameter& param) : filler_param_(param) {}
-  virtual ~Filler() {}
+  virtual ~Filler() = default;
   virtual void Fill(Blob<Dtype>* blob) = 0;
  protected:
   FillerParameter filler_param_;
@@ -32,7 +32,9 @@ class ConstantFiller : public Filler<Dtype> {
  public:
   explicit ConstantFiller(const FillerParameter& param)
       : Filler<Dtype>(param) {}
-  virtual void Fill(Blob<Dtype>* blob) {
+
+  void Fill(Blob<Dtype>* blob) override
+  {
     Dtype* data = blob->mutable_cpu_data();
     const int count = blob->count();
     const Dtype value = this->filler_param_.value();
@@ -51,7 +53,9 @@ class UniformFiller : public Filler<Dtype> {
  public:
   explicit UniformFiller(const FillerParameter& param)
       : Filler<Dtype>(param) {}
-  virtual void Fill(Blob<Dtype>* blob) {
+
+  void Fill(Blob<Dtype>* blob) override
+  {
     CHECK(blob->count());
     caffe_rng_uniform<Dtype>(blob->count(), Dtype(this->filler_param_.min()),
         Dtype(this->filler_param_.max()), blob->mutable_cpu_data());
@@ -66,7 +70,9 @@ class GaussianFiller : public Filler<Dtype> {
  public:
   explicit GaussianFiller(const FillerParameter& param)
       : Filler<Dtype>(param) {}
-  virtual void Fill(Blob<Dtype>* blob) {
+
+  void Fill(Blob<Dtype>* blob) override
+  {
     Dtype* data = blob->mutable_cpu_data();
     CHECK(blob->count());
     caffe_rng_gaussian<Dtype>(blob->count(), Dtype(this->filler_param_.mean()),
@@ -82,7 +88,7 @@ class GaussianFiller : public Filler<Dtype> {
       const int num_outputs = blob->shape(0);
       Dtype non_zero_probability = Dtype(sparse) / Dtype(num_outputs);
       rand_vec_.reset(new SyncedMemory(blob->count() * sizeof(int)));
-      int* mask = reinterpret_cast<int*>(rand_vec_->mutable_cpu_data());
+      auto mask = static_cast<int*>(rand_vec_->mutable_cpu_data());
       caffe_rng_bernoulli(blob->count(), non_zero_probability, mask);
       for (int i = 0; i < blob->count(); ++i) {
         data[i] *= mask[i];
@@ -102,7 +108,9 @@ class PositiveUnitballFiller : public Filler<Dtype> {
  public:
   explicit PositiveUnitballFiller(const FillerParameter& param)
       : Filler<Dtype>(param) {}
-  virtual void Fill(Blob<Dtype>* blob) {
+
+  void Fill(Blob<Dtype>* blob) override
+  {
     Dtype* data = blob->mutable_cpu_data();
     DCHECK(blob->count());
     caffe_rng_uniform<Dtype>(blob->count(), 0, 1, blob->mutable_cpu_data());
@@ -145,7 +153,9 @@ class XavierFiller : public Filler<Dtype> {
  public:
   explicit XavierFiller(const FillerParameter& param)
       : Filler<Dtype>(param) {}
-  virtual void Fill(Blob<Dtype>* blob) {
+
+  void Fill(Blob<Dtype>* blob) override
+  {
     CHECK(blob->count());
     int fan_in = blob->count() / blob->shape(0);
     // Compatibility with ND blobs
@@ -190,7 +200,9 @@ class MSRAFiller : public Filler<Dtype> {
  public:
   explicit MSRAFiller(const FillerParameter& param)
       : Filler<Dtype>(param) {}
-  virtual void Fill(Blob<Dtype>* blob) {
+
+  void Fill(Blob<Dtype>* blob) override
+  {
     CHECK(blob->count());
     int fan_in = blob->count() / blob->shape(0);
     // Compatibility with ND blobs
@@ -251,7 +263,9 @@ class BilinearFiller : public Filler<Dtype> {
  public:
   explicit BilinearFiller(const FillerParameter& param)
       : Filler<Dtype>(param) {}
-  virtual void Fill(Blob<Dtype>* blob) {
+
+  void Fill(Blob<Dtype>* blob) override
+  {
     CHECK_EQ(blob->num_axes(), 4) << "Blob must be 4 dim.";
     CHECK_EQ(blob->width(), blob->height()) << "Filter must be square";
     Dtype* data = blob->mutable_cpu_data();
@@ -293,7 +307,7 @@ Filler<Dtype>* GetFiller(const FillerParameter& param) {
   } else {
     CHECK(false) << "Unknown filler name: " << param.type();
   }
-  return (Filler<Dtype>*)(NULL);
+  return (Filler<Dtype>*)(nullptr);
 }
 
 }  // namespace caffe

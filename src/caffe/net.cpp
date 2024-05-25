@@ -33,7 +33,7 @@ Net<Dtype>::Net(const string& param_file, Phase phase,
   ReadNetParamsFromTextFileOrDie(param_file, &param);
   // Set phase, stages and level
   param.mutable_state()->set_phase(phase);
-  if (stages != NULL) {
+  if (stages != nullptr) {
     for (int i = 0; i < stages->size(); i++) {
       param.mutable_state()->add_stage((*stages)[i]);
     }
@@ -116,7 +116,7 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
         // Add "anonymous" top blobs -- do not modify available_blobs or
         // blob_name_to_idx as we don't want these blobs to be usable as input
         // to other layers.
-        AppendTop(param, layer_id, num_top, NULL, NULL);
+        AppendTop(param, layer_id, num_top, nullptr, nullptr);
       }
     }
     // After this layer is connected, set it up.
@@ -545,7 +545,7 @@ Dtype Net<Dtype>::ForwardTo(int end) {
 
 template <typename Dtype>
 const vector<Blob<Dtype>*>& Net<Dtype>::Forward(Dtype* loss) {
-  if (loss != NULL) {
+  if (loss != nullptr) {
     *loss = ForwardFromTo(0, static_cast<int>(layers_.size()) - 1);
   } else {
     ForwardFromTo(0, static_cast<int>(layers_.size()) - 1);
@@ -771,11 +771,13 @@ void Net<Dtype>::CopyTrainedLayersFrom(const NetParameter& param) {
 
 template <typename Dtype>
 void Net<Dtype>::CopyTrainedLayersFrom(const string& trained_filename) {
+#ifdef USE_HDF5
   if (H5Fis_hdf5(trained_filename.c_str())) {
     CopyTrainedLayersFromHDF5(trained_filename);
   } else {
     CopyTrainedLayersFromBinaryProto(trained_filename);
   }
+#endif
 }
 
 template <typename Dtype>
@@ -959,13 +961,14 @@ bool Net<Dtype>::has_blob(const string& blob_name) const {
 }
 
 template <typename Dtype>
-const shared_ptr<Blob<Dtype> > Net<Dtype>::blob_by_name(
-    const string& blob_name) const {
+shared_ptr<Blob<Dtype> > Net<Dtype>::blob_by_name(
+	const string& blob_name) const
+{
   shared_ptr<Blob<Dtype> > blob_ptr;
   if (has_blob(blob_name)) {
     blob_ptr = blobs_[blob_names_index_.find(blob_name)->second];
   } else {
-    blob_ptr.reset((Blob<Dtype>*)(NULL));
+    blob_ptr.reset();
     LOG(WARNING) << "Unknown blob name " << blob_name;
   }
   return blob_ptr;
@@ -983,7 +986,7 @@ const shared_ptr<Layer<Dtype> > Net<Dtype>::layer_by_name(
   if (has_layer(layer_name)) {
     layer_ptr = layers_[layer_names_index_.find(layer_name)->second];
   } else {
-    layer_ptr.reset((Layer<Dtype>*)(NULL));
+    layer_ptr.reset((Layer<Dtype>*)(nullptr));
     LOG(WARNING) << "Unknown layer name " << layer_name;
   }
   return layer_ptr;

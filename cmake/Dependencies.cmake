@@ -89,6 +89,7 @@ else()
     message(FATAL_ERROR "-- CUDA and/or cudnn are/is not detected by cmake. But was enabled. ERROR")
   endif()
   
+  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_CUDNN)
   if (BUILD_SHARED_LIBS)
     list(APPEND Caffe_LINKER_LIBS CUDA::cudart CUDA::cublas CUDA::curand)
   else()

@@ -26,17 +26,18 @@ class WindowDataLayer : public BasePrefetchingDataLayer<Dtype> {
  public:
   explicit WindowDataLayer(const LayerParameter& param)
       : BasePrefetchingDataLayer<Dtype>(param) {}
-  virtual ~WindowDataLayer();
-  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline const char* type() const { return "WindowData"; }
-  virtual inline int ExactNumBottomBlobs() const { return 0; }
-  virtual inline int ExactNumTopBlobs() const { return 2; }
+  ~WindowDataLayer() override;
+  void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
+                      const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] const char* type() const override { return "WindowData"; }
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 2; }
 
  protected:
   virtual unsigned int PrefetchRand();
-  virtual void load_batch(Batch<Dtype>* batch);
+  void load_batch(Batch<Dtype>* batch) override;
 
   shared_ptr<Caffe::RNG> prefetch_rng_;
   vector<std::pair<std::string, vector<int> > > image_database_;

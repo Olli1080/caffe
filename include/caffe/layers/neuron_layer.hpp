@@ -16,15 +16,16 @@ namespace caffe {
  *        element.
  */
 template <typename Dtype>
-class NeuronLayer : public Layer<Dtype> {
+class CAFFE_EXPORT NeuronLayer : public Layer<Dtype> {
  public:
   explicit NeuronLayer(const LayerParameter& param)
      : Layer<Dtype>(param) {}
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
 
-  virtual inline int ExactNumBottomBlobs() const { return 1; }
-  virtual inline int ExactNumTopBlobs() const { return 1; }
+  void Reshape(const vector<Blob<Dtype>*>& bottom,
+               const vector<Blob<Dtype>*>& top) override;
+
+  [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
+  [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
 };
 
 }  // namespace caffe

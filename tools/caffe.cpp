@@ -1,3 +1,9 @@
+#include <cstring>
+#include <map>
+#include <string>
+#include <vector>
+#include <ranges>
+
 #ifdef WITH_PYTHON_LAYER
 #include "boost/python.hpp"
 namespace bp = boost::python;
@@ -6,12 +12,6 @@ namespace bp = boost::python;
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
-#include <cstring>
-#include <map>
-#include <string>
-#include <vector>
-
-#include "boost/algorithm/string.hpp"
 #include "caffe/caffe.hpp"
 #include "caffe/util/signal_handler.h"
 
@@ -72,16 +72,15 @@ __Registerer_##func g_registerer_##func; \
 }
 
 static BrewFunction GetBrewFunction(const caffe::string& name) {
-  if (g_brew_map.count(name)) {
+  if (g_brew_map.contains(name)) {
     return g_brew_map[name];
   } else {
     LOG(ERROR) << "Available caffe actions:";
-    for (BrewMap::iterator it = g_brew_map.begin();
-         it != g_brew_map.end(); ++it) {
+    for (auto it = g_brew_map.begin(); it != g_brew_map.end(); ++it) {
       LOG(ERROR) << "\t" << it->first;
     }
     LOG(FATAL) << "Unknown action: " << name;
-    return NULL;  // not reachable, just to suppress old compiler warnings.
+    return nullptr;  // not reachable, just to suppress old compiler warnings.
   }
 }
 
@@ -98,11 +97,12 @@ static void get_gpus(vector<int>* gpus) {
       gpus->push_back(i);
     }
   } else if (FLAGS_gpu.size()) {
-    vector<string> strings;
-    boost::split(strings, FLAGS_gpu, boost::is_any_of(","));
-    for (int i = 0; i < strings.size(); ++i) {
-      gpus->push_back(boost::lexical_cast<int>(strings[i]));
-    }
+      for (const auto word : FLAGS_gpu | std::views::split(','))
+      {
+          int id;
+          std::from_chars(word.data(), word.data() + word.size(), id);
+          gpus->emplace_back(id);
+      }
   } else {
     CHECK_EQ(gpus->size(), 0);
   }
@@ -123,7 +123,8 @@ caffe::Phase get_phase_from_flags(caffe::Phase default_value) {
 // Parse stages from flags
 vector<string> get_stages_from_flags() {
   vector<string> stages;
-  boost::split(stages, FLAGS_stage, boost::is_any_of(","));
+  for (const auto word : FLAGS_stage | std::views::split(','))
+      stages.emplace_back(std::string{ word.begin(), word.end() });
   return stages;
 }
 
@@ -186,9 +187,9 @@ int train() {
       && solver_param.solver_mode() == caffe::SolverParameter_SolverMode_GPU) {
       if (solver_param.has_device_id()) {
           FLAGS_gpu = "" +
-              boost::lexical_cast<string>(solver_param.device_id());
+              std::to_string(solver_param.device_id());
       } else {  // Set default GPU if unspecified
-          FLAGS_gpu = "" + boost::lexical_cast<string>(0);
+          FLAGS_gpu = "" + std::to_string(0);
       }
   }
 

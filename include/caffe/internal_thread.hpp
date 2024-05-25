@@ -10,7 +10,7 @@ namespace caffe {
  * The child class will acquire the ability to run a single thread,
  * by reimplementing the virtual function InternalThreadEntry.
  */
-class InternalThread {
+class CAFFE_EXPORT InternalThread {
  public:
   InternalThread() = default;
   virtual ~InternalThread();

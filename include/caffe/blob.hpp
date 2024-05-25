@@ -221,13 +221,13 @@ class CAFFE_EXPORT Blob {
     return diff_;
   }
 
-  const Dtype* cpu_data() const;
+  [[maybe_unused]] const Dtype* cpu_data() const;
   void set_cpu_data(Dtype* data);
   [[nodiscard]] const int* gpu_shape() const;
-  const Dtype* gpu_data() const;
+  [[maybe_unused]] const Dtype* gpu_data() const;
   void set_gpu_data(Dtype* data);
-  const Dtype* cpu_diff() const;
-  const Dtype* gpu_diff() const;
+  [[nodiscard]] const Dtype* cpu_diff() const;
+  [[nodiscard]] const Dtype* gpu_diff() const;
   Dtype* mutable_cpu_data();
   Dtype* mutable_gpu_data();
   Dtype* mutable_cpu_diff();
@@ -237,13 +237,13 @@ class CAFFE_EXPORT Blob {
   void ToProto(BlobProto* proto, bool write_diff = false) const;
 
   /// @brief Compute the sum of absolute values (L1 norm) of the data.
-  Dtype asum_data() const;
+  [[nodiscard]] Dtype asum_data() const;
   /// @brief Compute the sum of absolute values (L1 norm) of the diff.
-  Dtype asum_diff() const;
+  [[nodiscard]] Dtype asum_diff() const;
   /// @brief Compute the sum of squares (L2 norm squared) of the data.
-  Dtype sumsq_data() const;
+  [[nodiscard]] Dtype sumsq_data() const;
   /// @brief Compute the sum of squares (L2 norm squared) of the diff.
-  Dtype sumsq_diff() const;
+  [[nodiscard]] Dtype sumsq_diff() const;
 
   /// @brief Scale the blob data by a constant factor.
   void scale_data(Dtype scale_factor);

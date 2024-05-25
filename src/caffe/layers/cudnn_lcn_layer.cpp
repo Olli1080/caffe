@@ -66,6 +66,11 @@ CuDNNLCNLayer<Dtype>::~CuDNNLCNLayer() {
   cudaFree(tempData1);
   cudaFree(tempData2);
 }
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNLCNLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNLCNLayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNLCNLayer);
 

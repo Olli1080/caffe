@@ -39,6 +39,11 @@ CuDNNPoolingLayer<Dtype>::~CuDNNPoolingLayer() {
   cudnnDestroyPoolingDescriptor(pooling_desc_);
   cudnnDestroy(handle_);
 }
+#ifdef CPU_ONLY
+STUB_GPU(CuDNNPoolingLayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNPoolingLayer);
+#endif
 
 INSTANTIATE_CLASS(CuDNNPoolingLayer);
 

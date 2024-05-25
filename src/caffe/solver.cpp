@@ -18,7 +18,8 @@ void Solver<Dtype>::SetActionFunction(ActionCallback func) {
 }
 
 template<typename Dtype>
-SolverAction::Enum Solver<Dtype>::GetRequestedAction() {
+SolverAction::Enum Solver<Dtype>::GetRequestedAction() const
+{
   if (action_request_function_) {
     // If the external request function has been set, call it.
     return action_request_function_();

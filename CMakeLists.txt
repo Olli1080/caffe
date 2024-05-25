@@ -53,7 +53,7 @@ caffe_option(USE_HDF5 "Build with hdf5" ON)
 # ---[ Dependencies
 include(cmake/Dependencies.cmake)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 #set(MSVC_TOOLSET_VERSION 143)
 # ---[ Flags
 if(UNIX OR APPLE)
@@ -98,7 +98,7 @@ if(NOT CPU_ONLY)
   list(APPEND CUDA_NVCC_FLAGS ${Caffe_ALL_DEFINITIONS})
 
   add_compile_options("$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/wd4506>")
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=1394 -Xcudafe --diag_suppress=1388 ")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=1394 -Xcudafe --diag_suppress=1388 -Xcudafe --diag_suppress=550")
 endif()
 
 # ---[ Subdirectories

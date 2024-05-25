@@ -56,7 +56,11 @@ void ReLULayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
     CUDA_POST_KERNEL_CHECK;
   }
 }
-
+#ifdef CPU_ONLY
+STUB_GPU(ReLULayer);
+#else
+INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ReLULayer);
+#endif
 
 INSTANTIATE_LAYER_GPU_FUNCS(ReLULayer);
 

@@ -115,10 +115,10 @@ add_custom_target(lint COMMAND ${CMAKE_COMMAND} -P ${PROJECT_SOURCE_DIR}/cmake/l
 
 # ---[ pytest target
 if(BUILD_python)
-  if(UNIX)
-    set(python_executable python${python_version})
-  else()
-    set(python_executable ${PYTHON_EXECUTABLE})
+  if(Python3_FOUND)
+    set(python_executable ${Python3_EXECUTABLE})
+  elseif(Python2_FOUND)
+    set(python_executable ${Python2_EXECUTABLE})
   endif()
   add_custom_target(pytest COMMAND ${python_executable} -m unittest discover -s caffe/test WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}/python )
   add_dependencies(pytest pycaffe)

@@ -42,7 +42,6 @@ target_compile_definitions(caffeproto ${Caffe_EXPORT_DEFINITIONS}
                                       PRIVATE ${Caffe_COMPILE_DEFS})
 target_link_libraries(caffeproto ${PROTOBUF_LIBRARY})
 add_dependencies(caffeproto generate_proto)
-#set_target_properties(caffeproto PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 # --[ Caffe library
 # creates 'test_srcs', 'srcs', 'test_cuda', 'cuda' lists
@@ -61,8 +60,6 @@ target_include_directories(caffe ${Caffe_INCLUDE_DIRS}
                                  PUBLIC
                                  $<BUILD_INTERFACE:${Caffe_INCLUDE_DIR}>
                                  $<INSTALL_INTERFACE:include>
-                                 PRIVATE
-                                 "${PROJECT_BINARY_DIR}/src"
                                  )
 target_compile_definitions(caffe ${Caffe_DEFINITIONS} ${Caffe_EXPORT_DEFINITIONS})
 if(Caffe_COMPILE_OPTIONS)
@@ -72,16 +69,6 @@ set_target_properties(caffe PROPERTIES
     VERSION   ${CAFFE_TARGET_VERSION}
     SOVERSION ${CAFFE_TARGET_SOVERSION}
     )
-if(MSVC AND BUILD_SHARED_LIBS)
-  # CMake 3.4 introduced a WINDOWS_EXPORT_ALL_SYMBOLS target property that makes it possible to
-  # build shared libraries without using the usual declspec() decoration.
-  # See: https://blog.kitware.com/create-dlls-on-windows-without-declspec-using-new-cmake-export-all-feature/
-  # and https://cmake.org/cmake/help/v3.5/prop_tgt/WINDOWS_EXPORT_ALL_SYMBOLS.html
-  # for details.
-  #set(IGNORED_LIBRARIES "/NODEFAULTLIB:LIBCMT.lib")
-  #set_target_properties(caffe PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
-  #set_target_properties(caffe PROPERTIES LINK_FLAGS ${IGNORED_LIBRARIES})
-endif()
 if(MSVC AND USE_NCCL)
   add_dependencies(caffe nccl_external)
 endif()

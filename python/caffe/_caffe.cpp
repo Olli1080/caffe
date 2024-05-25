@@ -168,7 +168,7 @@ void Net_SetInputArrays(Net<Dtype>* net, bp::object data_obj,
     bp::object labels_obj) {
   // check that this network has an input MemoryDataLayer
   shared_ptr<MemoryDataLayer<Dtype> > md_layer =
-    boost::dynamic_pointer_cast<MemoryDataLayer<Dtype> >(net->layers()[0]);
+    std::dynamic_pointer_cast<MemoryDataLayer<Dtype> >(net->layers()[0]);
   if (!md_layer) {
     throw std::runtime_error("set_input_arrays may only be called if the"
         " first layer is a MemoryDataLayer");
@@ -199,7 +199,7 @@ void Net_SetInputArrays(Net<Dtype>* net, bp::object data_obj,
 void Net_SetLayerInput(Net<Dtype>* net, const string& layer, bp::object data_obj) {
   // check that this network has an input MemoryDataLayer
   shared_ptr<MemoryDataLayer<Dtype> > md_layer =
-    boost::dynamic_pointer_cast<MemoryDataLayer<Dtype> >(net->layer_by_name(layer));
+    std::dynamic_pointer_cast<MemoryDataLayer<Dtype> >(net->layer_by_name(layer));
   if (!md_layer) {
     throw std::runtime_error("set_layer_input may only be called on a MemoryDataLayer");
   }
@@ -613,7 +613,7 @@ BOOST_PYTHON_MODULE(_caffe) {
 
   // boost python expects a void (missing) return value, while import_array
   // returns NULL for python3. import_array1() forces a void return value.
-  import_array1();
+  import_array1(void{});
 }
 
 }  // namespace caffe

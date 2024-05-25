@@ -158,11 +158,6 @@ if(BUILD_python)
 
     find_package(Python3 REQUIRED COMPONENTS NumPy)
     find_package(Boost 1.80 REQUIRED COMPONENTS python${Python3_VERSION_MAJOR}${Python3_VERSION_MINOR})
-
-    if(BUILD_python_layer)
-      list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Python3_INCLUDE_DIRS} ${Python3_NumPy_INCLUDE_DIRS})
-      list(APPEND Caffe_LINKER_LIBS PRIVATE ${Python3_LIBRARIES})
-    endif()
   else()
     # use python2
     find_package(Python2 REQUIRED COMPONENTS Interpreter Development)
@@ -171,11 +166,6 @@ if(BUILD_python)
 
     find_package(Python2 REQUIRED COMPONENTS NumPy)
     find_package(Boost 1.80 REQUIRED COMPONENTS python${Python2_VERSION_MAJOR}${Python2_VERSION_MINOR})
-
-    if(BUILD_python_layer)
-      list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Python2_INCLUDE_DIRS} ${Python2_NumPy_INCLUDE_DIRS})
-      list(APPEND Caffe_LINKER_LIBS PRIVATE ${Python2_LIBRARIES})
-    endif()
   endif()
   if(BUILD_python_layer)
     list(APPEND Caffe_DEFINITIONS PRIVATE -DWITH_PYTHON_LAYER)

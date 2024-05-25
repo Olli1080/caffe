@@ -1,4 +1,3 @@
-#include <boost/thread.hpp>
 #include <exception>
 
 #include "caffe/internal_thread.hpp"
@@ -14,8 +13,9 @@ bool InternalThread::is_started() const {
   return thread_ && thread_->joinable();
 }
 
-bool InternalThread::must_stop() {
-  return thread_ && thread_->interruption_requested();
+bool InternalThread::must_stop() const
+{
+  return thread_ && stop_requested;
 }
 
 void InternalThread::StartInternalThread() {
@@ -26,20 +26,20 @@ void InternalThread::StartInternalThread() {
   CUDA_CHECK(cudaGetDevice(&device));
 #endif
   Caffe::Brew mode = Caffe::mode();
-  int rand_seed = caffe_rng_rand();
+  unsigned int rand_seed = caffe_rng_rand();
   int solver_count = Caffe::solver_count();
   int solver_rank = Caffe::solver_rank();
   bool multiprocess = Caffe::multiprocess();
 
   try {
-    thread_.reset(new boost::thread(&InternalThread::entry, this, device, mode,
+    thread_.reset(new std::thread(&InternalThread::entry, this, device, mode,
           rand_seed, solver_count, solver_rank, multiprocess));
   } catch (std::exception& e) {
     LOG(FATAL) << "Thread exception: " << e.what();
   }
 }
 
-void InternalThread::entry(int device, Caffe::Brew mode, int rand_seed,
+void InternalThread::entry(int device, Caffe::Brew mode, unsigned int rand_seed,
     int solver_count, int solver_rank, bool multiprocess) {
 #ifndef CPU_ONLY
   CUDA_CHECK(cudaSetDevice(device));
@@ -55,10 +55,9 @@ void InternalThread::entry(int device, Caffe::Brew mode, int rand_seed,
 
 void InternalThread::StopInternalThread() {
   if (is_started()) {
-    thread_->interrupt();
+    stop_requested = true;
     try {
       thread_->join();
-    } catch (boost::thread_interrupted&) {
     } catch (std::exception& e) {
       LOG(FATAL) << "Thread exception: " << e.what();
     }

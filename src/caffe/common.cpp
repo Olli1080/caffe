@@ -1,8 +1,9 @@
-#include <boost/thread.hpp>
-#include <glog/logging.h>
 #include <cmath>
 #include <cstdio>
 #include <ctime>
+#include <random>
+
+#include <glog/logging.h>
 
 #include "caffe/common.hpp"
 #include "caffe/util/rng.hpp"
@@ -10,35 +11,15 @@
 namespace caffe {
 
 // Make sure each thread can have different values.
-static boost::thread_specific_ptr<Caffe> thread_instance_;
+thread_local std::unique_ptr<Caffe> thread_instance_;
+std::random_device rd;
 
 Caffe& Caffe::Get() {
-  if (!thread_instance_.get()) {
+  if (!thread_instance_) {
     thread_instance_.reset(new Caffe());
   }
-  return *(thread_instance_.get());
+  return *thread_instance_;
 }
-
-// random seeding
-int64_t cluster_seedgen(void) {
-  int64_t s, seed, pid; //TODO::replace with std random generator
-  FILE* f = std::fopen("/dev/urandom", "rb");
-  if (f && std::fread(&seed, 1, sizeof(seed), f) == sizeof(seed)) {
-    std::fclose(f);
-    return seed;
-  }
-
-  LOG(INFO) << "System entropy source not available, "
-              "using fallback algorithm to generate seed instead.";
-  if (f)
-    std::fclose(f);
-
-  pid = _getpid();
-  s = std::time(NULL);
-  seed = std::abs(((s * 181) * ((pid - 83) * 359)) % 104729);
-  return seed;
-}
-
 
 void GlobalInit(int* pargc, char*** pargv) {
   // Google flags.
@@ -105,7 +86,7 @@ void* Caffe::RNG::generator() {
 #else  // Normal GPU + CPU Caffe.
 
 Caffe::Caffe()
-    : cublas_handle_(NULL), curand_generator_(NULL), random_generator_(),
+    : cublas_handle_(nullptr), curand_generator_(nullptr), random_generator_(),
     mode_(Caffe::CPU),
     solver_count_(1), solver_rank_(0), multiprocess_(false) {
   // Try to create a cublas handler, and report an error if failed (but we will
@@ -116,7 +97,7 @@ Caffe::Caffe()
   // Try to create a curand handler.
   if (curandCreateGenerator(&curand_generator_, CURAND_RNG_PSEUDO_DEFAULT)
       != CURAND_STATUS_SUCCESS ||
-      curandSetPseudoRandomGeneratorSeed(curand_generator_, cluster_seedgen())
+      curandSetPseudoRandomGeneratorSeed(curand_generator_, rd())
       != CURAND_STATUS_SUCCESS) {
     LOG(ERROR) << "Cannot create Curand generator. Curand won't be available.";
   }
@@ -164,7 +145,7 @@ void Caffe::SetDevice(const int device_id) {
   CURAND_CHECK(curandCreateGenerator(&Get().curand_generator_,
       CURAND_RNG_PSEUDO_DEFAULT));
   CURAND_CHECK(curandSetPseudoRandomGeneratorSeed(Get().curand_generator_,
-      cluster_seedgen()));
+      rd()));
 }
 
 void Caffe::DeviceQuery() {
@@ -217,7 +198,7 @@ bool Caffe::CheckDevice(const int device_id) {
   // the permission. cudaFree(0) is one of those with no side effect,
   // except the context initialization.
   bool r = ((cudaSuccess == cudaSetDevice(device_id)) &&
-            (cudaSuccess == cudaFree(0)));
+            (cudaSuccess == cudaFree(nullptr)));
   // reset any error that may have occurred.
   cudaGetLastError();
   return r;
@@ -238,7 +219,7 @@ int Caffe::FindDevice(const int start_id) {
 
 class Caffe::RNG::Generator {
  public:
-  Generator() : rng_(new caffe::rng_t(cluster_seedgen())) {}
+  Generator() : rng_(new caffe::rng_t(rd())) {}
   explicit Generator(unsigned int seed) : rng_(new caffe::rng_t(seed)) {}
   caffe::rng_t* rng() { return rng_.get(); }
  private:
@@ -254,7 +235,7 @@ Caffe::RNG& Caffe::RNG::operator=(const RNG& other) {
   return *this;
 }
 
-void* Caffe::RNG::generator() {
+void* Caffe::RNG::generator() const {
   return static_cast<void*>(generator_->rng());
 }
 

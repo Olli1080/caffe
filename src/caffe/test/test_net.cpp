@@ -32,11 +32,11 @@ class NetTest : public MultiDeviceTest<TypeParam> {
 
   virtual void InitNetFromProtoFileWithState(const string& proto,
       Phase phase = caffe::TRAIN, const int level = 0,
-      const vector<string>* stages = NULL) {
+      const vector<string>* stages = nullptr) {
     NetParameter param;
     CHECK(google::protobuf::TextFormat::ParseFromString(proto, &param));
-    string param_file;
-    MakeTempFilename(&param_file);
+    TemporaryDirectory temporary_directory;
+    string param_file = temporary_directory.get_temp_filename().string();
     WriteProtoToTextFile(param, param_file);
     net_.reset(new Net<Dtype>(param_file, phase, level, stages));
   }
@@ -204,7 +204,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
     InitNetFromProtoString(proto);
   }
 
-  virtual void InitTrickyNet(Dtype* loss_weight = NULL) {
+  virtual void InitTrickyNet(Dtype* loss_weight = nullptr) {
     ostringstream loss_weight_stream;
     if (loss_weight) {
       loss_weight_stream << "  loss_weight: " << *loss_weight << " ";
@@ -295,8 +295,8 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   // midnet_loss_weight is the loss weight for the first 'InnerProduct' layer
   // output.  Should both default to 0.0 if unspecified (i.e., if NULL is
   // passed to this function).
-  virtual void InitUnsharedWeightsNet(const Dtype* loss_weight = NULL,
-      const Dtype* midnet_loss_weight = NULL,
+  virtual void InitUnsharedWeightsNet(const Dtype* loss_weight = nullptr,
+      const Dtype* midnet_loss_weight = nullptr,
       const bool force_backward = false, const bool bias_term = false,
       const Dtype blobs_lr_w1 = 1, const Dtype blobs_lr_b1 = 2,
       const Dtype blobs_lr_w2 = 1, const Dtype blobs_lr_b2 = 2) {
@@ -784,7 +784,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   }
 
   virtual void InitAllInOneNet(Phase phase = caffe::TRAIN,
-      const int level = 0, const vector<string>* stages = NULL) {
+      const int level = 0, const vector<string>* stages = nullptr) {
     string proto =
       "name: 'All-in-one Network'"
       "layer { "
@@ -1345,8 +1345,8 @@ TYPED_TEST(NetTest, TestSharedWeightsResume) {
 TYPED_TEST(NetTest, TestParamPropagateDown) {
   typedef typename TypeParam::Dtype Dtype;
   const bool kBiasTerm = true, kForceBackward = false;
-  const Dtype* kLossWeight1 = NULL;
-  const Dtype* kLossWeight2 = NULL;
+  const Dtype* kLossWeight1 = nullptr;
+  const Dtype* kLossWeight2 = nullptr;
 
   // Run the net with all params learned; check that gradients are non-zero.
   Caffe::set_random_seed(this->seed_);

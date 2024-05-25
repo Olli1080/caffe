@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
+#include <memory>
 
-#include "boost/scoped_ptr.hpp"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
 

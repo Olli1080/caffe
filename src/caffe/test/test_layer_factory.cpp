@@ -1,7 +1,6 @@
 #include <map>
 #include <string>
 
-#include "boost/scoped_ptr.hpp"
 #include "gtest/gtest.h"
 
 #include "caffe/common.hpp"
@@ -24,13 +23,12 @@ TYPED_TEST(LayerFactoryTest, TestCreateLayer) {
   typename LayerRegistry<Dtype>::CreatorRegistry& registry =
       LayerRegistry<Dtype>::Registry();
   shared_ptr<Layer<Dtype> > layer;
-  for (typename LayerRegistry<Dtype>::CreatorRegistry::iterator iter =
-       registry.begin(); iter != registry.end(); ++iter) {
+  for (const auto& [type, value] : registry) {
     // Special case: PythonLayer is checked by pytest
-    if (iter->first == "Python") { continue; }
+    if (type == "Python") { continue; }
     LayerParameter layer_param;
     // Data layers expect a DB
-    if (iter->first == "Data") {
+    if (type == "Data") {
 #ifdef USE_LEVELDB
       string tmp;
       MakeTempDir(&tmp);
@@ -42,9 +40,9 @@ TYPED_TEST(LayerFactoryTest, TestCreateLayer) {
       continue;
 #endif  // USE_LEVELDB
     }
-    layer_param.set_type(iter->first);
+    layer_param.set_type(type);
     layer = LayerRegistry<Dtype>::CreateLayer(layer_param);
-    EXPECT_EQ(iter->first, layer->type());
+    EXPECT_EQ(type, layer->type());
   }
 }
 

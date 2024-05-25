@@ -1,7 +1,7 @@
 #include <map>
 #include <string>
+#include <memory>
 
-#include "boost/scoped_ptr.hpp"
 #include "google/protobuf/text_format.h"
 #include "gtest/gtest.h"
 
@@ -39,11 +39,10 @@ TYPED_TEST(SolverFactoryTest, TestCreateSolver) {
       SolverRegistry<Dtype>::Registry();
   shared_ptr<Solver<Dtype> > solver;
   SolverParameter solver_param = this->simple_solver_param();
-  for (typename SolverRegistry<Dtype>::CreatorRegistry::iterator iter =
-       registry.begin(); iter != registry.end(); ++iter) {
-    solver_param.set_type(iter->first);
+  for (const auto& [type, value] : registry) {
+    solver_param.set_type(type);
     solver.reset(SolverRegistry<Dtype>::CreateSolver(solver_param));
-    EXPECT_EQ(iter->first, solver->type());
+    EXPECT_EQ(type, solver->type());
   }
 }
 

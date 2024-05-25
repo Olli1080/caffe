@@ -3,22 +3,16 @@
 
 #include "caffe/common.hpp"
 
-/**
- Forward declare boost::thread instead of including boost/thread.hpp
- to avoid a boost/NVCC issues (#1009, #1010) on OSX.
- */
-namespace boost { class thread; }
-
 namespace caffe {
 
 /**
- * Virtual class encapsulate boost::thread for use in base class
+ * Virtual class encapsulate std::thread for use in base class
  * The child class will acquire the ability to run a single thread,
  * by reimplementing the virtual function InternalThreadEntry.
  */
 class InternalThread {
  public:
-  InternalThread() : thread_() {}
+  InternalThread() = default;
   virtual ~InternalThread();
 
   /**
@@ -31,7 +25,7 @@ class InternalThread {
   /** Will not return until the internal thread has exited. */
   void StopInternalThread();
 
-  bool is_started() const;
+  [[nodiscard]] bool is_started() const;
 
  protected:
   /* Implement this method in your subclass
@@ -39,13 +33,14 @@ class InternalThread {
   virtual void InternalThreadEntry() {}
 
   /* Should be tested when running loops to exit when requested. */
-  bool must_stop();
+  [[nodiscard]] bool must_stop() const;
 
  private:
-  void entry(int device, Caffe::Brew mode, int rand_seed,
+  void entry(int device, Caffe::Brew mode, unsigned int rand_seed,
       int solver_count, int solver_rank, bool multiprocess);
 
-  shared_ptr<boost::thread> thread_;
+  shared_ptr<std::thread> thread_;
+  bool stop_requested = false;
 };
 
 }  // namespace caffe

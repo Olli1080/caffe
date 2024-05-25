@@ -4,15 +4,6 @@ set(Caffe_INCLUDE_DIRS "")
 set(Caffe_DEFINITIONS "")
 set(Caffe_COMPILE_OPTIONS "")
 
-# ---[ Boost
-find_package(Boost 1.80 REQUIRED COMPONENTS system thread filesystem)
-list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Boost_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${Boost_LIBRARIES})
-
-# ---[ Threads
-#find_package(Threads REQUIRED)
-#list(APPEND Caffe_LINKER_LIBS PRIVATE ${CMAKE_THREAD_LIBS_INIT})
-
 # ---[ OpenMP
 if(USE_OPENMP)
   # Ideally, this should be provided by the BLAS library IMPORTED target. However,

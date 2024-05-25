@@ -1,7 +1,6 @@
 #ifndef CAFFE_COMMON_HPP_
 #define CAFFE_COMMON_HPP_
 
-#include <boost/shared_ptr.hpp>
 #include <gflags/gflags.h>
 #include <glog/logging.h>
 
@@ -147,60 +146,63 @@ class Caffe {
 
   // This random number generator facade hides boost and CUDA rng
   // implementation from one another (for cross-platform compatibility).
+  
   class RNG {
+    
    public:
     RNG();
     explicit RNG(unsigned int seed);
     explicit RNG(const RNG&);
     RNG& operator=(const RNG&);
-    void* generator();
+    [[nodiscard]] void* generator() const;
    private:
     class Generator;
     shared_ptr<Generator> generator_;
   };
 
   // Getters for boost rng, curand, and cublas handles
-  inline static RNG& rng_stream() {
+  static RNG& rng_stream() {
     if (!Get().random_generator_) {
       Get().random_generator_.reset(new RNG());
     }
     return *(Get().random_generator_);
   }
 #ifndef CPU_ONLY
-  inline static cublasHandle_t cublas_handle() { return Get().cublas_handle_; }
-  inline static curandGenerator_t curand_generator() {
+  static cublasHandle_t cublas_handle() { return Get().cublas_handle_; }
+
+  static curandGenerator_t curand_generator() {
     return Get().curand_generator_;
   }
 #endif
 
   // Returns the mode: running on CPU or GPU.
-  inline static Brew mode() { return Get().mode_; }
+  static Brew mode() { return Get().mode_; }
   // The setters for the variables
   // Sets the mode. It is recommended that you don't change the mode halfway
   // into the program since that may cause allocation of pinned memory being
   // freed in a non-pinned way, which may cause problems - I haven't verified
   // it personally but better to note it here in the header file.
-  inline static void set_mode(Brew mode) { Get().mode_ = mode; }
+  static void set_mode(Brew mode) { Get().mode_ = mode; }
   // Sets the random seed of both boost and curand
-  static void set_random_seed(const unsigned int seed);
+  static void set_random_seed(unsigned int seed);
   // Sets the device. Since we have cublas and curand stuff, set device also
   // requires us to reset those values.
-  static void SetDevice(const int device_id);
+  static void SetDevice(int device_id);
   // Prints the current GPU status.
   static void DeviceQuery();
   // Check if specified device is available
-  static bool CheckDevice(const int device_id);
+  static bool CheckDevice(int device_id);
   // Search from start_id to the highest possible device ordinal,
   // return the ordinal of the first available device.
-  static int FindDevice(const int start_id = 0);
+  static int FindDevice(int start_id = 0);
   // Parallel training
-  inline static int solver_count() { return Get().solver_count_; }
-  inline static void set_solver_count(int val) { Get().solver_count_ = val; }
-  inline static int solver_rank() { return Get().solver_rank_; }
-  inline static void set_solver_rank(int val) { Get().solver_rank_ = val; }
-  inline static bool multiprocess() { return Get().multiprocess_; }
-  inline static void set_multiprocess(bool val) { Get().multiprocess_ = val; }
-  inline static bool root_solver() { return Get().solver_rank_ == 0; }
+  static int solver_count() { return Get().solver_count_; }
+  static void set_solver_count(int val) { Get().solver_count_ = val; }
+  static int solver_rank() { return Get().solver_rank_; }
+  static void set_solver_rank(int val) { Get().solver_rank_ = val; }
+  static bool multiprocess() { return Get().multiprocess_; }
+  static void set_multiprocess(bool val) { Get().multiprocess_ = val; }
+  static bool root_solver() { return Get().solver_rank_ == 0; }
 
  protected:
 #ifndef CPU_ONLY

@@ -1,10 +1,11 @@
 #ifndef CAFFE_UTIL_IO_H_
 #define CAFFE_UTIL_IO_H_
 
-#include <boost/filesystem.hpp>
+#include <filesystem>
 #include <iomanip>
 #include <iostream>  // NOLINT(readability/streams)
 #include <string>
+#include <random>
 
 #include "google/protobuf/message.h"
 
@@ -19,35 +20,46 @@
 namespace caffe {
 
 using ::google::protobuf::Message;
-using ::boost::filesystem::path;
 
-inline void MakeTempDir(string* temp_dirname) {
-  temp_dirname->clear();
-  const path& model =
-    boost::filesystem::temp_directory_path()/"caffe_test.%%%%-%%%%";
-  for ( int i = 0; i < CAFFE_TMP_DIR_RETRIES; i++ ) {
-    const path& dir = boost::filesystem::unique_path(model).string();
-    bool done = boost::filesystem::create_directory(dir);
-    if ( done ) {
-      *temp_dirname = dir.string();
-      return;
+class TemporaryDirectory
+{
+public:
+  TemporaryDirectory()
+  {
+    const auto model = std::filesystem::temp_directory_path();
+    for (int i = 0; i < CAFFE_TMP_DIR_RETRIES; i++) {
+      const auto dir = model / ("caffe_test-" + std::to_string(rd_()));
+      if (std::filesystem::create_directory(dir)) {
+        path_ = dir;
+      }
     }
+    LOG(FATAL) << "Failed to create a temporary directory.";
   }
-  LOG(FATAL) << "Failed to create a temporary directory.";
-}
 
-inline void MakeTempFilename(string* temp_filename) {
-  static path temp_files_subpath;
-  static uint64_t next_temp_file = 0;
-  temp_filename->clear();
-  if ( temp_files_subpath.empty() ) {
-    string path_string="";
-    MakeTempDir(&path_string);
-    temp_files_subpath = path_string;
+  ~TemporaryDirectory()
+  {
+    if (!path_.empty())
+	  std::filesystem::remove_all(path_);
   }
-  *temp_filename =
-    (temp_files_subpath/caffe::format_int(static_cast<int>(next_temp_file++), 9)).string();
-}
+
+  [[nodiscard]] const std::filesystem::path& get_path() const
+  {
+    return path_;
+  }
+
+  [[nodiscard]] std::filesystem::path get_temp_filename() const
+  {
+    if (!path_.empty())
+      return path_ / caffe::format_int(static_cast<int>(next_temp_file_++), 9);
+    return {};
+  }
+
+private:
+
+    std::filesystem::path path_;
+    static std::random_device rd_;
+    mutable uint64_t next_temp_file_ = 0;
+};
 
 bool ReadProtoFromTextFile(const char* filename, Message* proto);
 

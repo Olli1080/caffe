@@ -1,12 +1,10 @@
-#include <boost/date_time/posix_time/posix_time.hpp>
-
 #include "caffe/common.hpp"
 #include "caffe/util/benchmark.hpp"
 
 namespace caffe {
 
 Timer::Timer()
-    : initted_(false),
+    : initialized_(false),
       running_(false),
       has_run_at_least_once_(false) {
   Init();
@@ -27,12 +25,12 @@ void Timer::Start() {
   if (!running()) {
     if (Caffe::mode() == Caffe::GPU) {
 #ifndef CPU_ONLY
-      CUDA_CHECK(cudaEventRecord(start_gpu_, 0));
+      CUDA_CHECK(cudaEventRecord(start_gpu_, nullptr));
 #else
       NO_GPU;
 #endif
     } else {
-      start_cpu_ = boost::posix_time::microsec_clock::local_time();
+      start_cpu_ = std::chrono::high_resolution_clock::now();
     }
     running_ = true;
     has_run_at_least_once_ = true;
@@ -43,12 +41,12 @@ void Timer::Stop() {
   if (running()) {
     if (Caffe::mode() == Caffe::GPU) {
 #ifndef CPU_ONLY
-      CUDA_CHECK(cudaEventRecord(stop_gpu_, 0));
+      CUDA_CHECK(cudaEventRecord(stop_gpu_, nullptr));
 #else
       NO_GPU;
 #endif
     } else {
-      stop_cpu_ = boost::posix_time::microsec_clock::local_time();
+      stop_cpu_ = std::chrono::high_resolution_clock::now();
     }
     running_ = false;
   }
@@ -65,18 +63,19 @@ float Timer::MicroSeconds() {
   }
   if (Caffe::mode() == Caffe::GPU) {
 #ifndef CPU_ONLY
+  	float elapsed_milliseconds;
     CUDA_CHECK(cudaEventSynchronize(stop_gpu_));
-    CUDA_CHECK(cudaEventElapsedTime(&elapsed_milliseconds_, start_gpu_,
+    CUDA_CHECK(cudaEventElapsedTime(&elapsed_milliseconds, start_gpu_,
                                     stop_gpu_));
-    // Cuda only measure milliseconds
-    elapsed_microseconds_ = elapsed_milliseconds_ * 1000;
+    // Cuda only measure milliseconds with resolution of 0.5 microseconds
+    elapsed_time_ = std::chrono::duration<float, std::ratio<1, 5000000>>(elapsed_milliseconds);
 #else
       NO_GPU;
 #endif
   } else {
-    elapsed_microseconds_ = static_cast<float>((stop_cpu_ - start_cpu_).total_microseconds());
+    elapsed_time_ = stop_cpu_ - start_cpu_;
   }
-  return elapsed_microseconds_;
+  return std::chrono::duration<float, std::micro>(elapsed_time_).count();
 }
 
 float Timer::MilliSeconds() {
@@ -89,24 +88,26 @@ float Timer::MilliSeconds() {
   }
   if (Caffe::mode() == Caffe::GPU) {
 #ifndef CPU_ONLY
+    float elapsed_milliseconds;
     CUDA_CHECK(cudaEventSynchronize(stop_gpu_));
-    CUDA_CHECK(cudaEventElapsedTime(&elapsed_milliseconds_, start_gpu_,
+    CUDA_CHECK(cudaEventElapsedTime(&elapsed_milliseconds, start_gpu_,
                                     stop_gpu_));
+    elapsed_time_ = std::chrono::duration<float, std::ratio<1, 5000000>>(elapsed_milliseconds);
 #else
       NO_GPU;
 #endif
   } else {
-    elapsed_milliseconds_ = static_cast<float>((stop_cpu_ - start_cpu_).total_milliseconds());
+  	elapsed_time_ = stop_cpu_ - start_cpu_;
   }
-  return elapsed_milliseconds_;
+  return std::chrono::duration<float, std::milli>(elapsed_time_).count();
 }
 
 float Timer::Seconds() {
-  return MilliSeconds() / 1000.f;
+  return elapsed_time_.count();
 }
 
 void Timer::Init() {
-  if (!initted()) {
+  if (!initialized()) {
     if (Caffe::mode() == Caffe::GPU) {
 #ifndef CPU_ONLY
       CUDA_CHECK(cudaEventCreate(&start_gpu_));
@@ -115,19 +116,19 @@ void Timer::Init() {
       NO_GPU;
 #endif
     }
-    initted_ = true;
+    initialized_ = true;
   }
 }
 
 CPUTimer::CPUTimer() {
-  this->initted_ = true;
+  this->initialized_ = true;
   this->running_ = false;
   this->has_run_at_least_once_ = false;
 }
 
 void CPUTimer::Start() {
   if (!running()) {
-    this->start_cpu_ = boost::posix_time::microsec_clock::local_time();
+    this->start_cpu_ = std::chrono::high_resolution_clock::now();
     this->running_ = true;
     this->has_run_at_least_once_ = true;
   }
@@ -135,7 +136,7 @@ void CPUTimer::Start() {
 
 void CPUTimer::Stop() {
   if (running()) {
-    this->stop_cpu_ = boost::posix_time::microsec_clock::local_time();
+    this->stop_cpu_ = std::chrono::high_resolution_clock::now();
     this->running_ = false;
   }
 }
@@ -148,9 +149,8 @@ float CPUTimer::MilliSeconds() {
   if (running()) {
     Stop();
   }
-  this->elapsed_milliseconds_ = static_cast<float>((this->stop_cpu_ -
-                                this->start_cpu_).total_milliseconds());
-  return this->elapsed_milliseconds_;
+  elapsed_time_ = stop_cpu_ - start_cpu_;
+  return std::chrono::duration<float, std::milli>(elapsed_time_).count();
 }
 
 float CPUTimer::MicroSeconds() {
@@ -161,9 +161,8 @@ float CPUTimer::MicroSeconds() {
   if (running()) {
     Stop();
   }
-  this->elapsed_microseconds_ = static_cast<float>((this->stop_cpu_ -
-                                this->start_cpu_).total_microseconds());
-  return this->elapsed_microseconds_;
+  elapsed_time_ = stop_cpu_ - start_cpu_;
+  return std::chrono::duration<float, std::micro>(elapsed_time_).count();
 }
 
 }  // namespace caffe

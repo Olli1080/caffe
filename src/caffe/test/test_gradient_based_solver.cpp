@@ -34,7 +34,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     delete input_file_;
   }
 
-  string snapshot_prefix_;
+  //string snapshot_prefix_;
   shared_ptr<SGDSolver<Dtype> > solver_;
 #ifdef USE_NCCL
   shared_ptr<NCCL<Dtype> > nccl_;
@@ -72,7 +72,7 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
   string RunLeastSquaresSolver(const Dtype learning_rate,
       const Dtype weight_decay, const Dtype momentum, const int num_iters,
       const int iter_size = 1, const int devices = 1,
-      const bool snapshot = false, const char* from_snapshot = NULL) {
+      const bool snapshot = false, const char* from_snapshot = nullptr) {
     ostringstream proto;
     int device_id = 0;
 #ifndef CPU_ONLY
@@ -179,7 +179,8 @@ class GradientBasedSolverTest : public MultiDeviceTest<TypeParam> {
     if (momentum != 0) {
       proto << "momentum: " << momentum << " ";
     }
-    MakeTempDir(&snapshot_prefix_);
+    TemporaryDirectory temporary_directory;
+    const auto& snapshot_prefix_ = temporary_directory.get_path();
     proto << "snapshot_prefix: '" << snapshot_prefix_ << "/' ";
     if (snapshot) {
       proto << "snapshot: " << num_iters << " ";

@@ -2,8 +2,6 @@
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/text_format.h>
 
-#include <boost/filesystem.hpp>
-
 #include <map>
 #include <string>
 
@@ -1101,15 +1099,13 @@ bool UpgradeSolverAsNeeded(const string& param_file, SolverParameter* param) {
 // or is set to directory
 void UpgradeSnapshotPrefixProperty(const string& param_file,
                                    SolverParameter* param) {
-  using boost::filesystem::path;
-  using boost::filesystem::is_directory;
   if (!param->has_snapshot_prefix()) {
-    param->set_snapshot_prefix(path(param_file).replace_extension().string());
+    param->set_snapshot_prefix(std::filesystem::path(param_file).replace_extension().string());
     LOG(INFO) << "snapshot_prefix was not specified and is set to "
                 + param->snapshot_prefix();
-  } else if (is_directory(param->snapshot_prefix())) {
-    param->set_snapshot_prefix((path(param->snapshot_prefix()) /
-                               path(param_file).stem()).string());
+  } else if (std::filesystem::is_directory(param->snapshot_prefix())) {
+    param->set_snapshot_prefix((std::filesystem::path(param->snapshot_prefix()) /
+                               std::filesystem::path(param_file).stem()).string());
     LOG(INFO) << "snapshot_prefix was a directory and is replaced to "
                 + param->snapshot_prefix();
   }

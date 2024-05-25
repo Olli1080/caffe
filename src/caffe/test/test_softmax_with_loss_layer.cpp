@@ -1,7 +1,7 @@
 #include <cmath>
 #include <vector>
+#include <memory>
 
-#include "boost/scoped_ptr.hpp"
 #include "gtest/gtest.h"
 
 #include "caffe/blob.hpp"
@@ -11,8 +11,6 @@
 
 #include "caffe/test/test_caffe_main.hpp"
 #include "caffe/test/test_gradient_check_util.hpp"
-
-using boost::scoped_ptr;
 
 namespace caffe {
 
@@ -66,8 +64,7 @@ TYPED_TEST(SoftmaxWithLossLayerTest, TestForwardIgnoreLabel) {
   LayerParameter layer_param;
   layer_param.mutable_loss_param()->set_normalize(false);
   // First, compute the loss with all labels
-  scoped_ptr<SoftmaxWithLossLayer<Dtype> > layer(
-      new SoftmaxWithLossLayer<Dtype>(layer_param));
+  auto layer = std::make_unique<SoftmaxWithLossLayer<Dtype>>(layer_param);
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
   Dtype full_loss = this->blob_top_loss_->cpu_data()[0];
@@ -75,7 +72,7 @@ TYPED_TEST(SoftmaxWithLossLayerTest, TestForwardIgnoreLabel) {
   Dtype accum_loss = 0;
   for (int label = 0; label < 5; ++label) {
     layer_param.mutable_loss_param()->set_ignore_label(label);
-    layer.reset(new SoftmaxWithLossLayer<Dtype>(layer_param));
+    layer = std::make_unique<SoftmaxWithLossLayer<Dtype>>(layer_param);
     layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
     layer->Forward(this->blob_bottom_vec_, this->blob_top_vec_);
     accum_loss += this->blob_top_loss_->cpu_data()[0];

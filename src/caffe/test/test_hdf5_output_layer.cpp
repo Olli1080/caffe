@@ -28,7 +28,7 @@ class HDF5OutputLayerTest : public MultiDeviceTest<TypeParam> {
         channels_(8),
         height_(5),
         width_(5) {
-    MakeTempFilename(&output_file_name_);
+      output_file_name_ = temporary_directory_.get_temp_filename().string();
   }
 
   virtual ~HDF5OutputLayerTest() {
@@ -39,6 +39,7 @@ class HDF5OutputLayerTest : public MultiDeviceTest<TypeParam> {
   void CheckBlobEqual(const Blob<Dtype>& b1, const Blob<Dtype>& b2);
 
   string output_file_name_;
+  TemporaryDirectory temporary_directory_;
   string input_file_name_;
   Blob<Dtype>* const blob_data_;
   Blob<Dtype>* const blob_label_;

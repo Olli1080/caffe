@@ -76,7 +76,7 @@ Classifier::Classifier(const string& model_file,
   CHECK(labels) << "Unable to open labels file " << label_file;
   string line;
   while (std::getline(labels, line))
-    labels_.push_back(string(line));
+    labels_.emplace_back(line);
 
   Blob<float>* output_layer = net_->output_blobs()[0];
   CHECK_EQ(labels_.size(), output_layer->channels())
@@ -92,8 +92,8 @@ static bool PairCompare(const std::pair<float, int>& lhs,
 static std::vector<int> Argmax(const std::vector<float>& v, int N) {
   std::vector<std::pair<float, int> > pairs;
   for (size_t i = 0; i < v.size(); ++i)
-    pairs.push_back(std::make_pair(v[i], i));
-  std::partial_sort(pairs.begin(), pairs.begin() + N, pairs.end(), PairCompare);
+    pairs.emplace_back(v[i], static_cast<int>(i));
+  std::ranges::partial_sort(pairs, pairs.begin() + N, PairCompare);
 
   std::vector<int> result;
   for (int i = 0; i < N; ++i)
@@ -110,7 +110,7 @@ std::vector<Prediction> Classifier::Classify(const cv::Mat& img, int N) {
   std::vector<Prediction> predictions;
   for (int i = 0; i < N; ++i) {
     int idx = maxN[i];
-    predictions.push_back(std::make_pair(labels_[idx], output[idx]));
+    predictions.emplace_back(labels_[idx], output[idx]);
   }
 
   return predictions;
@@ -165,7 +165,7 @@ std::vector<float> Classifier::Predict(const cv::Mat& img) {
   Blob<float>* output_layer = net_->output_blobs()[0];
   const float* begin = output_layer->cpu_data();
   const float* end = begin + output_layer->channels();
-  return std::vector<float>(begin, end);
+  return std::vector(begin, end);
 }
 
 /* Wrap the input layer of the network in separate cv::Mat objects
@@ -252,10 +252,10 @@ int main(int argc, char** argv) {
   std::vector<Prediction> predictions = classifier.Classify(img);
 
   /* Print the top N predictions. */
-  for (size_t i = 0; i < predictions.size(); ++i) {
-    Prediction p = predictions[i];
-    std::cout << std::fixed << std::setprecision(4) << p.second << " - \""
-              << p.first << "\"" << std::endl;
+  for (auto [fst, snd] : predictions)
+  {
+	  std::cout << std::fixed << std::setprecision(4) << snd << " - \""
+              << fst << "\"" << std::endl;
   }
 }
 #else

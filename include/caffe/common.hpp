@@ -147,7 +147,7 @@ class CAFFE_EXPORT Caffe {
   // This random number generator facade hides boost and CUDA rng
   // implementation from one another (for cross-platform compatibility).
   
-  class RNG {
+  class CAFFE_EXPORT RNG {
     
    public:
     RNG();

@@ -37,17 +37,13 @@ find_package(Protobuf REQUIRED)
 list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${Protobuf_INCLUDE_DIRS})
 list(APPEND Caffe_LINKER_LIBS PUBLIC ${Protobuf_LIBRARIES})
 
-# ---[ HDF5
-find_package(HDF5 COMPONENTS HL REQUIRED)
-list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${HDF5_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-
 # This code is taken from https://github.com/sh1r0/caffe-android-lib
 if(USE_HDF5)
   find_package(HDF5 COMPONENTS HL REQUIRED)
-  include_directories(SYSTEM ${HDF5_INCLUDE_DIRS} ${HDF5_HL_INCLUDE_DIR})
+  list(APPEND Caffe_INCLUDE_DIRS PUBLIC ${HDF5_INCLUDE_DIRS})
+  #include_directories(SYSTEM ${HDF5_INCLUDE_DIRS} ${HDF5_HL_INCLUDE_DIR})
   list(APPEND Caffe_LINKER_LIBS ${HDF5_LIBRARIES} ${HDF5_HL_LIBRARIES})
-  add_definitions(-DUSE_HDF5)
+  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_HDF5 ${HDF5_DEFINITIONS})
 endif()
 
 # ---[ LMDB
@@ -103,7 +99,7 @@ if(USE_NCCL)
   find_package(NCCL REQUIRED)
   include_directories(SYSTEM ${NCCL_INCLUDE_DIR})
   list(APPEND Caffe_LINKER_LIBS ${NCCL_LIBRARIES})
-  add_definitions(-DUSE_NCCL)
+  list(APPEND Caffe_DEFINITIONS PUBLIC -DUSE_NCCL)
 endif()
 
 # ---[ OpenCV
@@ -174,7 +170,7 @@ endif()
 
 # ---[ Matlab
 if(BUILD_matlab)
-  find_package(MatlabMex)
+  find_package(MatlabMex REQUIRED)
   if(MATLABMEX_FOUND)
     set(HAVE_MATLAB TRUE)
   endif()

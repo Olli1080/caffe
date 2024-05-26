@@ -9,9 +9,9 @@
 #endif
 
 namespace {
-  static volatile sig_atomic_t got_sigint = false;
-  static volatile sig_atomic_t got_sighup = false;
-  static bool already_hooked_up = false;
+  volatile sig_atomic_t got_sigint = false;
+  volatile sig_atomic_t got_sighup = false;
+  bool already_hooked_up = false;
 
   void handle_signal(int signal) {
     switch (signal) {

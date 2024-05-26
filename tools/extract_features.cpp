@@ -1,7 +1,7 @@
 #include <string>
 #include <vector>
+#include <ranges>
 
-#include "boost/algorithm/string.hpp"
 #include "google/protobuf/text_format.h"
 
 #include "caffe/blob.hpp"
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
 template<typename Dtype>
 int feature_extraction_pipeline(int argc, char** argv) {
   ::google::InitGoogleLogging(argv[0]);
-  const int num_required_args = 7;
+  constexpr int num_required_args = 7;
   if (argc < num_required_args) {
     LOG(ERROR)<<
     "This program takes in a trained network and an input data layer, and then"
@@ -94,18 +94,20 @@ int feature_extraction_pipeline(int argc, char** argv) {
    }
    */
   std::string feature_extraction_proto(argv[++arg_pos]);
-  boost::shared_ptr<Net<Dtype> > feature_extraction_net(
+  std::shared_ptr<Net<Dtype> > feature_extraction_net(
       new Net<Dtype>(feature_extraction_proto, caffe::TEST));
   feature_extraction_net->CopyTrainedLayersFrom(pretrained_binary_proto);
 
   std::string extract_feature_blob_names(argv[++arg_pos]);
   std::vector<std::string> blob_names;
-  boost::split(blob_names, extract_feature_blob_names, boost::is_any_of(","));
+  for (const auto word : extract_feature_blob_names | std::views::split(','))
+      blob_names.emplace_back(word.begin(), word.end());
 
   std::string save_feature_dataset_names(argv[++arg_pos]);
   std::vector<std::string> dataset_names;
-  boost::split(dataset_names, save_feature_dataset_names,
-               boost::is_any_of(","));
+  for (const auto word : save_feature_dataset_names | std::views::split(','))
+      dataset_names.emplace_back(word.begin(), word.end());
+
   CHECK_EQ(blob_names.size(), dataset_names.size()) <<
       " the number of blob names and dataset names must be equal";
   size_t num_features = blob_names.size();
@@ -116,17 +118,17 @@ int feature_extraction_pipeline(int argc, char** argv) {
         << " in the network " << feature_extraction_proto;
   }
 
-  int num_mini_batches = atoi(argv[++arg_pos]);
+  int num_mini_batches = std::atoi(argv[++arg_pos]);
 
-  std::vector<boost::shared_ptr<db::DB> > feature_dbs;
-  std::vector<boost::shared_ptr<db::Transaction> > txns;
+  std::vector<std::shared_ptr<db::DB> > feature_dbs;
+  std::vector<std::shared_ptr<db::Transaction> > txns;
   const char* db_type = argv[++arg_pos];
   for (size_t i = 0; i < num_features; ++i) {
     LOG(INFO)<< "Opening dataset " << dataset_names[i];
-    boost::shared_ptr<db::DB> db(db::GetDB(db_type));
-    db->Open(dataset_names.at(i), db::NEW);
+    std::shared_ptr<db::DB> db(db::GetDB(db_type));
+    db->Open(dataset_names[i], db::NEW);
     feature_dbs.push_back(db);
-    boost::shared_ptr<db::Transaction> txn(db->NewTransaction());
+    std::shared_ptr<db::Transaction> txn(db->NewTransaction());
     txns.push_back(txn);
   }
 
@@ -137,7 +139,7 @@ int feature_extraction_pipeline(int argc, char** argv) {
   for (int batch_index = 0; batch_index < num_mini_batches; ++batch_index) {
     feature_extraction_net->Forward();
     for (int i = 0; i < num_features; ++i) {
-      const boost::shared_ptr<Blob<Dtype> > feature_blob =
+      const std::shared_ptr<Blob<Dtype> > feature_blob =
         feature_extraction_net->blob_by_name(blob_names[i]);
       int batch_size = feature_blob->num();
       int dim_features = feature_blob->count() / batch_size;

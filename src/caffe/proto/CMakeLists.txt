@@ -4,13 +4,12 @@ protobuf_generate_python(proto_python ${proto_files})
 
 SET_SOURCE_FILES_PROPERTIES(${proto_srcs} ${proto_hdrs} PROPERTIES GENERATED TRUE)
 
-add_custom_target(generate_proto ALL DEPENDS ${proto_srcs} ${proto_hdrs} ${proto_python})
+add_custom_target(generate_proto DEPENDS ${proto_srcs} ${proto_hdrs})
 add_custom_command(TARGET generate_proto POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/include/caffe/proto/"
     COMMAND ${CMAKE_COMMAND} -E copy ${proto_hdrs} "${PROJECT_BINARY_DIR}/include/caffe/proto/"
     COMMAND ${CMAKE_COMMAND} -E make_directory "${Caffe_INCLUDE_DIR}/caffe/proto/"
     COMMAND ${CMAKE_COMMAND} -E copy ${proto_hdrs} "${Caffe_INCLUDE_DIR}/caffe/proto/"
-    #COMMAND ${CMAKE_COMMAND} -E rm ${proto_hdrs}
     COMMENT "Copied Generated Files"
 )
 

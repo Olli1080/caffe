@@ -93,6 +93,9 @@ if(MSVC)
   install(FILES ${caffe_additional_hdr} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/caffe)
 endif()
 
-file(WRITE ${PROJECT_BINARY_DIR}/__init__.py)
-list(APPEND proto_python ${PROJECT_BINARY_DIR}/__init__.py)
-install(PROGRAMS ${proto_python} DESTINATION python/caffe/proto)
+if(BUILD_python)
+  file(WRITE ${PROJECT_BINARY_DIR}/__init__.py)
+  list(APPEND proto_python ${PROJECT_BINARY_DIR}/__init__.py)
+  install(PROGRAMS ${proto_python} DESTINATION python/caffe/proto)
+endif()
+  

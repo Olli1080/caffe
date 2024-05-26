@@ -1,6 +1,8 @@
 file(GLOB proto_files *.proto)
 protobuf_generate_cpp(proto_srcs proto_hdrs EXPORT_MACRO CAFFE_EXPORT ${proto_files})
-protobuf_generate_python(proto_python ${proto_files})
+if(BUILD_python)
+    protobuf_generate_python(proto_python ${proto_files})
+endif()
 
 SET_SOURCE_FILES_PROPERTIES(${proto_srcs} ${proto_hdrs} PROPERTIES GENERATED TRUE)
 

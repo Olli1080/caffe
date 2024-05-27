@@ -3,10 +3,9 @@
 
 #ifdef USE_NCCL
 
-#include <boost/thread.hpp>
-
 #include <string>
 #include <vector>
+#include <barrier>
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
@@ -79,8 +78,8 @@ class NCCL : public GPUParams<Dtype>,
   NCCL(shared_ptr<Solver<Dtype> > solver, const string& uid);
   ~NCCL();
 
-  boost::barrier* barrier();
-  void set_barrier(boost::barrier* value);
+  std::barrier* barrier();
+  void set_barrier(std::barrier* value);
 
   /**
    * In single process settings, create instances without uids and
@@ -111,7 +110,7 @@ class NCCL : public GPUParams<Dtype>,
 
   shared_ptr<Solver<Dtype> > solver_;
   // Should not be necessary, https://github.com/NVIDIA/nccl/issues/37
-  boost::barrier* barrier_;
+  std::barrier* barrier_;
   using Params<Dtype>::size_;
   using Params<Dtype>::data_;
   using Params<Dtype>::diff_;

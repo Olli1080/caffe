@@ -154,11 +154,11 @@ NCCL<Dtype>::~NCCL() {
 }
 
 template<typename Dtype>
-boost::barrier* NCCL<Dtype>::barrier() {
+std::barrier* NCCL<Dtype>::barrier() {
   return barrier_;
 }
 template<typename Dtype>
-void NCCL<Dtype>::set_barrier(boost::barrier* value) {
+void NCCL<Dtype>::set_barrier(std::barrier* value) {
   barrier_ = value;
 }
 
@@ -259,7 +259,7 @@ template<typename Dtype>
 class Worker : public InternalThread {
  public:
   explicit Worker(shared_ptr<Solver<Dtype> > rank0, int device,
-                  boost::barrier* barrier, vector<NCCL<Dtype>*>* nccls,
+                  std::barrier* barrier, vector<NCCL<Dtype>*>* nccls,
                   const char* restore)
     : rank0_(rank0), device_(device), barrier_(barrier),
       nccls_(nccls), restore_(restore) {
@@ -319,14 +319,14 @@ class Worker : public InternalThread {
 
   shared_ptr<Solver<Dtype> > rank0_;
   int device_;
-  boost::barrier* barrier_;
+  std::barrier* barrier_;
   vector<NCCL<Dtype>*>* nccls_;
   const char* restore_;
 };
 
 template<typename Dtype>
 void NCCL<Dtype>::Run(const vector<int>& gpus, const char* restore) {
-  boost::barrier barrier(static_cast<int>(gpus.size()));
+  std::barrier barrier(static_cast<int>(gpus.size()));
   vector<NCCL<Dtype>*> nccls(gpus.size());
   // Create workers
   vector<shared_ptr<Worker<Dtype> > > workers(gpus.size());

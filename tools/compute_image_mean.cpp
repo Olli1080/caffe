@@ -3,8 +3,8 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <memory>
 
-#include "boost/scoped_ptr.hpp"
 #include "gflags/gflags.h"
 #include "glog/logging.h"
 
@@ -16,7 +16,6 @@ using namespace caffe;  // NOLINT(build/namespaces)
 
 using std::max;
 using std::pair;
-using boost::scoped_ptr;
 
 DEFINE_string(backend, "lmdb",
         "The backend {leveldb, lmdb} containing the images");
@@ -43,9 +42,9 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  scoped_ptr<db::DB> db(db::GetDB(FLAGS_backend));
+  std::unique_ptr<db::DB> db(db::GetDB(FLAGS_backend));
   db->Open(argv[1], db::READ);
-  scoped_ptr<db::Cursor> cursor(db->NewCursor());
+  std::unique_ptr<db::Cursor> cursor(db->NewCursor());
 
   BlobProto sum_blob;
   int count = 0;

@@ -10,9 +10,7 @@
 #ifdef USE_ACCELERATE
 #include <Accelerate/Accelerate.h>
 #else
-extern "C" {
-#include <cblas.h>
-}
+#include <openblas/cblas.h>
 #endif  // USE_ACCELERATE
 
 #include <math.h>

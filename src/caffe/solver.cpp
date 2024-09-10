@@ -2,8 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <ranges>
 
-#include "boost/algorithm/string.hpp"
 #include "caffe/solver.hpp"
 #include "caffe/util/format.hpp"
 #include "caffe/util/hdf5.hpp"
@@ -11,6 +11,21 @@
 #include "caffe/util/upgrade_proto.hpp"
 
 namespace caffe {
+
+std::string trim(const std::string& s)
+{
+    auto start = s.begin();
+    while (start != s.end() && std::isspace(*start)) {
+        ++start;
+    }
+
+    auto end = s.end();
+    do {
+        --end;
+    } while (std::distance(start, end) > 0 && std::isspace(*end));
+
+    return { start, end + 1 };
+}
 
 template<typename Dtype>
 void Solver<Dtype>::SetActionFunction(ActionCallback func) {
@@ -66,12 +81,11 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
 template <typename Dtype>
 void LoadNetWeights(shared_ptr<Net<Dtype> > net,
     const std::string& model_list) {
-  std::vector<std::string> model_names;
-  boost::split(model_names, model_list, boost::is_any_of(","));
-  for (int i = 0; i < model_names.size(); ++i) {
-    boost::trim(model_names[i]);
-    LOG(INFO) << "Finetuning from " << model_names[i];
-    net->CopyTrainedLayersFrom(model_names[i]);
+  for (const auto& word : std::views::split(model_list, ","))
+  {
+      const std::string trimmed = trim(std::string(word.data(), word.size()));
+      LOG(INFO) << "Finetuning from " << trimmed;
+      net->CopyTrainedLayersFrom(trimmed);
   }
 }
 

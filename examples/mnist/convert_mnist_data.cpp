@@ -21,8 +21,8 @@
 
 #include <fstream>  // NOLINT(readability/streams)
 #include <string>
+#include <memory>
 
-#include "boost/scoped_ptr.hpp"
 #include "caffe/proto/caffe.pb.h"
 #include "caffe/util/db.hpp"
 #include "caffe/util/format.hpp"
@@ -30,7 +30,6 @@
 #if defined(USE_LEVELDB) && defined(USE_LMDB)
 
 using namespace caffe;  // NOLINT(build/namespaces)
-using boost::scoped_ptr;
 using std::string;
 
 DEFINE_string(backend, "lmdb", "The backend for storing the result");
@@ -71,9 +70,9 @@ void convert_dataset(const char* image_filename, const char* label_filename,
   cols = swap_endian(cols);
 
 
-  scoped_ptr<db::DB> db(db::GetDB(db_backend));
+  std::unique_ptr<db::DB> db(db::GetDB(db_backend));
   db->Open(db_path, db::NEW);
-  scoped_ptr<db::Transaction> txn(db->NewTransaction());
+  std::unique_ptr<db::Transaction> txn(db->NewTransaction());
 
   // Storing to db
   char label;

@@ -53,7 +53,6 @@ caffe_option(USE_HDF5 "Build with hdf5" ON)
 # ---[ Dependencies
 include(cmake/Dependencies.cmake)
 
-set(CMAKE_CXX_STANDARD 20)
 #set(MSVC_TOOLSET_VERSION 143)
 # ---[ Flags
 if(UNIX OR APPLE)

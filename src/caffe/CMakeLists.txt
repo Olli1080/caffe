@@ -36,6 +36,7 @@ set(Caffe_EXPORT_DEFINITIONS PRIVATE ${Caffe_EXPORT_DEFINITION}
 # include python files either to force generation
 # make caffeproto an object library so the symbols get exported on windows
 add_library(caffeproto OBJECT ${proto_hdrs} ${proto_srcs} ${proto_python})
+target_compile_features(caffeproto PUBLIC cxx_std_20)
 caffe_default_properties(caffeproto)
 target_include_directories(caffeproto PUBLIC ${Protobuf_INCLUDE_DIRS})
 target_compile_definitions(caffeproto ${Caffe_EXPORT_DEFINITIONS}
@@ -54,6 +55,7 @@ if(MSVC)
   list(APPEND Caffe_DEFINITIONS PUBLIC -DNO_STRICT)
 endif()
 add_library(caffe ${srcs} $<TARGET_OBJECTS:caffeproto>)
+target_compile_features(caffe PUBLIC cxx_std_20)
 caffe_default_properties(caffe)
 target_link_libraries(caffe ${Caffe_LINKER_LIBS})
 target_include_directories(caffe ${Caffe_INCLUDE_DIRS}

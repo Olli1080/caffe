@@ -6,6 +6,7 @@ endif()
 file(GLOB_RECURSE python_srcs ${PROJECT_SOURCE_DIR}/python/*.cpp)
 
 add_library(pycaffe ${python_srcs})
+target_compile_features(pycaffe PUBLIC cxx_std_20)
 add_dependencies(pycaffe generate_proto)
 caffe_default_properties(pycaffe)
 set_target_properties(pycaffe PROPERTIES PREFIX "" OUTPUT_NAME "_caffe")

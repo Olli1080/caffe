@@ -16,25 +16,24 @@
 #   Caffe_HAVE_CUDA    - signals about CUDA support
 #   Caffe_HAVE_CUDNN   - signals about cuDNN support
 
+include(CMakeFindDependencyMacro)
 
-# OpenCV dependency (optional)
+find_dependency(glog)
+find_dependency(gflags)
+find_dependency(Protobuf)
+find_dependency(BLAS)
+
+if(NOT @CPU_ONLY@)
+  find_dependency(CUDAToolkit)
+  find_dependency(CUDNN)
+endif()
 
 if(@USE_OPENCV@)
-  if(NOT OpenCV_FOUND)
-    set(Caffe_OpenCV_CONFIG_PATH "@OpenCV_CONFIG_PATH@")
-    if(Caffe_OpenCV_CONFIG_PATH)
-      get_filename_component(Caffe_OpenCV_CONFIG_PATH ${Caffe_OpenCV_CONFIG_PATH} ABSOLUTE)
+  find_dependency(OpenCV)
+endif()
 
-      if(EXISTS ${Caffe_OpenCV_CONFIG_PATH} AND NOT TARGET opencv_core)
-        message(STATUS "Caffe: using OpenCV config from ${Caffe_OpenCV_CONFIG_PATH}")
-	include(${Caffe_OpenCV_CONFIG_PATH}/OpenCVConfig.cmake)
-      endif()
-
-    else()
-      find_package(OpenCV REQUIRED)
-    endif()
-    unset(Caffe_OpenCV_CONFIG_PATH)
-  endif()
+if(@USE_HDF5@)
+  find_dependency(HDF5)
 endif()
 
 # Compute paths

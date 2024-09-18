@@ -35,7 +35,7 @@ list(APPEND Caffe_LINKER_LIBS PUBLIC gflags::gflags)
 # ---[ Google-protobuf
 find_package(Protobuf REQUIRED)
 #list(APPEND Caffe_INCLUDE_DIRS PRIVATE ${Protobuf_INCLUDE_DIRS})
-list(APPEND Caffe_LINKER_LIBS PUBLIC ${Protobuf_LIBRARIES})
+list(APPEND Caffe_LINKER_LIBS PUBLIC protobuf::libprotobuf)
 
 # This code is taken from https://github.com/sh1r0/caffe-android-lib
 if(USE_HDF5)

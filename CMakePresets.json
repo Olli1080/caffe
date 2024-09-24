@@ -7,7 +7,7 @@
         "architecture": "x64",
         "binaryDir": "${sourceDir}/build",
         "cacheVariables": {
-          "CMAKE_TOOLCHAIN_FILE": "C:/vcpkgs/vcpkg_18_05_2024/scripts/buildsystems/vcpkg.cmake",
+          "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
           "CMAKE_BUILD_TYPE": "Debug"
         }
       }

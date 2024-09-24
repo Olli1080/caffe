@@ -1,0 +1,19 @@
+diff --git a/absl/container/internal/raw_hash_map.h b/absl/container/internal/raw_hash_map.h
+index 464bf23..6ba2a6f 100644
+--- a/absl/container/internal/raw_hash_map.h
++++ b/absl/container/internal/raw_hash_map.h
+@@ -36,12 +36,12 @@ class raw_hash_map : public raw_hash_set<Policy, Hash, Eq, Alloc> {
+   // MappedReference<> may be a non-reference type.
+   template <class P>
+   using MappedReference = decltype(P::value(
+-      std::addressof(std::declval<typename raw_hash_map::reference>())));
++      std::addressof(std::declval<typename raw_hash_set<Policy, Hash, Eq, Alloc>::reference>())));
+ 
+   // MappedConstReference<> may be a non-reference type.
+   template <class P>
+   using MappedConstReference = decltype(P::value(
+-      std::addressof(std::declval<typename raw_hash_map::const_reference>())));
++      std::addressof(std::declval<typename raw_hash_set<Policy, Hash, Eq, Alloc>::const_reference>())));
+ 
+   using KeyArgImpl =
+       KeyArg<IsTransparent<Eq>::value && IsTransparent<Hash>::value>;

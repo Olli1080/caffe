@@ -81,7 +81,7 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
 template <typename Dtype>
 void LoadNetWeights(shared_ptr<Net<Dtype> > net,
     const std::string& model_list) {
-  for (const auto& word : std::views::split(model_list, ","))
+  for (const auto& word : std::views::split(model_list, ','))
   {
       const std::string trimmed = trim(std::string(word.data(), word.size()));
       LOG(INFO) << "Finetuning from " << trimmed;

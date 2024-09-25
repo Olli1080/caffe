@@ -230,8 +230,9 @@ void CuDNNConvolutionLayer<Dtype>::Reshape(
   // planning strategy and a rewrite of Caffe's GPU memory mangagement
   size_t workspace_limit_bytes = 8*1024*1024;
 
-  bool select_algo = !shapes_ready_ 
-	  	     || cudnn_shape_ != bottom[0]->shape();
+  bool select_algo = !shapes_ready_
+                     || !cudnn::areConvShapesCompatible(
+                             cudnn_shape_, bottom[0]->shape());
    
   for (int i = 0; i < bottom.size(); i++) {
     cudnn::setTensor4dDesc<Dtype>(&bottom_descs_[i],

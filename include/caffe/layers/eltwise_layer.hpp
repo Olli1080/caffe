@@ -49,8 +49,10 @@ class EltwiseLayer : public Layer<Dtype> {
 
 private:
 
+#ifndef CPU_ONLY
     void forward_kernel(int count, const Dtype* bottom_data_a, const Dtype* bottom_data_b, int blob_idx, Dtype* top_data, int* mask);
     void backward_kernel(int count, const Dtype* top_diff, const int blob_idx, const int* mask, Dtype* bottom_diff);
+#endif
 };
 
 }  // namespace caffe

@@ -1,3 +1,5 @@
+#include "caffe/common.hpp"
+
 #include <cmath>
 #include <cstdio>
 #include <ctime>
@@ -5,7 +7,6 @@
 
 #include <glog/logging.h>
 
-#include "caffe/common.hpp"
 #include "caffe/util/rng.hpp"
 
 namespace caffe {
@@ -36,7 +37,7 @@ Caffe::Caffe()
     : random_generator_(), mode_(Caffe::CPU),
       solver_count_(1), solver_rank_(0), multiprocess_(false) { }
 
-Caffe::~Caffe() { }
+Caffe::~Caffe() = default;
 
 void Caffe::set_random_seed(const unsigned int seed) {
   // RNG seed
@@ -63,7 +64,7 @@ int Caffe::FindDevice(const int start_id) {
 
 class Caffe::RNG::Generator {
  public:
-  Generator() : rng_(new caffe::rng_t(static_cast<uint32_t>(cluster_seedgen()))) {}
+  Generator() : rng_(new caffe::rng_t(static_cast<uint32_t>(rd()))) {}
   explicit Generator(unsigned int seed) : rng_(new caffe::rng_t(seed)) {}
   caffe::rng_t* rng() { return rng_.get(); }
  private:
@@ -79,7 +80,7 @@ Caffe::RNG& Caffe::RNG::operator=(const RNG& other) {
   return *this;
 }
 
-void* Caffe::RNG::generator() {
+void* Caffe::RNG::generator() const {
   return static_cast<void*>(generator_->rng());
 }
 

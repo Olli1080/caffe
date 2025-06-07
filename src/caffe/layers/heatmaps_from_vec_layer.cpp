@@ -1,6 +1,8 @@
+#include "caffe/layers/heatmaps_from_vec_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/heatmaps_from_vec_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 

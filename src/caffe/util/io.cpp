@@ -1,5 +1,6 @@
 #include "caffe/util/io.hpp"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstdio>
 
@@ -135,8 +136,8 @@ static bool matchExt(const std::string & fn,
                      std::string en) {
   size_t p = fn.rfind('.');
   std::string ext = p != fn.npos ? fn.substr(p+1) : fn;
-  std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-  std::transform(en.begin(), en.end(), en.begin(), ::tolower);
+  std::ranges::transform(ext, ext.begin(), ::tolower);
+  std::ranges::transform(en, en.begin(), ::tolower);
   if ( ext == en )
     return true;
   if ( en == "jpg" && ext == "jpeg" )
@@ -149,13 +150,13 @@ bool ReadImageToDatum(const string& filename, const int label,
     const std::string & encoding, Datum* datum) {
   cv::Mat cv_img = ReadImageToCVMat(filename, height, width, is_color);
   if (cv_img.data) {
-    if (encoding.size()) {
+    if (!encoding.empty()) {
       if ( (cv_img.channels() == 3) == is_color && !height && !width &&
           matchExt(filename, encoding) )
         return ReadFileToDatum(filename, label, datum);
       std::vector<uchar> buf;
       cv::imencode("."+encoding, cv_img, buf);
-      datum->set_data(std::string(reinterpret_cast<char*>(&buf[0]),
+      datum->set_data(std::string(reinterpret_cast<char*>(buf.data()),
                       buf.size()));
       datum->set_label(label);
       datum->set_encoded(true);
@@ -190,24 +191,22 @@ bool ReadFileToDatum(const string& filename, const int label,
 
 #ifdef USE_OPENCV
 cv::Mat DecodeDatumToCVMatNative(const Datum& datum) {
-  cv::Mat cv_img;
-  CHECK(datum.encoded()) << "Datum not encoded";
+	CHECK(datum.encoded()) << "Datum not encoded";
   const string& data = datum.data();
   std::vector<char> vec_data(data.c_str(), data.c_str() + data.size());
-  cv_img = cv::imdecode(vec_data, -1);
+  cv::Mat cv_img = cv::imdecode(vec_data, -1);
   if (!cv_img.data) {
     LOG(ERROR) << "Could not decode datum ";
   }
   return cv_img;
 }
 cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color) {
-  cv::Mat cv_img;
-  CHECK(datum.encoded()) << "Datum not encoded";
+	CHECK(datum.encoded()) << "Datum not encoded";
   const string& data = datum.data();
   std::vector<char> vec_data(data.c_str(), data.c_str() + data.size());
   int cv_read_flag = (is_color ? cv::IMREAD_COLOR :
     cv::IMREAD_GRAYSCALE);
-  cv_img = cv::imdecode(vec_data, cv_read_flag);
+  cv::Mat cv_img = cv::imdecode(vec_data, cv_read_flag);
   if (!cv_img.data) {
     LOG(ERROR) << "Could not decode datum ";
   }

@@ -1,21 +1,24 @@
+#include "caffe/layers/accuracy_layer.hpp"
+
 #include <functional>
 #include <utility>
 #include <vector>
 
-#include "caffe/layers/accuracy_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void AccuracyLayer<Dtype>::LayerSetUp(
   const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  top_k_ = this->layer_param_.accuracy_param().top_k();
+  top_k_ = this->layer_param_->accuracy_param().top_k();
 
   has_ignore_label_ =
-    this->layer_param_.accuracy_param().has_ignore_label();
+    this->layer_param_->accuracy_param().has_ignore_label();
   if (has_ignore_label_) {
-    ignore_label_ = this->layer_param_.accuracy_param().ignore_label();
+    ignore_label_ = this->layer_param_->accuracy_param().ignore_label();
   }
 }
 
@@ -25,7 +28,7 @@ void AccuracyLayer<Dtype>::Reshape(
   CHECK_LE(top_k_, bottom[0]->count() / bottom[1]->count())
       << "top_k must be less than or equal to the number of classes.";
   label_axis_ =
-      bottom[0]->CanonicalAxisIndex(this->layer_param_.accuracy_param().axis());
+      bottom[0]->CanonicalAxisIndex(this->layer_param_->accuracy_param().axis());
   outer_num_ = bottom[0]->count(0, label_axis_);
   inner_num_ = bottom[0]->count(label_axis_ + 1);
   CHECK_EQ(outer_num_ * inner_num_, bottom[1]->count())

@@ -1,16 +1,18 @@
+#include "caffe/layers/argmax_layer.hpp"
+
 #include <algorithm>
 #include <functional>
 #include <utility>
 #include <vector>
 
-#include "caffe/layers/argmax_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void ArgMaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const ArgMaxParameter& argmax_param = this->layer_param_.argmax_param();
+  const ArgMaxParameter& argmax_param = this->layer_param_->argmax_param();
   out_max_val_ = argmax_param.out_max_val();
   top_k_ = argmax_param.top_k();
   has_axis_ = argmax_param.has_axis();
@@ -33,7 +35,7 @@ template <typename Dtype>
 void ArgMaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   int num_top_axes = bottom[0]->num_axes();
-  if ( num_top_axes < 3 ) num_top_axes = 3;
+  num_top_axes = std::max(num_top_axes, 3);
   std::vector<int> shape(num_top_axes, 1);
   if (has_axis_) {
     // Produces max_ind or max_val per axis

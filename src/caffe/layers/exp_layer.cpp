@@ -1,7 +1,9 @@
+#include "caffe/layers/exp_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/exp_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -9,7 +11,7 @@ template <typename Dtype>
 void ExpLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
-  const Dtype base = this->layer_param_.exp_param().base();
+  const Dtype base = this->layer_param_->exp_param().base();
   if (base != Dtype(-1)) {
     CHECK_GT(base, 0) << "base must be strictly positive.";
   }
@@ -20,8 +22,8 @@ void ExpLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << "NaN result: log(base) = log(" << base << ") = " << log_base;
   CHECK(!isinf(log_base))
       << "Inf result: log(base) = log(" << base << ") = " << log_base;
-  const Dtype input_scale = this->layer_param_.exp_param().scale();
-  const Dtype input_shift = this->layer_param_.exp_param().shift();
+  const Dtype input_scale = this->layer_param_->exp_param().scale();
+  const Dtype input_shift = this->layer_param_->exp_param().shift();
   inner_scale_ = log_base * input_scale;
   outer_scale_ = (input_shift == Dtype(0)) ? Dtype(1) :
      ( (base != Dtype(-1)) ? pow(base, input_shift) : exp(input_shift) );

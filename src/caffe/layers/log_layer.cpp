@@ -1,7 +1,9 @@
+#include "caffe/layers/log_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/log_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -9,7 +11,7 @@ template <typename Dtype>
 void LogLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
-  const Dtype base = this->layer_param_.log_param().base();
+  const Dtype base = this->layer_param_->log_param().base();
   if (base != Dtype(-1)) {
     CHECK_GT(base, 0) << "base must be strictly positive.";
   }
@@ -25,8 +27,8 @@ void LogLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << "NaN result: 1/log(base) = 1/log(" << base << ") = " << base_scale_;
   CHECK(!isinf(base_scale_))
       << "Inf result: 1/log(base) = 1/log(" << base << ") = " << base_scale_;
-  input_scale_ = this->layer_param_.log_param().scale();
-  input_shift_ = this->layer_param_.log_param().shift();
+  input_scale_ = this->layer_param_->log_param().scale();
+  input_shift_ = this->layer_param_->log_param().shift();
   backward_num_scale_ = input_scale_ / log_base;
 }
 

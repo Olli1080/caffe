@@ -10,11 +10,14 @@
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	class NetStateRule;
+	class NetState;
+	class NetParameter;
 
-/**
+	/**
  * @brief Connects Layer%s together into a directed acyclic graph (DAG)
  *        specified by a NetParameter.
  *
@@ -24,8 +27,8 @@ template <typename Dtype>
 class CAFFE_EXPORT Net {
  public:
   explicit Net(const NetParameter& param);
-  explicit Net(const string& param_file, Phase phase,
-		int level = 0, const vector<string>* stages = nullptr);
+  explicit Net(const std::string& param_file, Phase phase,
+		int level = 0, const std::vector<std::string>* stages = nullptr);
   virtual ~Net() = default;
 
   /// @brief Initialize a network with a NetParameter.
@@ -249,24 +252,24 @@ class CAFFE_EXPORT Net {
     friend class Net;
   };
 
-  [[nodiscard]] const vector<Callback*>& before_forward() const { return before_forward_; }
+  [[nodiscard]] const std::vector<Callback*>& before_forward() const { return before_forward_; }
   void add_before_forward(Callback* value) {
-    before_forward_.push_back(value);
+    before_forward_.emplace_back(value);
   }
 
-  [[nodiscard]] const vector<Callback*>& after_forward() const { return after_forward_; }
+  [[nodiscard]] const std::vector<Callback*>& after_forward() const { return after_forward_; }
   void add_after_forward(Callback* value) {
-    after_forward_.push_back(value);
+    after_forward_.emplace_back(value);
   }
 
-  [[nodiscard]] const vector<Callback*>& before_backward() const { return before_backward_; }
+  [[nodiscard]] const std::vector<Callback*>& before_backward() const { return before_backward_; }
   void add_before_backward(Callback* value) {
-    before_backward_.push_back(value);
+    before_backward_.emplace_back(value);
   }
 
-  [[nodiscard]] const vector<Callback*>& after_backward() const { return after_backward_; }
+  [[nodiscard]] const std::vector<Callback*>& after_backward() const { return after_backward_; }
   void add_after_backward(Callback* value) {
-    after_backward_.push_back(value);
+    after_backward_.emplace_back(value);
   }
 
  protected:
@@ -291,44 +294,44 @@ class CAFFE_EXPORT Net {
   void UpdateDebugInfo(int param_id);
 
   /// @brief The network name
-  string name_;
+  std::string name_;
   /// @brief The phase: TRAIN or TEST
   Phase phase_;
   /// @brief Individual layers in the net
-  vector<shared_ptr<Layer<Dtype> > > layers_;
-  vector<string> layer_names_;
-  map<string, int> layer_names_index_;
-  vector<bool> layer_need_backward_;
+  std::vector<std::shared_ptr<Layer<Dtype> > > layers_;
+  std::vector<std::string> layer_names_;
+  std::map<std::string, int> layer_names_index_;
+  std::vector<bool> layer_need_backward_;
   /// @brief the blobs storing intermediate results between the layer.
-  vector<shared_ptr<Blob<Dtype> > > blobs_;
-  vector<string> blob_names_;
-  map<string, int> blob_names_index_;
-  vector<bool> blob_need_backward_;
+  std::vector<std::shared_ptr<Blob<Dtype> > > blobs_;
+  std::vector<std::string> blob_names_;
+  std::map<std::string, int> blob_names_index_;
+  std::vector<bool> blob_need_backward_;
   /// bottom_vecs stores the vectors containing the input for each layer.
   /// They don't actually host the blobs (blobs_ does), so we simply store
   /// pointers.
-  vector<vector<Blob<Dtype>*> > bottom_vecs_;
-  vector<vector<int> > bottom_id_vecs_;
-  vector<vector<bool> > bottom_need_backward_;
+  std::vector<std::vector<Blob<Dtype>*> > bottom_vecs_;
+  std::vector<std::vector<int> > bottom_id_vecs_;
+  std::vector<std::vector<bool> > bottom_need_backward_;
   /// top_vecs stores the vectors containing the output for each layer
-  vector<vector<Blob<Dtype>*> > top_vecs_;
-  vector<vector<int> > top_id_vecs_;
+  std::vector<std::vector<Blob<Dtype>*> > top_vecs_;
+  std::vector<std::vector<int> > top_id_vecs_;
   /// Vector of weight in the loss (or objective) function of each net blob,
   /// indexed by blob_id.
-  vector<Dtype> blob_loss_weights_;
-  vector<vector<int> > param_id_vecs_;
-  vector<int> param_owners_;
-  vector<string> param_display_names_;
-  vector<pair<int, int> > param_layer_indices_;
-  map<string, int> param_names_index_;
+  std::vector<Dtype> blob_loss_weights_;
+  std::vector<std::vector<int> > param_id_vecs_;
+  std::vector<int> param_owners_;
+  std::vector<std::string> param_display_names_;
+  std::vector<std::pair<int, int> > param_layer_indices_;
+  std::map<std::string, int> param_names_index_;
   /// blob indices for the input and the output of the net
-  vector<int> net_input_blob_indices_;
-  vector<int> net_output_blob_indices_;
-  vector<Blob<Dtype>*> net_input_blobs_;
-  vector<Blob<Dtype>*> net_output_blobs_;
+  std::vector<int> net_input_blob_indices_;
+  std::vector<int> net_output_blob_indices_;
+  std::vector<Blob<Dtype>*> net_input_blobs_;
+  std::vector<Blob<Dtype>*> net_output_blobs_;
   /// The parameters in the network.
-  vector<shared_ptr<Blob<Dtype> > > params_;
-  vector<Blob<Dtype>*> learnable_params_;
+  std::vector<std::shared_ptr<Blob<Dtype> > > params_;
+  std::vector<Blob<Dtype>*> learnable_params_;
   /**
    * The mapping from params_ -> learnable_params_: we have
    * learnable_param_ids_.size() == params_.size(),
@@ -336,22 +339,22 @@ class CAFFE_EXPORT Net {
    * if and only if params_[i] is an "owner"; otherwise, params_[i] is a sharer
    * and learnable_params_[learnable_param_ids_[i]] gives its owner.
    */
-  vector<int> learnable_param_ids_;
+  std::vector<int> learnable_param_ids_;
   /// the learning rate multipliers for learnable_params_
-  vector<float> params_lr_;
-  vector<bool> has_params_lr_;
+  std::vector<float> params_lr_;
+  std::vector<bool> has_params_lr_;
   /// the weight decay multipliers for learnable_params_
-  vector<float> params_weight_decay_;
-  vector<bool> has_params_decay_;
+  std::vector<float> params_weight_decay_;
+  std::vector<bool> has_params_decay_;
   /// The bytes of memory used by this net
   size_t memory_used_;
   /// Whether to compute and display debug info for the net.
   bool debug_info_;
   // Callbacks
-  vector<Callback*> before_forward_;
-  vector<Callback*> after_forward_;
-  vector<Callback*> before_backward_;
-  vector<Callback*> after_backward_;
+  std::vector<Callback*> before_forward_;
+  std::vector<Callback*> after_forward_;
+  std::vector<Callback*> before_backward_;
+  std::vector<Callback*> after_backward_;
 
 DISABLE_COPY_AND_ASSIGN(Net);
 };

@@ -1,10 +1,12 @@
+#include "caffe/layers/prelu_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
 #include "caffe/filler.hpp"
 
 #include "caffe/layers/neuron_layer.hpp"
-#include "caffe/layers/prelu_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 

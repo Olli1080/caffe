@@ -1,19 +1,22 @@
+#include "caffe/layers/embed_layer.hpp"
+
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/embed_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void EmbedLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  N_ = this->layer_param_.embed_param().num_output();
+  N_ = this->layer_param_->embed_param().num_output();
   CHECK_GT(N_, 0) << "EmbedLayer num_output must be positive.";
-  K_ = this->layer_param_.embed_param().input_dim();
+  K_ = this->layer_param_->embed_param().input_dim();
   CHECK_GT(K_, 0) << "EmbedLayer input_dim must be positive.";
-  bias_term_ = this->layer_param_.embed_param().bias_term();
+  bias_term_ = this->layer_param_->embed_param().bias_term();
   // Check if we need to set up the weights
   if (this->blobs_.size() > 0) {
     LOG(INFO) << "Skipping parameter initialization";
@@ -31,14 +34,14 @@ void EmbedLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
     // fill the weights
     shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
-        this->layer_param_.embed_param().weight_filler()));
+        this->layer_param_->embed_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
     // If necessary, initialize and fill the bias term
     if (bias_term_) {
       vector<int> bias_shape(1, N_);
       this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
       shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
-          this->layer_param_.embed_param().bias_filler()));
+          this->layer_param_->embed_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
     }
   }  // parameter initialization

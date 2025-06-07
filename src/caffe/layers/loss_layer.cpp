@@ -1,6 +1,8 @@
+#include "caffe/layers/loss_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/loss_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -8,8 +10,8 @@ template <typename Dtype>
 void LossLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   // LossLayers have a non-zero (1) loss by default.
-  if (this->layer_param_.loss_weight_size() == 0) {
-    this->layer_param_.add_loss_weight(Dtype(1));
+  if (this->layer_param_->loss_weight_size() == 0) {
+    this->layer_param_->add_loss_weight(Dtype(1));
   }
 }
 

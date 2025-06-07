@@ -1,12 +1,13 @@
-#include <cuda_runtime_api.h>  // CUDA's, not caffe's, for fabs, signbit
-#include <thrust/device_vector.h>
-#include <thrust/functional.h>  // thrust::plus
-#include <thrust/reduce.h>
+#include "caffe/util/math_functions.hpp"
+
+#include <cuda_runtime.h>  // CUDA's, not caffe's, for fabs, signbit
+//#include <thrust/device_vector.h>
+//#include <thrust/functional.h>  // thrust::plus
+//#include <thrust/reduce.h>
 
 #include <cmath>
 
 #include "caffe/common.hpp"
-#include "caffe/util/math_functions.hpp"
 
 namespace caffe {
 

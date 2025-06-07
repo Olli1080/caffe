@@ -5,11 +5,12 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	enum ReductionParameter_ReductionOp : int;
 
-/**
+	/**
  * @brief Compute "reductions" -- operations that return a scalar output Blob
  *        for an input Blob of arbitrary size, such as the sum, absolute sum,
  *        and sum of squares.

@@ -1,9 +1,10 @@
 // TODO (sergeyk): effect should not be dependent on phase. wasted memcpy.
+#include "caffe/layers/dropout_layer.hpp"
 
 #include <vector>
 
-#include "caffe/layers/dropout_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -11,7 +12,7 @@ template <typename Dtype>
 void DropoutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
-  threshold_ = this->layer_param_.dropout_param().dropout_ratio();
+  threshold_ = this->layer_param_->dropout_param().dropout_ratio();
   DCHECK(threshold_ > 0.);
   DCHECK(threshold_ < 1.);
   scale_ = static_cast<Dtype>(1. / (1. - threshold_));
@@ -68,7 +69,51 @@ void DropoutLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(DropoutLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(DropoutLayer);
+template <typename Dtype>
+void DropoutLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+    const int count = bottom[0]->count();
+    if (this->phase_ == TRAIN) {
+        unsigned int* mask =
+            static_cast<unsigned int*>(rand_vec_.mutable_gpu_data());
+        caffe_gpu_rng_uniform(count, mask);
+        // set thresholds
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        forward_kernel(count, bottom_data, mask, top_data);
+        CUDA_POST_KERNEL_CHECK;
+    }
+    else {
+        caffe_copy(count, bottom_data, top_data);
+    }
+}
+
+template <typename Dtype>
+void DropoutLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down,
+    const vector<Blob<Dtype>*>& bottom) {
+    if (propagate_down[0]) {
+        const Dtype* top_diff = top[0]->gpu_diff();
+        Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+        if (this->phase_ == TRAIN) {
+            const unsigned int* mask =
+                static_cast<const unsigned int*>(rand_vec_.gpu_data());
+            const int count = bottom[0]->count();
+            // NOLINT_NEXT_LINE(whitespace/operators)
+            backward_kernel(count, top_diff, mask, bottom_diff);
+            CUDA_POST_KERNEL_CHECK;
+        }
+        else {
+            caffe_copy(top[0]->count(), top_diff, bottom_diff);
+        }
+    }
+}
+extern template void DropoutLayer<float>::forward_kernel(int, const float*, unsigned int*, float*);
+extern template void DropoutLayer<double>::forward_kernel(int, const double*, unsigned int*, double*);
+
+extern template void DropoutLayer<float>::backward_kernel(int, const float*, const unsigned int*, float*);
+extern template void DropoutLayer<double>::backward_kernel(int, const double*, const unsigned int*, double*);
 #endif
 
 INSTANTIATE_CLASS(DropoutLayer);

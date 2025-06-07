@@ -5,11 +5,14 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	class Datum;
+	enum Phase : int;
+	class TransformationParameter;
 
-/**
+	/**
  * @brief Applies common transformations to the input data, such as
  * scaling, mirroring, substracting the image mean...
  */
@@ -17,7 +20,7 @@ template <typename Dtype>
 class DataTransformer {
  public:
   explicit DataTransformer(const TransformationParameter& param, Phase phase);
-  virtual ~DataTransformer() {}
+  virtual ~DataTransformer() = default;
 
   /**
    * @brief Initialize the Random number generations if needed by the
@@ -139,8 +142,8 @@ class DataTransformer {
   virtual int Rand(int n);
 
   void Transform(const Datum& datum, Dtype* transformed_data);
-  // Tranformation parameters
-  TransformationParameter param_;
+  // Transformation parameters
+  std::unique_ptr<TransformationParameter> param_;
 
 
   shared_ptr<Caffe::RNG> rng_;

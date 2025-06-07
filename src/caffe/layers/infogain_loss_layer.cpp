@@ -1,10 +1,12 @@
+#include "caffe/layers/infogain_loss_layer.hpp"
+
 #include <algorithm>
 #include <cmath>
 #include <vector>
 
-#include "caffe/layers/infogain_loss_layer.hpp"
 #include "caffe/util/io.hpp"  // for bolb reading of matrix H
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -13,9 +15,9 @@ void InfogainLossLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   // internal softmax layer
-  LayerParameter softmax_layer_param(this->layer_param_);
+  LayerParameter softmax_layer_param(*this->layer_param_);
   SoftmaxParameter* softmax_param = softmax_layer_param.mutable_softmax_param();
-  softmax_param->set_axis(this->layer_param_.infogain_loss_param().axis());
+  softmax_param->set_axis(this->layer_param_->infogain_loss_param().axis());
   softmax_layer_param.set_type("Softmax");
   softmax_layer_param.clear_loss_weight();
   softmax_layer_param.add_loss_weight(1);
@@ -28,21 +30,21 @@ void InfogainLossLayer<Dtype>::LayerSetUp(
 
   // ignore label
   has_ignore_label_ =
-    this->layer_param_.loss_param().has_ignore_label();
+    this->layer_param_->loss_param().has_ignore_label();
   if (has_ignore_label_) {
-    ignore_label_ = this->layer_param_.loss_param().ignore_label();
+    ignore_label_ = this->layer_param_->loss_param().ignore_label();
   }
   // normalization
-  CHECK(!this->layer_param_.loss_param().has_normalize())
+  CHECK(!this->layer_param_->loss_param().has_normalize())
     << "normalize is deprecated. use \"normalization\"";
-  normalization_ = this->layer_param_.loss_param().normalization();
+  normalization_ = this->layer_param_->loss_param().normalization();
   // matrix H
   if (bottom.size() < 3) {
-    CHECK(this->layer_param_.infogain_loss_param().has_source())
+    CHECK(this->layer_param_->infogain_loss_param().has_source())
         << "Infogain matrix source must be specified.";
     BlobProto blob_proto;
     ReadProtoFromBinaryFile(
-      this->layer_param_.infogain_loss_param().source(), &blob_proto);
+      this->layer_param_->infogain_loss_param().source(), &blob_proto);
     infogain_.FromProto(blob_proto);
   }
 }
@@ -54,7 +56,7 @@ void InfogainLossLayer<Dtype>::Reshape(
   softmax_layer_->Reshape(softmax_bottom_vec_, softmax_top_vec_);
   infogain_axis_ =
     bottom[0]->CanonicalAxisIndex(
-      this->layer_param_.infogain_loss_param().axis());
+      this->layer_param_->infogain_loss_param().axis());
   outer_num_ = bottom[0]->count(0, infogain_axis_);
   inner_num_ = bottom[0]->count(infogain_axis_ + 1);
   CHECK_EQ(outer_num_ * inner_num_, bottom[1]->count())
@@ -63,7 +65,7 @@ void InfogainLossLayer<Dtype>::Reshape(
       << "label count (number of labels) must be N*H*W, "
       << "with integer values in {0, 1, ..., C-1}.";
   num_labels_ = bottom[0]->shape(infogain_axis_);
-  Blob<Dtype>* infogain = NULL;
+  Blob<Dtype>* infogain = nullptr;
   if (bottom.size() < 3) {
     infogain = &infogain_;
   } else {
@@ -132,7 +134,7 @@ void InfogainLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   softmax_layer_->Forward(softmax_bottom_vec_, softmax_top_vec_);
   const Dtype* prob_data = prob_.cpu_data();
   const Dtype* bottom_label = bottom[1]->cpu_data();
-  const Dtype* infogain_mat = NULL;
+  const Dtype* infogain_mat = nullptr;
   if (bottom.size() < 3) {
     infogain_mat = infogain_.cpu_data();
   } else {
@@ -179,7 +181,7 @@ void InfogainLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   if (propagate_down[0]) {
     const Dtype* prob_data = prob_.cpu_data();
     const Dtype* bottom_label = bottom[1]->cpu_data();
-    const Dtype* infogain_mat = NULL;
+    const Dtype* infogain_mat = nullptr;
     if (bottom.size() < 3) {
       infogain_mat = infogain_.cpu_data();
     } else {

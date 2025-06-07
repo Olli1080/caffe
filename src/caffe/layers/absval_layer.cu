@@ -1,4 +1,4 @@
-#include <vector>
+/*#include <vector>
 
 #include "caffe/layers/absval_layer.hpp"
 #include "caffe/util/math_functions.hpp"
@@ -30,3 +30,4 @@ INSTANTIATE_LAYER_GPU_FUNCS(AbsValLayer);
 
 
 }  // namespace caffe
+*/

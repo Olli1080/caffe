@@ -5,14 +5,15 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/loss_layer.hpp"
 #include "caffe/layers/softmax_layer.hpp"
 
 namespace caffe {
+	enum LossParameter_NormalizationMode : int;
 
-/**
+	/**
  * @brief A generalization of SoftmaxWithLossLayer that takes an
  *        "information gain" (infogain) matrix specifying the "value" of all label
  *        pairs.

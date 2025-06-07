@@ -1,7 +1,9 @@
+#include "caffe/layers/sigmoid_layer.hpp"
+
 #include <cmath>
 #include <vector>
 
-#include "caffe/layers/sigmoid_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 

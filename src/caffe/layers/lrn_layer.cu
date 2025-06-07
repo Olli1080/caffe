@@ -1,6 +1,7 @@
+#include "caffe/layers/lrn_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/lrn_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
@@ -51,22 +52,6 @@ __global__ void LRNFillScale(const int nthreads, const Dtype* const in,
   }
 }
 
-
-template <typename Dtype>
-void LRNLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
-  switch (this->layer_param_.lrn_param().norm_region()) {
-  case LRNParameter_NormRegion_ACROSS_CHANNELS:
-    CrossChannelForward_gpu(bottom, top);
-    break;
-  case LRNParameter_NormRegion_WITHIN_CHANNEL:
-    WithinChannelForward(bottom, top);
-    break;
-  default:
-    LOG(FATAL) << "Unknown normalization region.";
-  }
-}
-
 // TODO: check if it would be faster to just put it into the previous kernel.
 template <typename Dtype>
 __global__ void LRNComputeOutput(const int nthreads, const Dtype* const in,
@@ -101,22 +86,6 @@ template void LRNLayer<float>::CrossChannelForward_gpu(
     const vector<Blob<float>*>& bottom, const vector<Blob<float>*>& top);
 template void LRNLayer<double>::CrossChannelForward_gpu(
     const vector<Blob<double>*>& bottom, const vector<Blob<double>*>& top);
-
-
-template <typename Dtype>
-void LRNLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  switch (this->layer_param_.lrn_param().norm_region()) {
-  case LRNParameter_NormRegion_ACROSS_CHANNELS:
-    CrossChannelBackward_gpu(top, propagate_down, bottom);
-    break;
-  case LRNParameter_NormRegion_WITHIN_CHANNEL:
-    WithinChannelBackward(top, propagate_down, bottom);
-    break;
-  default:
-    LOG(FATAL) << "Unknown normalization region.";
-  }
-}
 
 template <typename Dtype>
 __global__ void LRNComputeDiff(const int nthreads,
@@ -197,6 +166,6 @@ template void LRNLayer<double>::CrossChannelBackward_gpu(
 
 
 
-INSTANTIATE_LAYER_GPU_FUNCS(LRNLayer);
+//INSTANTIATE_LAYER_GPU_FUNCS(LRNLayer);
 
 }  // namespace caffe

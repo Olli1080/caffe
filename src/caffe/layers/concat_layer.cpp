@@ -1,14 +1,16 @@
+#include "caffe/layers/concat_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/concat_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const ConcatParameter& concat_param = this->layer_param_.concat_param();
+  const ConcatParameter& concat_param = this->layer_param_->concat_param();
   CHECK(!(concat_param.has_axis() && concat_param.has_concat_dim()))
       << "Either axis or concat_dim should be specified; not both.";
 }
@@ -17,7 +19,7 @@ template <typename Dtype>
 void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const int num_axes = bottom[0]->num_axes();
-  const ConcatParameter& concat_param = this->layer_param_.concat_param();
+  const ConcatParameter& concat_param = this->layer_param_->concat_param();
   if (concat_param.has_concat_dim()) {
     concat_axis_ = static_cast<int>(concat_param.concat_dim());
     // Don't allow negative indexing for concat_dim, a uint32 -- almost

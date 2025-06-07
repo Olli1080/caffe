@@ -3,20 +3,23 @@
 
 #include <string>
 
-#include "caffe/proto/caffe.pb.h"
-
 namespace caffe {
+	class SolverParameter;
+	enum V1LayerParameter_LayerType : int;
+	class LayerParameter;
+	class V1LayerParameter;
+	class NetParameter;
 
-// Return true iff the net is not the current version.
+	// Return true iff the net is not the current version.
 CAFFE_EXPORT bool NetNeedsUpgrade(const NetParameter& net_param);
 
 // Check for deprecations and upgrade the NetParameter as needed.
-CAFFE_EXPORT bool UpgradeNetAsNeeded(const string& param_file, NetParameter* param);
+CAFFE_EXPORT bool UpgradeNetAsNeeded(const std::string& param_file, NetParameter* param);
 
 // Read parameters from a file into a NetParameter proto message.
-CAFFE_EXPORT void ReadNetParamsFromTextFileOrDie(const string& param_file,
+CAFFE_EXPORT void ReadNetParamsFromTextFileOrDie(const std::string& param_file,
                                     NetParameter* param);
-CAFFE_EXPORT void ReadNetParamsFromBinaryFileOrDie(const string& param_file,
+CAFFE_EXPORT void ReadNetParamsFromBinaryFileOrDie(const std::string& param_file,
                                       NetParameter* param);
 
 // Return true iff any layer contains parameters specified using
@@ -38,7 +41,7 @@ CAFFE_EXPORT void UpgradeV0PaddingLayers(const NetParameter& param,
 CAFFE_EXPORT bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
                              V1LayerParameter* layer_param);
 
-CAFFE_EXPORT V1LayerParameter_LayerType UpgradeV0LayerType(const string& type);
+CAFFE_EXPORT V1LayerParameter_LayerType UpgradeV0LayerType(const std::string& type);
 
 // Return true iff any layer contains deprecated data transformation parameters.
 CAFFE_EXPORT bool NetNeedsDataUpgrade(const NetParameter& net_param);
@@ -77,10 +80,10 @@ CAFFE_EXPORT bool SolverNeedsTypeUpgrade(const SolverParameter& solver_param);
 CAFFE_EXPORT bool UpgradeSolverType(SolverParameter* solver_param);
 
 // Check for deprecations and upgrade the SolverParameter as needed.
-CAFFE_EXPORT bool UpgradeSolverAsNeeded(const string& param_file, SolverParameter* param);
+CAFFE_EXPORT bool UpgradeSolverAsNeeded(const std::string& param_file, SolverParameter* param);
 
 // Read parameters from a file into a SolverParameter proto message.
-CAFFE_EXPORT void ReadSolverParamsFromTextFileOrDie(const string& param_file,
+CAFFE_EXPORT void ReadSolverParamsFromTextFileOrDie(const std::string& param_file,
                                        SolverParameter* param);
 
 }  // namespace caffe

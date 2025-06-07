@@ -1,9 +1,11 @@
+#include "caffe/layers/softmax_loss_layer.hpp"
+
 #include <algorithm>
 #include <cfloat>
 #include <vector>
 
-#include "caffe/layers/softmax_loss_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -11,7 +13,7 @@ template <typename Dtype>
 void SoftmaxWithLossLayer<Dtype>::LayerSetUp(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
-  LayerParameter softmax_param(this->layer_param_);
+  LayerParameter softmax_param(*this->layer_param_);
   softmax_param.set_type("Softmax");
   softmax_layer_ = LayerRegistry<Dtype>::CreateLayer(softmax_param);
   softmax_bottom_vec_.clear();
@@ -21,17 +23,17 @@ void SoftmaxWithLossLayer<Dtype>::LayerSetUp(
   softmax_layer_->SetUp(softmax_bottom_vec_, softmax_top_vec_);
 
   has_ignore_label_ =
-    this->layer_param_.loss_param().has_ignore_label();
+    this->layer_param_->loss_param().has_ignore_label();
   if (has_ignore_label_) {
-    ignore_label_ = this->layer_param_.loss_param().ignore_label();
+    ignore_label_ = this->layer_param_->loss_param().ignore_label();
   }
-  if (!this->layer_param_.loss_param().has_normalization() &&
-      this->layer_param_.loss_param().has_normalize()) {
-    normalization_ = this->layer_param_.loss_param().normalize() ?
+  if (!this->layer_param_->loss_param().has_normalization() &&
+      this->layer_param_->loss_param().has_normalize()) {
+    normalization_ = this->layer_param_->loss_param().normalize() ?
                      LossParameter_NormalizationMode_VALID :
                      LossParameter_NormalizationMode_BATCH_SIZE;
   } else {
-    normalization_ = this->layer_param_.loss_param().normalization();
+    normalization_ = this->layer_param_->loss_param().normalization();
   }
 }
 
@@ -41,7 +43,7 @@ void SoftmaxWithLossLayer<Dtype>::Reshape(
   LossLayer<Dtype>::Reshape(bottom, top);
   softmax_layer_->Reshape(softmax_bottom_vec_, softmax_top_vec_);
   softmax_axis_ =
-      bottom[0]->CanonicalAxisIndex(this->layer_param_.softmax_param().axis());
+      bottom[0]->CanonicalAxisIndex(this->layer_param_->softmax_param().axis());
   outer_num_ = bottom[0]->count(0, softmax_axis_);
   inner_num_ = bottom[0]->count(softmax_axis_ + 1);
   CHECK_EQ(outer_num_ * inner_num_, bottom[1]->count())
@@ -151,7 +153,79 @@ void SoftmaxWithLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(SoftmaxWithLossLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(SoftmaxWithLossLayer);
+template <typename Dtype>
+void SoftmaxWithLossLayer<Dtype>::Forward_gpu(
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    softmax_layer_->Forward(softmax_bottom_vec_, softmax_top_vec_);
+    const Dtype* prob_data = prob_.gpu_data();
+    const Dtype* label = bottom[1]->gpu_data();
+    const int dim = prob_.count() / outer_num_;
+    const int nthreads = outer_num_ * inner_num_;
+    // Since this memory is not used for anything, we use it here to avoid having
+    // to allocate new GPU memory to accumulate intermediate results.
+    Dtype* loss_data = bottom[0]->mutable_gpu_diff();
+    // Similarly, this memory is never used elsewhere, and thus we can use it
+    // to avoid having to allocate additional GPU memory.
+    Dtype* counts = prob_.mutable_gpu_diff();
+    // NOLINT_NEXT_LINE(whitespace/operators)
+    forward_kernel(nthreads, prob_data, label, loss_data, dim, counts);
+    Dtype loss;
+    caffe_gpu_asum(nthreads, loss_data, &loss);
+    Dtype valid_count = -1;
+    // Only launch another CUDA kernel if we actually need the count of valid
+    // outputs.
+    if (normalization_ == LossParameter_NormalizationMode_VALID &&
+        has_ignore_label_) {
+        caffe_gpu_asum(nthreads, counts, &valid_count);
+    }
+    top[0]->mutable_cpu_data()[0] = loss / get_normalizer(normalization_,
+        valid_count);
+    if (top.size() == 2) {
+        top[1]->ShareData(prob_);
+    }
+
+    // Clear scratch memory to prevent interfering with backward (see #6202).
+    caffe_gpu_set(bottom[0]->count(), Dtype(0), bottom[0]->mutable_gpu_diff());
+}
+
+template <typename Dtype>
+void SoftmaxWithLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    if (propagate_down[1]) {
+        LOG(FATAL) << this->type()
+            << " Layer cannot backpropagate to label inputs.";
+    }
+    if (propagate_down[0]) {
+        Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+        const Dtype* prob_data = prob_.gpu_data();
+        const Dtype* top_data = top[0]->gpu_data();
+        caffe_gpu_memcpy(prob_.count() * sizeof(Dtype), prob_data, bottom_diff);
+        const Dtype* label = bottom[1]->gpu_data();
+        const int dim = prob_.count() / outer_num_;
+        const int nthreads = outer_num_ * inner_num_;
+        // Since this memory is never used for anything else,
+        // we use to to avoid allocating new GPU memory.
+        Dtype* counts = prob_.mutable_gpu_diff();
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        backward_kernel(nthreads, top_data, label, bottom_diff, dim, counts);
+
+        Dtype valid_count = -1;
+        // Only launch another CUDA kernel if we actually need the count of valid
+        // outputs.
+        if (normalization_ == LossParameter_NormalizationMode_VALID &&
+            has_ignore_label_) {
+            caffe_gpu_asum(nthreads, counts, &valid_count);
+        }
+        const Dtype loss_weight = top[0]->cpu_diff()[0] /
+            get_normalizer(normalization_, valid_count);
+        caffe_gpu_scal(prob_.count(), loss_weight, bottom_diff);
+    }
+}
+extern template void SoftmaxWithLossLayer<float>::forward_kernel(const int, const float*, const float*, float*, const int, float*);
+extern template void SoftmaxWithLossLayer<double>::forward_kernel(const int, const double*, const double*, double*, const int, double*);
+
+extern template void SoftmaxWithLossLayer<float>::backward_kernel(const int, const float*, const float*, float*, const int, float*);
+extern template void SoftmaxWithLossLayer<double>::backward_kernel(const int, const double*, const double*, double*, const int, double*);
 #endif
 
 INSTANTIATE_CLASS(SoftmaxWithLossLayer);

@@ -1,6 +1,8 @@
+#include "caffe/layers/threshold_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/threshold_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -8,7 +10,7 @@ template <typename Dtype>
 void ThresholdLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
-  threshold_ = this->layer_param_.threshold_param().threshold();
+  threshold_ = this->layer_param_->threshold_param().threshold();
 }
 
 template <typename Dtype>

@@ -1,13 +1,12 @@
 #ifndef CAFFE_CUDNN_POOLING_LAYER_HPP_
 #define CAFFE_CUDNN_POOLING_LAYER_HPP_
 
+#include "caffe/layers/pooling_layer.hpp"
+
 #include <vector>
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
-
-#include "caffe/layers/pooling_layer.hpp"
 
 namespace caffe {
 

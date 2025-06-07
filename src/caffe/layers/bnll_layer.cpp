@@ -1,7 +1,9 @@
+#include "caffe/layers/bnll_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/bnll_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 

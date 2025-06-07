@@ -1,7 +1,9 @@
 #ifdef USE_OPENCV
-#include <opencv2/highgui/highgui_c.h>
-#include <stdint.h>
+#include "caffe/layers/window_data_layer.hpp"
 
+#include <opencv2/highgui/highgui_c.h>
+
+#include <cstdint>
 #include <algorithm>
 #include <map>
 #include <string>
@@ -15,11 +17,13 @@
 #include "caffe/data_transformer.hpp"
 #include "caffe/internal_thread.hpp"
 #include "caffe/layers/base_data_layer.hpp"
-#include "caffe/layers/window_data_layer.hpp"
+
 #include "caffe/util/benchmark.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/util/math_functions.hpp"
 #include "caffe/util/rng.hpp"
+
+#include "caffe/proto/caffe.pb.h"
 
 // caffe.proto > LayerParameter > WindowDataParameter
 //   'source' field specifies the window_file
@@ -52,22 +56,22 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   LOG(INFO) << "Window data layer:" << std::endl
       << "  foreground (object) overlap threshold: "
-      << this->layer_param_.window_data_param().fg_threshold() << std::endl
+      << this->layer_param_->window_data_param().fg_threshold() << std::endl
       << "  background (non-object) overlap threshold: "
-      << this->layer_param_.window_data_param().bg_threshold() << std::endl
+      << this->layer_param_->window_data_param().bg_threshold() << std::endl
       << "  foreground sampling fraction: "
-      << this->layer_param_.window_data_param().fg_fraction() << std::endl
+      << this->layer_param_->window_data_param().fg_fraction() << std::endl
       << "  cache_images: "
-      << this->layer_param_.window_data_param().cache_images() << std::endl
+      << this->layer_param_->window_data_param().cache_images() << std::endl
       << "  root_folder: "
-      << this->layer_param_.window_data_param().root_folder();
+      << this->layer_param_->window_data_param().root_folder();
 
-  cache_images_ = this->layer_param_.window_data_param().cache_images();
-  string root_folder = this->layer_param_.window_data_param().root_folder();
+  cache_images_ = this->layer_param_->window_data_param().cache_images();
+  string root_folder = this->layer_param_->window_data_param().root_folder();
 
   const bool prefetch_needs_rand =
-      this->transform_param_.mirror() ||
-      this->transform_param_.crop_size();
+      this->transform_param_->mirror() ||
+      this->transform_param_->crop_size();
   if (prefetch_needs_rand) {
     const unsigned int prefetch_rng_seed = caffe_rng_rand();
     prefetch_rng_.reset(new Caffe::RNG(prefetch_rng_seed));
@@ -75,9 +79,9 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     prefetch_rng_.reset();
   }
 
-  std::ifstream infile(this->layer_param_.window_data_param().source().c_str());
+  std::ifstream infile(this->layer_param_->window_data_param().source().c_str());
   CHECK(infile.good()) << "Failed to open window file "
-      << this->layer_param_.window_data_param().source() << std::endl;
+      << this->layer_param_->window_data_param().source() << std::endl;
 
   map<int, int> label_hist;
   label_hist.insert(std::make_pair(0, 0));
@@ -97,7 +101,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
     vector<int> image_size(3);
     infile >> image_size[0] >> image_size[1] >> image_size[2];
     channels = image_size[0];
-    image_database_.push_back(std::make_pair(image_path, image_size));
+    image_database_.emplace_back(image_path, image_size);
 
     if (cache_images_) {
       Datum datum;
@@ -105,15 +109,15 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
         LOG(ERROR) << "Could not open or find file " << image_path;
         return;
       }
-      image_database_cache_.push_back(std::make_pair(image_path, datum));
+      image_database_cache_.emplace_back(image_path, datum);
     }
     // read each box
     int num_windows;
     infile >> num_windows;
     const float fg_threshold =
-        this->layer_param_.window_data_param().fg_threshold();
+        this->layer_param_->window_data_param().fg_threshold();
     const float bg_threshold =
-        this->layer_param_.window_data_param().bg_threshold();
+        this->layer_param_->window_data_param().bg_threshold();
     for (int i = 0; i < num_windows; ++i) {
       int label, x1, y1, x2, y2;
       float overlap;
@@ -134,7 +138,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
         CHECK_GT(label, 0);
         fg_windows_.push_back(window);
         label_hist.insert(std::make_pair(label, 0));
-        label_hist[label]++;
+        ++label_hist[label];
       } else if (overlap < bg_threshold) {
         // background window, force label and overlap to 0
         window[WindowDataLayer::LABEL] = 0;
@@ -163,15 +167,15 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 
   LOG(INFO) << "Amount of context padding: "
-      << this->layer_param_.window_data_param().context_pad();
+      << this->layer_param_->window_data_param().context_pad();
 
   LOG(INFO) << "Crop mode: "
-      << this->layer_param_.window_data_param().crop_mode();
+      << this->layer_param_->window_data_param().crop_mode();
 
   // image
-  const int crop_size = this->transform_param_.crop_size();
+  const int crop_size = this->transform_param_->crop_size();
   CHECK_GT(crop_size, 0);
-  const int batch_size = this->layer_param_.window_data_param().batch_size();
+  const int batch_size = this->layer_param_->window_data_param().batch_size();
   top[0]->Reshape(batch_size, channels, crop_size, crop_size);
   for (int i = 0; i < this->prefetch_.size(); ++i)
     this->prefetch_[i]->data_.Reshape(
@@ -188,11 +192,11 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 
   // data mean
-  has_mean_file_ = this->transform_param_.has_mean_file();
-  has_mean_values_ = this->transform_param_.mean_value_size() > 0;
+  has_mean_file_ = this->transform_param_->has_mean_file();
+  has_mean_values_ = this->transform_param_->mean_value_size() > 0;
   if (has_mean_file_) {
     const string& mean_file =
-          this->transform_param_.mean_file();
+          this->transform_param_->mean_file();
     LOG(INFO) << "Loading mean file from: " << mean_file;
     BlobProto blob_proto;
     ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);
@@ -201,8 +205,8 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   if (has_mean_values_) {
     CHECK(has_mean_file_ == false) <<
       "Cannot specify mean_file and mean_value at the same time";
-    for (int c = 0; c < this->transform_param_.mean_value_size(); ++c) {
-      mean_values_.push_back(this->transform_param_.mean_value(c));
+    for (int c = 0; c < this->transform_param_->mean_value_size(); ++c) {
+      mean_values_.push_back(this->transform_param_->mean_value(c));
     }
     CHECK(mean_values_.size() == 1 || mean_values_.size() == channels) <<
      "Specify either 1 mean_value or as many as channels: " << channels;
@@ -235,14 +239,14 @@ void WindowDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   CPUTimer timer;
   Dtype* top_data = batch->data_.mutable_cpu_data();
   Dtype* top_label = batch->label_.mutable_cpu_data();
-  const Dtype scale = this->layer_param_.window_data_param().scale();
-  const int batch_size = this->layer_param_.window_data_param().batch_size();
-  const int context_pad = this->layer_param_.window_data_param().context_pad();
-  const int crop_size = this->transform_param_.crop_size();
-  const bool mirror = this->transform_param_.mirror();
+  const Dtype scale = this->layer_param_->window_data_param().scale();
+  const int batch_size = this->layer_param_->window_data_param().batch_size();
+  const int context_pad = this->layer_param_->window_data_param().context_pad();
+  const int crop_size = this->transform_param_->crop_size();
+  const bool mirror = this->transform_param_->mirror();
   const float fg_fraction =
-      this->layer_param_.window_data_param().fg_fraction();
-  Dtype* mean = NULL;
+      this->layer_param_->window_data_param().fg_fraction();
+  Dtype* mean = nullptr;
   int mean_off = 0;
   int mean_width = 0;
   int mean_height = 0;
@@ -253,7 +257,7 @@ void WindowDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
     mean_height = this->data_mean_.height();
   }
   cv::Size cv_crop_size(crop_size, crop_size);
-  const string& crop_mode = this->layer_param_.window_data_param().crop_mode();
+  const string& crop_mode = this->layer_param_->window_data_param().crop_mode();
 
   bool use_square = (crop_mode == "square") ? true : false;
 

@@ -1,7 +1,9 @@
+#include "caffe/layers/dummy_data_layer.hpp"
+
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/dummy_data_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -9,7 +11,7 @@ template <typename Dtype>
 void DummyDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const int num_top = static_cast<int>(top.size());
-  const DummyDataParameter& param = this->layer_param_.dummy_data_param();
+  const DummyDataParameter& param = this->layer_param_->dummy_data_param();
   const int num_data_filler = param.data_filler_size();
   CHECK(num_data_filler == 0 || num_data_filler == 1 ||
         num_data_filler == num_top)
@@ -92,9 +94,8 @@ void DummyDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   this->Forward(bottom, top);
   // Invert the inverted refill_ values to refill the desired (non-constant)
   // Blobs in every usual forward pass.
-  for (int i = 0; i < refill_.size(); ++i) {
-    refill_[i] = !refill_[i];
-  }
+  for (auto&& i : refill_)
+	  i = !i;
 }
 
 template <typename Dtype>

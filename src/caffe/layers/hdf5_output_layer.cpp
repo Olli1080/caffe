@@ -1,18 +1,20 @@
 #ifdef USE_HDF5
+#include "caffe/layers/hdf5_output_layer.hpp"
+
 #include <vector>
 
 #include "hdf5.h"
 #include "hdf5_hl.h"
 
-#include "caffe/layers/hdf5_output_layer.hpp"
 #include "caffe/util/hdf5.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void HDF5OutputLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  file_name_ = this->layer_param_.hdf5_output_param().file_name();
+  file_name_ = this->layer_param_->hdf5_output_param().file_name();
   file_id_ = H5Fcreate(file_name_.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT,
                        H5P_DEFAULT);
   CHECK_GE(file_id_, 0) << "Failed to open HDF5 file" << file_name_;

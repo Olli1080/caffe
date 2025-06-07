@@ -1,28 +1,29 @@
+#include "caffe/layers/slice_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/slice_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void SliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const SliceParameter& slice_param = this->layer_param_.slice_param();
+  const SliceParameter& slice_param = this->layer_param_->slice_param();
   CHECK(!(slice_param.has_axis() && slice_param.has_slice_dim()))
       << "Either axis or slice_dim should be specified; not both.";
   slice_point_.clear();
-  std::copy(slice_param.slice_point().begin(),
-      slice_param.slice_point().end(),
-      std::back_inserter(slice_point_));
+  std::ranges::copy(slice_param.slice_point(),
+                    std::back_inserter(slice_point_));
 }
 
 template <typename Dtype>
 void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   const int num_axes = bottom[0]->num_axes();
-  const SliceParameter& slice_param = this->layer_param_.slice_param();
+  const SliceParameter& slice_param = this->layer_param_->slice_param();
   if (slice_param.has_slice_dim()) {
     slice_axis_ = static_cast<int>(slice_param.slice_dim());
     // Don't allow negative indexing for slice_dim, a uint32 -- almost
@@ -39,17 +40,18 @@ void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   num_slices_ = bottom[0]->count(0, slice_axis_);
   slice_size_ = bottom[0]->count(slice_axis_ + 1);
   int count = 0;
-  if (slice_point_.size() != 0) {
+  if (!slice_point_.empty()) {
     CHECK_EQ(slice_point_.size(), top.size() - 1);
     CHECK_LE(top.size(), bottom_slice_axis)
         << "slice axis: " << slice_axis_
         << ", bottom[0] shape: " << bottom[0]->shape_string();
     int prev = 0;
     vector<int> slices;
-    for (int i = 0; i < slice_point_.size(); ++i) {
-      CHECK_GT(slice_point_[i], prev);
-      slices.push_back(slice_point_[i] - prev);
-      prev = slice_point_[i];
+    for (int i : slice_point_)
+    {
+      CHECK_GT(i, prev);
+      slices.push_back(i - prev);
+      prev = i;
     }
     slices.push_back(bottom_slice_axis - prev);
     for (int i = 0; i < top.size(); ++i) {

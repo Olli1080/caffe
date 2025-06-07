@@ -1,20 +1,22 @@
+#include "caffe/layers/inner_product_layer.hpp"
+
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/inner_product_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const int num_output = this->layer_param_.inner_product_param().num_output();
-  bias_term_ = this->layer_param_.inner_product_param().bias_term();
-  transpose_ = this->layer_param_.inner_product_param().transpose();
+  const int num_output = this->layer_param_->inner_product_param().num_output();
+  bias_term_ = this->layer_param_->inner_product_param().bias_term();
+  transpose_ = this->layer_param_->inner_product_param().transpose();
   N_ = num_output;
   const int axis = bottom[0]->CanonicalAxisIndex(
-      this->layer_param_.inner_product_param().axis());
+      this->layer_param_->inner_product_param().axis());
   // Dimensions starting from "axis" are "flattened" into a single
   // length K_ vector. For example, if bottom[0]'s shape is (N, C, H, W),
   // and axis == 1, N inner products with dimension CHW are performed.
@@ -40,14 +42,14 @@ void InnerProductLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
     // fill the weights
     shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
-        this->layer_param_.inner_product_param().weight_filler()));
+        this->layer_param_->inner_product_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
     // If necessary, initialize and fill the bias term
     if (bias_term_) {
       vector<int> bias_shape(1, N_);
       this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
       shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
-          this->layer_param_.inner_product_param().bias_filler()));
+          this->layer_param_->inner_product_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
     }
   }  // parameter initialization
@@ -59,7 +61,7 @@ void InnerProductLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   // Figure out the dimensions
   const int axis = bottom[0]->CanonicalAxisIndex(
-      this->layer_param_.inner_product_param().axis());
+      this->layer_param_->inner_product_param().axis());
   const int new_K = bottom[0]->count(axis);
   CHECK_EQ(K_, new_K)
       << "Input size incompatible with inner product parameters.";
@@ -143,7 +145,76 @@ void InnerProductLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(InnerProductLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(InnerProductLayer);
+template <typename Dtype>
+void InnerProductLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+    const Dtype* weight = this->blobs_[0]->gpu_data();
+    if (M_ == 1) {
+        caffe_gpu_gemv<Dtype>(CblasNoTrans, N_, K_, (Dtype)1.,
+            weight, bottom_data, (Dtype)0., top_data);
+        if (bias_term_)
+            caffe_gpu_axpy<Dtype>(N_, bias_multiplier_.cpu_data()[0],
+                this->blobs_[1]->gpu_data(), top_data);
+    }
+    else {
+        caffe_gpu_gemm<Dtype>(CblasNoTrans,
+            transpose_ ? CblasNoTrans : CblasTrans,
+            M_, N_, K_, (Dtype)1.,
+            bottom_data, weight, (Dtype)0., top_data);
+        if (bias_term_)
+            caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans, M_, N_, 1, (Dtype)1.,
+                bias_multiplier_.gpu_data(),
+                this->blobs_[1]->gpu_data(), (Dtype)1., top_data);
+    }
+}
+
+template <typename Dtype>
+void InnerProductLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down,
+    const vector<Blob<Dtype>*>& bottom) {
+    if (this->param_propagate_down_[0]) {
+        const Dtype* top_diff = top[0]->gpu_diff();
+        const Dtype* bottom_data = bottom[0]->gpu_data();
+        // Gradient with respect to weight
+        if (transpose_) {
+            caffe_gpu_gemm<Dtype>(CblasTrans, CblasNoTrans,
+                K_, N_, M_,
+                (Dtype)1., bottom_data, top_diff,
+                (Dtype)1., this->blobs_[0]->mutable_gpu_diff());
+        }
+        else {
+            caffe_gpu_gemm<Dtype>(CblasTrans, CblasNoTrans,
+                N_, K_, M_,
+                (Dtype)1., top_diff, bottom_data,
+                (Dtype)1., this->blobs_[0]->mutable_gpu_diff());
+        }
+    }
+    if (bias_term_ && this->param_propagate_down_[1]) {
+        const Dtype* top_diff = top[0]->gpu_diff();
+        // Gradient with respect to bias
+        caffe_gpu_gemv<Dtype>(CblasTrans, M_, N_, (Dtype)1., top_diff,
+            bias_multiplier_.gpu_data(), (Dtype)1.,
+            this->blobs_[1]->mutable_gpu_diff());
+    }
+    if (propagate_down[0]) {
+        const Dtype* top_diff = top[0]->gpu_diff();
+        // Gradient with respect to bottom data
+        if (transpose_) {
+            caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasTrans,
+                M_, K_, N_,
+                (Dtype)1., top_diff, this->blobs_[0]->gpu_data(),
+                (Dtype)0., bottom[0]->mutable_gpu_diff());
+        }
+        else {
+            caffe_gpu_gemm<Dtype>(CblasNoTrans, CblasNoTrans,
+                M_, K_, N_,
+                (Dtype)1., top_diff, this->blobs_[0]->gpu_data(),
+                (Dtype)0., bottom[0]->mutable_gpu_diff());
+        }
+    }
+}
 #endif
 
 INSTANTIATE_CLASS(InnerProductLayer);

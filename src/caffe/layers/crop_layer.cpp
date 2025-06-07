@@ -1,3 +1,5 @@
+#include "caffe/layers/crop_layer.hpp"
+
 #include <algorithm>
 #include <functional>
 #include <map>
@@ -6,8 +8,8 @@
 
 
 #include "caffe/layer.hpp"
-#include "caffe/layers/crop_layer.hpp"
 #include "caffe/net.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 
 namespace caffe {
@@ -18,7 +20,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // LayerSetup() handles the number of dimensions; Reshape() handles the sizes.
   // bottom[0] supplies the data
   // bottom[1] supplies the size
-  const CropParameter& param = this->layer_param_.crop_param();
+  const CropParameter& param = this->layer_param_->crop_param();
   CHECK_EQ(bottom.size(), 2) << "Wrong number of bottom blobs.";
   int input_dim = bottom[0]->num_axes();
   const int start_axis = bottom[0]->CanonicalAxisIndex(param.axis());
@@ -35,7 +37,7 @@ void CropLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void CropLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  const CropParameter& param = this->layer_param_.crop_param();
+  const CropParameter& param = this->layer_param_->crop_param();
   int input_dim = bottom[0]->num_axes();
   const int start_axis = bottom[0]->CanonicalAxisIndex(param.axis());
 

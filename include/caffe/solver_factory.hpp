@@ -43,11 +43,12 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	class SolverParameter;
 
-template <typename Dtype>
+	template <typename Dtype>
 class Solver;
 
 template <typename Dtype>

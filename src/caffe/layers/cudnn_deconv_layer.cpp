@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
 

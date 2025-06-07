@@ -1,4 +1,4 @@
-#include <vector>
+/*#include <vector>
 
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
@@ -42,3 +42,4 @@ void RecurrentLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 INSTANTIATE_LAYER_GPU_FORWARD(RecurrentLayer);
 
 }  // namespace caffe
+*/

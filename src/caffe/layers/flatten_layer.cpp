@@ -1,6 +1,8 @@
+#include "caffe/layers/flatten_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/flatten_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -10,9 +12,9 @@ void FlattenLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
       "allow in-place computation.";
   const int start_axis = bottom[0]->CanonicalAxisIndex(
-      this->layer_param_.flatten_param().axis());
+      this->layer_param_->flatten_param().axis());
   const int end_axis = bottom[0]->CanonicalAxisIndex(
-      this->layer_param_.flatten_param().end_axis());
+      this->layer_param_->flatten_param().end_axis());
   vector<int> top_shape;
   for (int i = 0; i < start_axis; ++i) {
     top_shape.push_back(bottom[0]->shape(i));

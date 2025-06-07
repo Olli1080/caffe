@@ -1,3 +1,5 @@
+#include "caffe/util/insert_splits.hpp"
+
 #include <algorithm>
 #include <map>
 #include <sstream>
@@ -5,7 +7,8 @@
 #include <utility>
 
 #include "caffe/common.hpp"
-#include "caffe/util/insert_splits.hpp"
+
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -24,8 +27,7 @@ void InsertSplits(const NetParameter& param, NetParameter* param_split) {
     layer_idx_to_layer_name[i] = layer_param.name();
     for (int j = 0; j < layer_param.bottom_size(); ++j) {
       const string& blob_name = layer_param.bottom(j);
-      if (blob_name_to_last_top_idx.find(blob_name) ==
-          blob_name_to_last_top_idx.end()) {
+      if (!blob_name_to_last_top_idx.contains(blob_name)) {
         LOG(FATAL) << "Unknown bottom blob '" << blob_name << "' (layer '"
                    << layer_param.name() << "', bottom index " << j << ")";
       }

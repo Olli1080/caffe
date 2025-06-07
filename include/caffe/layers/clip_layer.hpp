@@ -5,7 +5,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/neuron_layer.hpp"
 
@@ -68,6 +68,13 @@ class ClipLayer : public NeuronLayer<Dtype> {
                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
   void Backward_gpu(const vector<Blob<Dtype>*>& top,
                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+
+private:
+
+#ifndef CPU_ONLY
+    void forward_kernel(int count, const Dtype* bottom_data, Dtype* top_data, Dtype p_min, Dtype p_max);
+    void backward_kernel(int count, const Dtype* top_diff, const Dtype* bottom_data, Dtype* bottom_diff, Dtype p_min, Dtype p_max);
+#endif
 };
 
 }  // namespace caffe

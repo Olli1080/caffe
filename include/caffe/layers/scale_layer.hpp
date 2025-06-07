@@ -5,7 +5,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/bias_layer.hpp"
 
@@ -42,7 +42,7 @@ class ScaleLayer: public Layer<Dtype> {
  protected:
   /**
    * In the below shape specifications, @f$ i @f$ denotes the value of the
-   * `axis` field given by `this->layer_param_.scale_param().axis()`, after
+   * `axis` field given by `this->layer_param_->scale_param().axis()`, after
    * canonicalization (i.e., conversion from negative to positive index,
    * if applicable).
    *

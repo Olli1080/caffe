@@ -1,8 +1,10 @@
 #ifdef USE_CUDNN
+#include "caffe/layers/cudnn_conv_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/cudnn_conv_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -118,7 +120,7 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
     filter_desc_,
     conv_descs_[index],
     top_descs_[index],
-    fwd_v.size(), &count, &fwd_v[0]));
+    fwd_v.size(), &count, fwd_v.data()));
 
   cudnnConvolutionFwdAlgoPerf_t fwd_perf = cudnn::findFirstSuitableAlgorithm(fwd_v,
       count, workspace_limit_bytes);
@@ -133,7 +135,7 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
         filter_desc_,
         bwd_filter_v.size(),
         &count,
-        &bwd_filter_v[0]));
+        bwd_filter_v.data()));
 
   cudnnConvolutionBwdFilterAlgoPerf_t bwd_filter_perf = cudnn::findFirstSuitableAlgorithm(bwd_filter_v,
 	  count, workspace_limit_bytes);
@@ -144,7 +146,7 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
   CUDNN_CHECK(cudnnGetConvolutionBackwardDataAlgorithm_v7(handle_[0],
         filter_desc_, top_descs_[index], conv_descs_[index],
         bottom_descs_[index],
-        bwd_data_v.size(), &count, &bwd_data_v[0]));
+        bwd_data_v.size(), &count, bwd_data_v.data()));
 
   cudnnConvolutionBwdDataAlgoPerf_t bwd_data_perf = cudnn::findFirstSuitableAlgorithm(bwd_data_v,
 	  count, workspace_limit_bytes);

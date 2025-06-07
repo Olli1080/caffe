@@ -79,6 +79,12 @@ private:\
       const std::vector<Blob<double>*>& bottom, \
       const std::vector<Blob<double>*>& top);
 
+/*#define INSTANTIATE_EXTERN_NAMED(classname, funcname, parameters) \
+  extern template void classname<float>::funcname##_##gpu( \
+      const std::vector<Blob<float>*>& top, \
+      const std::vector<bool>& propagate_down, \
+      const std::vector<Blob<float>*>& bottom); \*/
+
 #define INSTANTIATE_LAYER_GPU_BACKWARD_EXTERN_NAMED(classname, funcname) \
   extern template void classname<float>::funcname##_##gpu( \
       const std::vector<Blob<float>*>& top, \

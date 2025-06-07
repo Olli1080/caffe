@@ -10,7 +10,7 @@
 #include "google/protobuf/message.h"
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 #include "caffe/util/format.hpp"
 
 #ifndef CAFFE_TMP_DIR_RETRIES
@@ -18,8 +18,9 @@
 #endif
 
 namespace caffe {
+	class Datum;
 
-using ::google::protobuf::Message;
+	using ::google::protobuf::Message;
 
 class CAFFE_EXPORT TemporaryDirectory
 {

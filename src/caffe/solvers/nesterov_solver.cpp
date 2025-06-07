@@ -1,6 +1,8 @@
+#include "caffe/sgd_solvers.hpp"
+
 #include <vector>
 
-#include "caffe/sgd_solvers.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -14,7 +16,7 @@ template <typename Dtype>
 void NesterovSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
-  Dtype momentum = this->param_.momentum();
+  Dtype momentum = this->param_->momentum();
   Dtype local_rate = rate * net_params_lr[param_id];
   switch (Caffe::mode()) {
   case Caffe::CPU: {

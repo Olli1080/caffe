@@ -1,4 +1,5 @@
 #ifdef USE_HDF5
+#include "caffe/layers/hdf5_data_layer.hpp"
 /*
 TODO:
 - load file in a separate thread ("prefetch")
@@ -15,10 +16,10 @@ TODO:
 
 #include "hdf5.h"
 #include "hdf5_hl.h"
-#include "stdint.h"
+#include <cstdint>
 
-#include "caffe/layers/hdf5_data_layer.hpp"
 #include "caffe/util/hdf5.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -26,7 +27,7 @@ static std::random_device rd;
 static std::mt19937 g(rd());
 
 template <typename Dtype>
-HDF5DataLayer<Dtype>::~HDF5DataLayer<Dtype>() { }
+HDF5DataLayer<Dtype>::~HDF5DataLayer<Dtype>() = default;
 
 // Load data and label from HDF5 filename into the class property blobs.
 template <typename Dtype>
@@ -37,16 +38,16 @@ void HDF5DataLayer<Dtype>::LoadHDF5FileData(const char* filename) {
     LOG(FATAL) << "Failed opening HDF5 file: " << filename;
   }
 
-  int top_size = this->layer_param_.top_size();
+  int top_size = this->layer_param_->top_size();
   hdf_blobs_.resize(top_size);
 
   const int MIN_DATA_DIM = 1;
   const int MAX_DATA_DIM = INT_MAX;
 
   for (int i = 0; i < top_size; ++i) {
-    hdf_blobs_[i] = shared_ptr<Blob<Dtype> >(new Blob<Dtype>());
+    hdf_blobs_[i] = std::make_shared<Blob<Dtype>>();
     // Allow reshape here, as we are loading data not params
-    hdf5_load_nd_dataset(file_id, this->layer_param_.top(i).c_str(),
+    hdf5_load_nd_dataset(file_id, this->layer_param_->top(i).c_str(),
         MIN_DATA_DIM, MAX_DATA_DIM, hdf_blobs_[i].get(), true);
   }
 
@@ -66,8 +67,8 @@ void HDF5DataLayer<Dtype>::LoadHDF5FileData(const char* filename) {
     data_permutation_[i] = i;
 
   // Shuffle if needed.
-  if (this->layer_param_.hdf5_data_param().shuffle()) {
-    std::shuffle(data_permutation_.begin(), data_permutation_.end(), g);
+  if (this->layer_param_->hdf5_data_param().shuffle()) {
+    std::ranges::shuffle(data_permutation_, g);
     DLOG(INFO) << "Successfully loaded " << hdf_blobs_[0]->shape(0)
                << " rows (shuffled)";
   } else {
@@ -79,10 +80,10 @@ template <typename Dtype>
 void HDF5DataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   // Refuse transformation parameters since HDF5 is totally generic.
-  CHECK(!this->layer_param_.has_transform_param()) <<
+  CHECK(!this->layer_param_->has_transform_param()) <<
       this->type() << " does not transform data.";
   // Read the source to parse the filenames.
-  const string& source = this->layer_param_.hdf5_data_param().source();
+  const string& source = this->layer_param_->hdf5_data_param().source();
   LOG(INFO) << "Loading list of HDF5 filenames from: " << source;
   hdf_filenames_.clear();
   std::ifstream source_file(source.c_str());
@@ -109,8 +110,8 @@ void HDF5DataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
 
   // Shuffle if needed.
-  if (this->layer_param_.hdf5_data_param().shuffle()) {
-    std::shuffle(file_permutation_.begin(), file_permutation_.end(), g);
+  if (this->layer_param_->hdf5_data_param().shuffle()) {
+    std::ranges::shuffle(file_permutation_, g);
   }
 
   // Load the first HDF5 file and initialize the line counter.
@@ -118,8 +119,8 @@ void HDF5DataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   current_row_ = 0;
 
   // Reshape blobs.
-  const int batch_size = this->layer_param_.hdf5_data_param().batch_size();
-  const int top_size = this->layer_param_.top_size();
+  const int batch_size = this->layer_param_->hdf5_data_param().batch_size();
+  const int top_size = this->layer_param_->top_size();
   vector<int> top_shape;
   for (int i = 0; i < top_size; ++i) {
     top_shape.resize(hdf_blobs_[i]->num_axes());
@@ -137,7 +138,7 @@ bool HDF5DataLayer<Dtype>::Skip() {
   int rank = Caffe::solver_rank();
   bool keep = (offset_ % size) == rank ||
               // In test mode, only rank 0 runs, so avoid skipping
-              this->layer_param_.phase() == TEST;
+              this->layer_param_->phase() == TEST;
   return !keep;
 }
 
@@ -148,9 +149,8 @@ void HDF5DataLayer<Dtype>::Next() {
       ++current_file_;
       if (current_file_ == num_files_) {
         current_file_ = 0;
-        if (this->layer_param_.hdf5_data_param().shuffle()) {
-          std::shuffle(file_permutation_.begin(),
-                              file_permutation_.end(), g);
+        if (this->layer_param_->hdf5_data_param().shuffle()) {
+          std::ranges::shuffle(file_permutation_, g);
         }
         DLOG(INFO) << "Looping around to first file.";
       }
@@ -158,8 +158,8 @@ void HDF5DataLayer<Dtype>::Next() {
         hdf_filenames_[file_permutation_[current_file_]].c_str());
     }
     current_row_ = 0;
-    if (this->layer_param_.hdf5_data_param().shuffle())
-      std::shuffle(data_permutation_.begin(), data_permutation_.end(), g);
+    if (this->layer_param_->hdf5_data_param().shuffle())
+      std::ranges::shuffle(data_permutation_, g);
   }
   offset_++;
 }
@@ -167,12 +167,12 @@ void HDF5DataLayer<Dtype>::Next() {
 template <typename Dtype>
 void HDF5DataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const int batch_size = this->layer_param_.hdf5_data_param().batch_size();
+  const int batch_size = this->layer_param_->hdf5_data_param().batch_size();
   for (int i = 0; i < batch_size; ++i) {
     while (Skip()) {
       Next();
     }
-    for (int j = 0; j < this->layer_param_.top_size(); ++j) {
+    for (int j = 0; j < this->layer_param_->top_size(); ++j) {
       int data_dim = top[j]->count() / top[j]->shape(0);
       caffe_copy(data_dim,
           &hdf_blobs_[j]->cpu_data()[data_permutation_[current_row_]
@@ -185,7 +185,23 @@ void HDF5DataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 #ifdef CPU_ONLY
 STUB_GPU_FORWARD(HDF5DataLayer, Forward);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(HDF5DataLayer);
+template <typename Dtype>
+void HDF5DataLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+    const int batch_size = this->layer_param_->hdf5_data_param().batch_size();
+    for (int i = 0; i < batch_size; ++i) {
+        while (Skip()) {
+            Next();
+        }
+        for (int j = 0; j < this->layer_param_->top_size(); ++j) {
+            int data_dim = top[j]->count() / top[j]->shape(0);
+            caffe_copy(data_dim,
+                &hdf_blobs_[j]->cpu_data()[data_permutation_[current_row_]
+                * data_dim], &top[j]->mutable_gpu_data()[i * data_dim]);
+        }
+        Next();
+    }
+}
 #endif
 
 INSTANTIATE_CLASS(HDF5DataLayer);

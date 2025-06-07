@@ -5,7 +5,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/loss_layer.hpp"
 
@@ -96,6 +96,11 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
   Blob<Dtype> dist_sq_;  // cached for backward pass
   Blob<Dtype> diff_sq_;  // tmp storage for gpu forward pass
   Blob<Dtype> summer_vec_;  // tmp storage for gpu forward pass
+
+private:
+#ifndef CPU_ONLY
+    void backward_kernel(int count, int channels, Dtype margin, bool legacy_version, Dtype alpha, const vector<Blob<Dtype>*>& bottom, int i);
+#endif
 };
 
 }  // namespace caffe

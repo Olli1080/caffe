@@ -1,14 +1,16 @@
+#include "caffe/layers/im2col_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/im2col_layer.hpp"
 #include "caffe/util/im2col.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  ConvolutionParameter conv_param = this->layer_param_.convolution_param();
+  ConvolutionParameter conv_param = this->layer_param_->convolution_param();
   force_nd_im2col_ = conv_param.force_nd_im2col();
   const int input_num_dims = static_cast<int>(bottom[0]->shape().size());
   channel_axis_ = bottom[0]->CanonicalAxisIndex(conv_param.axis());

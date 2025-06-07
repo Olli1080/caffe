@@ -1,20 +1,22 @@
+#include "caffe/layers/lrn_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/lrn_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void LRNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  size_ = this->layer_param_.lrn_param().local_size();
+  size_ = this->layer_param_->lrn_param().local_size();
   CHECK_EQ(size_ % 2, 1) << "LRN only supports odd values for local_size";
   pre_pad_ = (size_ - 1) / 2;
-  alpha_ = this->layer_param_.lrn_param().alpha();
-  beta_ = this->layer_param_.lrn_param().beta();
-  k_ = this->layer_param_.lrn_param().k();
-  if (this->layer_param_.lrn_param().norm_region() ==
+  alpha_ = this->layer_param_->lrn_param().alpha();
+  beta_ = this->layer_param_->lrn_param().beta();
+  k_ = this->layer_param_->lrn_param().k();
+  if (this->layer_param_->lrn_param().norm_region() ==
       LRNParameter_NormRegion_WITHIN_CHANNEL) {
     // Set up split_layer_ to use inputs in the numerator and denominator.
     split_top_vec_.clear();
@@ -74,7 +76,7 @@ void LRNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   channels_ = bottom[0]->channels();
   height_ = bottom[0]->height();
   width_ = bottom[0]->width();
-  switch (this->layer_param_.lrn_param().norm_region()) {
+  switch (this->layer_param_->lrn_param().norm_region()) {
   case LRNParameter_NormRegion_ACROSS_CHANNELS:
     top[0]->Reshape(num_, channels_, height_, width_);
     scale_.Reshape(num_, channels_, height_, width_);
@@ -92,7 +94,7 @@ void LRNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void LRNLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     const vector<Blob<Dtype>*>& top) {
-  switch (this->layer_param_.lrn_param().norm_region()) {
+  switch (this->layer_param_->lrn_param().norm_region()) {
   case LRNParameter_NormRegion_ACROSS_CHANNELS:
     CrossChannelForward_cpu(bottom, top);
     break;
@@ -164,7 +166,7 @@ void LRNLayer<Dtype>::WithinChannelForward(
 template <typename Dtype>
 void LRNLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  switch (this->layer_param_.lrn_param().norm_region()) {
+  switch (this->layer_param_->lrn_param().norm_region()) {
   case LRNParameter_NormRegion_ACROSS_CHANNELS:
     CrossChannelBackward_cpu(top, propagate_down, bottom);
     break;
@@ -251,7 +253,37 @@ STUB_GPU(LRNLayer);
 STUB_GPU_FORWARD(LRNLayer, CrossChannelForward);
 STUB_GPU_BACKWARD(LRNLayer, CrossChannelBackward);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(LRNLayer);
+template <typename Dtype>
+void LRNLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+    switch (this->layer_param_->lrn_param().norm_region()) {
+    case LRNParameter_NormRegion_ACROSS_CHANNELS:
+        CrossChannelForward_gpu(bottom, top);
+        break;
+    case LRNParameter_NormRegion_WITHIN_CHANNEL:
+        WithinChannelForward(bottom, top);
+        break;
+    default:
+        LOG(FATAL) << "Unknown normalization region.";
+    }
+}
+
+template <typename Dtype>
+void LRNLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    switch (this->layer_param_->lrn_param().norm_region()) {
+    case LRNParameter_NormRegion_ACROSS_CHANNELS:
+        CrossChannelBackward_gpu(top, propagate_down, bottom);
+        break;
+    case LRNParameter_NormRegion_WITHIN_CHANNEL:
+        WithinChannelBackward(top, propagate_down, bottom);
+        break;
+    default:
+        LOG(FATAL) << "Unknown normalization region.";
+    }
+}
+
+//INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(LRNLayer);
 INSTANTIATE_LAYER_GPU_FORWARD_EXTERN_NAMED(LRNLayer, CrossChannelForward);
 INSTANTIATE_LAYER_GPU_BACKWARD_EXTERN_NAMED(LRNLayer, CrossChannelBackward);
 #endif

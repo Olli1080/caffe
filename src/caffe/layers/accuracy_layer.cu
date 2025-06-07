@@ -1,6 +1,7 @@
+#include "caffe/layers/accuracy_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/accuracy_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 
@@ -139,8 +140,8 @@ void AccuracyLayer<Dtype>::Forward_gpu(
 
 
 template <typename Dtype>
-void AccuracyLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void AccuracyLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[1]) {  NOT_IMPLEMENTED;  }
 }
 

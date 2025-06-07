@@ -37,6 +37,20 @@
 
 namespace caffe {
 
+template <typename Dtype>
+shared_ptr<Layer<Dtype>> LayerRegistry<Dtype>::CreateLayer(const LayerParameter& param)
+{
+  if (Caffe::root_solver()) {
+    LOG(INFO) << "Creating layer " << param.name();
+  }
+  const string& type = param.type();
+  CreatorRegistry& registry = Registry();
+  CHECK_EQ(registry.count(type), 1) << "Unknown layer type: " << type
+      << " (known types: " << LayerTypeListString() << ")";
+  return registry[type](param);
+}
+INSTANTIATE_CLASS(LayerRegistry);
+
 // Get convolution layer according to engine.
 template <typename Dtype>
 shared_ptr<Layer<Dtype> > GetConvolutionLayer(

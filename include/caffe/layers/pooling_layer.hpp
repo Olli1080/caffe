@@ -5,11 +5,12 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	enum PoolingParameter_RoundMode : int;
 
-/**
+	/**
  * @brief Pools the input image by taking the max, average, etc. within regions.
  *
  * TODO(dox): thorough documentation for Forward, Backward, and proto params.
@@ -30,11 +31,7 @@ class CAFFE_EXPORT PoolingLayer : public Layer<Dtype> {
   [[nodiscard]] int MinTopBlobs() const override { return 1; }
   // MAX POOL layers can output an extra top blob for the mask;
   // others can only output the pooled inputs.
-  [[nodiscard]] int MaxTopBlobs() const override
-  {
-    return (this->layer_param_.pooling_param().pool() ==
-            PoolingParameter_PoolMethod_MAX) ? 2 : 1;
-  }
+  [[nodiscard]] int MaxTopBlobs() const override;
 
  protected:
   void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
@@ -56,6 +53,38 @@ class CAFFE_EXPORT PoolingLayer : public Layer<Dtype> {
   PoolingParameter_RoundMode round_mode_;
   Blob<Dtype> rand_idx_;
   Blob<int> max_idx_;
+
+private:
+
+#ifndef CPU_ONLY
+    void MaxPoolForwardKernel(const int nthreads,
+        const Dtype* const bottom_data, const int num,
+        Dtype* const top_data, int* mask, Dtype* top_mask);
+
+    void AvePoolForwardKernel(const int nthreads,
+        const Dtype* const bottom_data, const int num,
+        Dtype* const top_data);
+
+    void StoPoolForwardTrainKernel(const int nthreads,
+        const Dtype* const bottom_data,
+        const int num, Dtype* const rand_idx, Dtype* const top_data);
+
+    void StoPoolForwardTestKernel(const int nthreads,
+        const Dtype* const bottom_data,
+        const int num, Dtype* const top_data);
+
+
+
+    void MaxPoolBackwardKernel(const int nthreads, const Dtype* const top_diff,
+        const int* const mask, const Dtype* const top_mask, const int num, Dtype* const bottom_diff);
+
+    void AvePoolBackwardKernel(const int nthreads, const Dtype* const top_diff,
+        const int num, Dtype* const bottom_diff);
+
+    void StoPoolBackwardKernel(const int nthreads,
+        const Dtype* const rand_idx, const Dtype* const top_diff,
+        const int num, Dtype* const bottom_diff);
+#endif
 };
 
 }  // namespace caffe

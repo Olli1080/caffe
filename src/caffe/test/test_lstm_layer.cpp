@@ -30,17 +30,17 @@ class LSTMLayerTest : public MultiDeviceTest<TypeParam> {
 
     ReshapeBlobs(1, 3);
 
-    layer_param_.mutable_recurrent_param()->set_num_output(num_output_);
+    layer_param_->mutable_recurrent_param()->set_num_output(num_output_);
     FillerParameter* weight_filler =
-        layer_param_.mutable_recurrent_param()->mutable_weight_filler();
+        layer_param_->mutable_recurrent_param()->mutable_weight_filler();
     weight_filler->set_type("gaussian");
     weight_filler->set_std(0.2);
     FillerParameter* bias_filler =
-        layer_param_.mutable_recurrent_param()->mutable_bias_filler();
+        layer_param_->mutable_recurrent_param()->mutable_bias_filler();
     bias_filler->set_type("gaussian");
     bias_filler->set_std(0.1);
 
-    layer_param_.set_phase(TEST);
+    layer_param_->set_phase(TEST);
   }
 
   void ReshapeBlobs(int num_timesteps, int num_instances) {
@@ -91,7 +91,7 @@ TYPED_TEST_CASE(LSTMLayerTest, TestDtypesAndDevices);
 
 TYPED_TEST(LSTMLayerTest, TestSetUp) {
   typedef typename TypeParam::Dtype Dtype;
-  LSTMLayer<Dtype> layer(this->layer_param_);
+  LSTMLayer<Dtype> layer(*this->layer_param_);
   layer.SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   vector<int> expected_top_shape = this->blob_bottom_.shape();
   expected_top_shape.resize(3);
@@ -121,7 +121,7 @@ TYPED_TEST(LSTMLayerTest, TestForward) {
   GaussianFiller<Dtype> sequence_filler(filler_param);
   Caffe::set_random_seed(1);
   sequence_filler.Fill(&this->blob_bottom_);
-  shared_ptr<LSTMLayer<Dtype> > layer(new LSTMLayer<Dtype>(this->layer_param_));
+  shared_ptr<LSTMLayer<Dtype> > layer(new LSTMLayer<Dtype>(*this->layer_param_));
   Caffe::set_random_seed(1701);
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   LOG(INFO) << "Calling forward for full sequence LSTM";
@@ -136,7 +136,7 @@ TYPED_TEST(LSTMLayerTest, TestForward) {
   // Process the batch one timestep at a time;
   // check that we get the same result.
   this->ReshapeBlobs(1, num);
-  layer.reset(new LSTMLayer<Dtype>(this->layer_param_));
+  layer.reset(new LSTMLayer<Dtype>(*this->layer_param_));
   Caffe::set_random_seed(1701);
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   const int bottom_count = this->blob_bottom_.count();
@@ -161,7 +161,7 @@ TYPED_TEST(LSTMLayerTest, TestForward) {
   // Process the batch one timestep at a time with all cont blobs set to 0.
   // Check that we get a different result, except in the first timestep.
   Caffe::set_random_seed(1701);
-  layer.reset(new LSTMLayer<Dtype>(this->layer_param_));
+  layer.reset(new LSTMLayer<Dtype>(*this->layer_param_));
   layer->SetUp(this->blob_bottom_vec_, this->blob_top_vec_);
   for (int t = 0; t < kNumTimesteps; ++t) {
     caffe_copy(bottom_count, bottom_copy.cpu_data() + t * bottom_count,
@@ -233,7 +233,7 @@ TYPED_TEST(LSTMLayerTest, TestLSTMUnitGradientNonZeroCont) {
 
 TYPED_TEST(LSTMLayerTest, TestGradient) {
   typedef typename TypeParam::Dtype Dtype;
-  LSTMLayer<Dtype> layer(this->layer_param_);
+  LSTMLayer<Dtype> layer(*this->layer_param_);
   GradientChecker<Dtype> checker(1e-2, 1e-3);
   checker.CheckGradientExhaustive(&layer, this->blob_bottom_vec_,
       this->blob_top_vec_, 0);
@@ -241,7 +241,7 @@ TYPED_TEST(LSTMLayerTest, TestGradient) {
 
 TYPED_TEST(LSTMLayerTest, TestGradientNonZeroCont) {
   typedef typename TypeParam::Dtype Dtype;
-  LSTMLayer<Dtype> layer(this->layer_param_);
+  LSTMLayer<Dtype> layer(*this->layer_param_);
   GradientChecker<Dtype> checker(1e-2, 1e-3);
   for (int i = 0; i < this->blob_bottom_cont_.count(); ++i) {
     this->blob_bottom_cont_.mutable_cpu_data()[i] = i > 2;
@@ -256,7 +256,7 @@ TYPED_TEST(LSTMLayerTest, TestGradientNonZeroContBufferSize2) {
   FillerParameter filler_param;
   UniformFiller<Dtype> filler(filler_param);
   filler.Fill(&this->blob_bottom_);
-  LSTMLayer<Dtype> layer(this->layer_param_);
+  LSTMLayer<Dtype> layer(*this->layer_param_);
   GradientChecker<Dtype> checker(1e-2, 1e-3);
   for (int i = 0; i < this->blob_bottom_cont_.count(); ++i) {
     this->blob_bottom_cont_.mutable_cpu_data()[i] = i > 2;
@@ -273,7 +273,7 @@ TYPED_TEST(LSTMLayerTest, TestGradientNonZeroContBufferSize2WithStaticInput) {
   filler.Fill(&this->blob_bottom_);
   filler.Fill(&this->blob_bottom_static_);
   this->blob_bottom_vec_.push_back(&this->blob_bottom_static_);
-  LSTMLayer<Dtype> layer(this->layer_param_);
+  LSTMLayer<Dtype> layer(*this->layer_param_);
   GradientChecker<Dtype> checker(1e-2, 1e-3);
   for (int i = 0; i < this->blob_bottom_cont_.count(); ++i) {
     this->blob_bottom_cont_.mutable_cpu_data()[i] = i > 2;

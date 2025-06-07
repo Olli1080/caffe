@@ -1,7 +1,8 @@
+/*#include "caffe/layers/inner_product_layer.hpp"
+
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/inner_product_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
@@ -77,3 +78,4 @@ void InnerProductLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
 INSTANTIATE_LAYER_GPU_FUNCS(InnerProductLayer);
 
 }  // namespace caffe
+*/

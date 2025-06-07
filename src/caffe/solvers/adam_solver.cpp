@@ -1,6 +1,8 @@
+#include "caffe/sgd_solvers.hpp"
+
 #include <vector>
 
-#include "caffe/sgd_solvers.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -12,7 +14,7 @@ void AdamSolver<Dtype>::AdamPreSolve() {
   for (int i = 0; i < net_params.size(); ++i) {
     const vector<int>& shape = net_params[i]->shape();
     this->history_.push_back(
-            shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
+	    std::make_shared<Blob<Dtype>>(shape));
   }
 }
 
@@ -27,8 +29,8 @@ void AdamSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
   Dtype local_rate = rate * net_params_lr[param_id];
-  const Dtype beta1 = this->param_.momentum();
-  const Dtype beta2 = this->param_.momentum2();
+  const Dtype beta1 = this->param_->momentum();
+  const Dtype beta2 = this->param_->momentum2();
 
   // we create aliases for convenience
   size_t update_history_offset = net_params.size();
@@ -40,7 +42,7 @@ void AdamSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const Dtype correction = static_cast<Dtype>(std::sqrt(Dtype(1) - pow(beta2, t)) /
       (Dtype(1.) - pow(beta1, t)));
   const int N = net_params[param_id]->count();
-  const Dtype eps_hat = this->param_.delta();
+  const Dtype eps_hat = this->param_->delta();
 
   switch (Caffe::mode()) {
     case Caffe::CPU: {

@@ -1,6 +1,8 @@
+#include "caffe/layers/deconv_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/deconv_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 

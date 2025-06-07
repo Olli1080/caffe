@@ -1,4 +1,4 @@
-#ifdef USE_CUDNN
+/*#ifdef USE_CUDNN
 #include <vector>
 
 #include "thrust/device_vector.h"
@@ -42,3 +42,4 @@ INSTANTIATE_LAYER_GPU_FUNCS(CuDNNSoftmaxLayer);
 
 }  // namespace caffe
 #endif
+*/

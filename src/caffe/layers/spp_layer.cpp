@@ -1,3 +1,5 @@
+#include "caffe/layers/spp_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
@@ -6,7 +8,8 @@
 #include "caffe/layers/flatten_layer.hpp"
 #include "caffe/layers/pooling_layer.hpp"
 #include "caffe/layers/split_layer.hpp"
-#include "caffe/layers/spp_layer.hpp"
+
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -64,7 +67,7 @@ LayerParameter SPPLayer<Dtype>::GetPoolingParam(const int pyramid_level,
 template <typename Dtype>
 void SPPLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  SPPParameter spp_param = this->layer_param_.spp_param();
+  SPPParameter spp_param = this->layer_param_->spp_param();
 
   num_ = bottom[0]->num();
   channels_ = bottom[0]->channels();
@@ -89,8 +92,7 @@ void SPPLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     // pooling layer setup
     LayerParameter pooling_param = GetPoolingParam(0, bottom_h_, bottom_w_,
         spp_param);
-    pooling_layers_.push_back(shared_ptr<PoolingLayer<Dtype> > (
-        new PoolingLayer<Dtype>(pooling_param)));
+    pooling_layers_.push_back(std::make_shared<PoolingLayer<Dtype>>(pooling_param));
     pooling_layers_[0]->SetUp(bottom, top);
     return;
   }
@@ -118,8 +120,7 @@ void SPPLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     LayerParameter pooling_param = GetPoolingParam(
         i, bottom_h_, bottom_w_, spp_param);
 
-    pooling_layers_.push_back(shared_ptr<PoolingLayer<Dtype> > (
-        new PoolingLayer<Dtype>(pooling_param)));
+    pooling_layers_.push_back(std::make_shared<PoolingLayer<Dtype>>(pooling_param));
     pooling_layers_[i]->SetUp(*pooling_bottom_vecs_[i], *pooling_top_vecs_[i]);
 
     // flatten layer output holders setup
@@ -158,7 +159,7 @@ void SPPLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   bottom_h_ = bottom[0]->height();
   bottom_w_ = bottom[0]->width();
   reshaped_first_time_ = true;
-  SPPParameter spp_param = this->layer_param_.spp_param();
+  SPPParameter spp_param = this->layer_param_->spp_param();
   if (pyramid_height_ == 1) {
     LayerParameter pooling_param = GetPoolingParam(0, bottom_h_, bottom_w_,
         spp_param);

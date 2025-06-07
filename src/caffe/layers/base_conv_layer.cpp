@@ -1,10 +1,14 @@
+#include "caffe/layers/base_conv_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/base_conv_layer.hpp"
+
 #include "caffe/util/im2col.hpp"
 #include "caffe/util/math_functions.hpp"
+
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -12,7 +16,7 @@ template <typename Dtype>
 void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   // Configure the kernel size, padding, stride, and inputs.
-  ConvolutionParameter conv_param = this->layer_param_.convolution_param();
+  ConvolutionParameter conv_param = this->layer_param_->convolution_param();
   force_nd_im2col_ = conv_param.force_nd_im2col();
   channel_axis_ = bottom[0]->CanonicalAxisIndex(conv_param.axis());
   const int first_spatial_axis = channel_axis_ + 1;
@@ -115,9 +119,9 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   }
   // Configure output channels and groups.
   channels_ = bottom[0]->shape(channel_axis_);
-  num_output_ = this->layer_param_.convolution_param().num_output();
+  num_output_ = this->layer_param_->convolution_param().num_output();
   CHECK_GT(num_output_, 0);
-  group_ = this->layer_param_.convolution_param().group();
+  group_ = this->layer_param_->convolution_param().group();
   CHECK_EQ(channels_ % group_, 0);
   CHECK_EQ(num_output_ % group_, 0)
       << "Number of output should be multiples of group.";
@@ -137,7 +141,7 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   for (int i = 0; i < num_spatial_axes_; ++i) {
     weight_shape.push_back(kernel_shape_data[i]);
   }
-  bias_term_ = this->layer_param_.convolution_param().bias_term();
+  bias_term_ = this->layer_param_->convolution_param().bias_term();
   vector<int> bias_shape(bias_term_, num_output_);
   if (this->blobs_.size() > 0) {
     CHECK_EQ(1 + bias_term_, this->blobs_.size())
@@ -165,13 +169,13 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     // output channels x input channels per-group x kernel height x kernel width
     this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
     shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
-        this->layer_param_.convolution_param().weight_filler()));
+        this->layer_param_->convolution_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
     // If necessary, initialize and fill the biases.
     if (bias_term_) {
       this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
       shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
-          this->layer_param_.convolution_param().bias_filler()));
+          this->layer_param_->convolution_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
     }
   }

@@ -1,5 +1,6 @@
 #ifndef CAFFE_SOLVER_HPP_
 #define CAFFE_SOLVER_HPP_
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -8,8 +9,9 @@
 #include "caffe/util/benchmark.hpp"
 
 namespace caffe {
+	class SolverParameter;
 
-/**
+	/**
   * @brief Enumeration of actions that a client of the Solver may request by
   * implementing the Solver's action request function, which a
   * client may optionally provide in order to request early termination
@@ -53,7 +55,7 @@ class CAFFE_EXPORT Solver {
   SolverAction::Enum GetRequestedAction() const;
   // The main entry of the solver function. In default, iter will be zero. Pass
   // in a non-zero iter number to resume training for a pre-trained net.
-  virtual void Solve(const char* resume_file = NULL);
+  virtual void Solve(const char* resume_file = nullptr);
   inline void Solve(const string& resume_file) { Solve(resume_file.c_str()); }
   void Step(int iters);
   // The Restore method simply dispatches to one of the
@@ -65,8 +67,8 @@ class CAFFE_EXPORT Solver {
   // function that produces a SolverState protocol buffer that needs to be
   // written to disk together with the learned net.
   void Snapshot();
-  virtual ~Solver() {}
-  inline const SolverParameter& param() const { return param_; }
+  virtual ~Solver();
+  inline const SolverParameter& param() const;
   inline shared_ptr<Net<Dtype> > net() { return net_; }
   inline const vector<shared_ptr<Net<Dtype> > >& test_nets() {
     return test_nets_;
@@ -109,7 +111,7 @@ class CAFFE_EXPORT Solver {
   //void DisplayOutputBlobs(const int net_id);
   void UpdateSmoothedLoss(Dtype loss, int start_iter, int average_loss);
 
-  SolverParameter param_;
+  std::unique_ptr<SolverParameter> param_;
   int iter_;
   int current_step_;
   shared_ptr<Net<Dtype> > net_;

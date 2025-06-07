@@ -44,10 +44,10 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	class LayerParameter;
 
 template <typename Dtype>
 class Layer;
@@ -72,16 +72,7 @@ class LayerRegistry {
   }
 
   // Get a layer using a LayerParameter.
-  static shared_ptr<Layer<Dtype> > CreateLayer(const LayerParameter& param) {
-    if (Caffe::root_solver()) {
-      LOG(INFO) << "Creating layer " << param.name();
-    }
-    const string& type = param.type();
-    CreatorRegistry& registry = Registry();
-    CHECK_EQ(registry.count(type), 1) << "Unknown layer type: " << type
-        << " (known types: " << LayerTypeListString() << ")";
-    return registry[type](param);
-  }
+  static shared_ptr<Layer<Dtype>> CreateLayer(const LayerParameter& param);
 
   static vector<string> LayerTypeList() {
     CreatorRegistry& registry = Registry();
@@ -96,7 +87,7 @@ class LayerRegistry {
  private:
   // Layer registry should never be instantiated - everything is done with its
   // static variables.
-  LayerRegistry() {}
+  LayerRegistry() = default;
 
   static string LayerTypeListString() {
     vector<string> layer_types = LayerTypeList();

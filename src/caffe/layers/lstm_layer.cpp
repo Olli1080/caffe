@@ -1,3 +1,5 @@
+#include "caffe/layers/lstm_layer.hpp"
+
 #include <string>
 #include <vector>
 
@@ -5,8 +7,9 @@
 #include "caffe/common.hpp"
 #include "caffe/filler.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/layers/lstm_layer.hpp"
+
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -26,7 +29,7 @@ void LSTMLayer<Dtype>::RecurrentOutputBlobNames(vector<string>* names) const {
 
 template <typename Dtype>
 void LSTMLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
-  const int num_output = this->layer_param_.recurrent_param().num_output();
+  const int num_output = this->layer_param_->recurrent_param().num_output();
   const int num_blobs = 2;
   shapes->resize(num_blobs);
   for (int i = 0; i < num_blobs; ++i) {
@@ -45,12 +48,12 @@ void LSTMLayer<Dtype>::OutputBlobNames(vector<string>* names) const {
 
 template <typename Dtype>
 void LSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
-  const int num_output = this->layer_param_.recurrent_param().num_output();
+  const int num_output = this->layer_param_->recurrent_param().num_output();
   CHECK_GT(num_output, 0) << "num_output must be positive";
   const FillerParameter& weight_filler =
-      this->layer_param_.recurrent_param().weight_filler();
+      this->layer_param_->recurrent_param().weight_filler();
   const FillerParameter& bias_filler =
-      this->layer_param_.recurrent_param().bias_filler();
+      this->layer_param_->recurrent_param().bias_filler();
 
   // Add generic LayerParameter's (without bottoms/tops) of layer types we'll
   // use to save redundant code.

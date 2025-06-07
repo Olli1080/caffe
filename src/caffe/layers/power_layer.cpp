@@ -1,7 +1,9 @@
+#include "caffe/layers/power_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/power_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -9,9 +11,9 @@ template <typename Dtype>
 void PowerLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
-  power_ = this->layer_param_.power_param().power();
-  scale_ = this->layer_param_.power_param().scale();
-  shift_ = this->layer_param_.power_param().shift();
+  power_ = this->layer_param_->power_param().power();
+  scale_ = this->layer_param_->power_param().scale();
+  shift_ = this->layer_param_->power_param().shift();
   diff_scale_ = power_  * scale_;
 }
 

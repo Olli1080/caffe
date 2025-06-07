@@ -6,14 +6,16 @@
 #include <vector>
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 #include "caffe/syncedmem.hpp"
 
 const int kMaxBlobAxes = 32;
 
 namespace caffe {
+	class BlobProto;
+	class BlobShape;
 
-/**
+	/**
  * @brief A wrapper around SyncedMemory holders serving as the basic
  *        computational unit through which Layer%s, Net%s, and Solver%s
  *        interact.

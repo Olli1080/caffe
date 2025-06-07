@@ -5,14 +5,15 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/loss_layer.hpp"
 #include "caffe/layers/softmax_layer.hpp"
 
 namespace caffe {
+	enum LossParameter_NormalizationMode : int;
 
-/**
+	/**
  * @brief Computes the multinomial logistic loss for a one-of-many
  *        classification task, passing real-valued predictions through a
  *        softmax to get a probability distribution over classes.
@@ -124,6 +125,18 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
   LossParameter_NormalizationMode normalization_;
 
   int softmax_axis_, outer_num_, inner_num_;
+
+private:
+
+#ifndef CPU_ONLY
+    void forward_kernel(const int nthreads,
+        const Dtype* prob_data, const Dtype* label, Dtype* loss,
+        const int dim,
+        Dtype* counts);
+
+    void backward_kernel(const int nthreads, const Dtype* top,
+        const Dtype* label, Dtype* bottom_diff, const int dim, Dtype* counts);
+#endif
 };
 
 }  // namespace caffe

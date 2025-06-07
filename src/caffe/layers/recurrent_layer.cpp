@@ -1,3 +1,5 @@
+#include "caffe/layers/recurrent_layer.hpp"
+
 #include <string>
 #include <vector>
 
@@ -5,8 +7,9 @@
 #include "caffe/common.hpp"
 #include "caffe/filler.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/layers/recurrent_layer.hpp"
+
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -27,7 +30,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   // If expose_hidden is set, we take as input and produce as output
   // the hidden state blobs at the first and last timesteps.
-  expose_hidden_ = this->layer_param_.recurrent_param().expose_hidden();
+  expose_hidden_ = this->layer_param_->recurrent_param().expose_hidden();
 
   // Get (recurrent) input/output names.
   vector<string> output_names;
@@ -82,7 +85,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   this->FillUnrolledNet(&net_param);
 
   // Prepend this layer's name to the names of each layer in the unrolled net.
-  const string& layer_name = this->layer_param_.name();
+  const string& layer_name = this->layer_param_->name();
   if (layer_name.size()) {
     for (int i = 0; i < net_param.layer_size(); ++i) {
       LayerParameter* layer = net_param.mutable_layer(i);
@@ -107,7 +110,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // Create the unrolled net.
   unrolled_net_.reset(new Net<Dtype>(net_param));
   unrolled_net_->set_debug_info(
-      this->layer_param_.recurrent_param().debug_info());
+      this->layer_param_->recurrent_param().debug_info());
 
   // Setup pointers to the inputs.
   x_input_blob_ = CHECK_NOTNULL(unrolled_net_->blob_by_name("x").get());
@@ -290,7 +293,35 @@ void RecurrentLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU_FORWARD(RecurrentLayer, Forward);
 #else
-INSTANTIATE_LAYER_GPU_FORWARD_EXTERN(RecurrentLayer);
+template <typename Dtype>
+void RecurrentLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+    // Hacky fix for test time... reshare all the shared blobs.
+    // TODO: somehow make this work non-hackily.
+    if (this->phase_ == TEST) {
+        unrolled_net_->ShareWeights();
+    }
+
+    DCHECK_EQ(recur_input_blobs_.size(), recur_output_blobs_.size());
+    if (!expose_hidden_) {
+        for (int i = 0; i < recur_input_blobs_.size(); ++i) {
+            const int count = recur_input_blobs_[i]->count();
+            DCHECK_EQ(count, recur_output_blobs_[i]->count());
+            const Dtype* timestep_T_data = recur_output_blobs_[i]->gpu_data();
+            Dtype* timestep_0_data = recur_input_blobs_[i]->mutable_gpu_data();
+            caffe_copy(count, timestep_T_data, timestep_0_data);
+        }
+    }
+
+    unrolled_net_->ForwardTo(last_layer_index_);
+
+    if (expose_hidden_) {
+        const int top_offset = output_blobs_.size();
+        for (int i = top_offset, j = 0; i < top.size(); ++i, ++j) {
+            top[i]->ShareData(*recur_output_blobs_[j]);
+        }
+    }
+}
 #endif
 
 INSTANTIATE_CLASS(RecurrentLayer);

@@ -7,7 +7,7 @@
 #include "caffe/data_transformer.hpp"
 #include "caffe/internal_thread.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 #include "caffe/util/blocking_queue.hpp"
 
 namespace caffe {
@@ -21,6 +21,7 @@ template <typename Dtype>
 class CAFFE_EXPORT BaseDataLayer : public Layer<Dtype> {
  public:
   explicit BaseDataLayer(const LayerParameter& param);
+  virtual ~BaseDataLayer() override;
   // LayerSetUp: implements common data layer setup functionality, and calls
   // DataLayerSetUp to do special data layer setup for individual layer types.
   // This method may not be overridden except by the BasePrefetchingDataLayer.
@@ -39,8 +40,8 @@ class CAFFE_EXPORT BaseDataLayer : public Layer<Dtype> {
       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override {}
 
  protected:
-  TransformationParameter transform_param_;
-  shared_ptr<DataTransformer<Dtype> > data_transformer_;
+  std::unique_ptr<TransformationParameter> transform_param_;
+  std::shared_ptr<DataTransformer<Dtype>> data_transformer_;
   bool output_labels_;
 };
 

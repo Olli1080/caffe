@@ -1,8 +1,10 @@
+#include "caffe/layers/eltwise_layer.hpp"
+
 #include <cfloat>
 #include <vector>
 
-#include "caffe/layers/eltwise_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -16,7 +18,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       == EltwiseParameter_EltwiseOp_PROD
       && this->layer_param().eltwise_param().coeff_size())) <<
       "Eltwise layer only takes coefficients for summation.";
-  op_ = this->layer_param_.eltwise_param().operation();
+  op_ = this->layer_param_->eltwise_param().operation();
   // Blob-wise coefficients for the elementwise operation.
   coeffs_ = vector<Dtype>(bottom.size(), 1);
   if (this->layer_param().eltwise_param().coeff_size()) {
@@ -24,7 +26,7 @@ void EltwiseLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       coeffs_[i] = this->layer_param().eltwise_param().coeff(i);
     }
   }
-  stable_prod_grad_ = this->layer_param_.eltwise_param().stable_prod_grad();
+  stable_prod_grad_ = this->layer_param_->eltwise_param().stable_prod_grad();
 }
 
 template <typename Dtype>
@@ -37,7 +39,7 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   }
   top[0]->ReshapeLike(*bottom[0]);
   // If max operation, we will initialize the vector index part.
-  if (this->layer_param_.eltwise_param().operation() ==
+  if (this->layer_param_->eltwise_param().operation() ==
       EltwiseParameter_EltwiseOp_MAX && top.size() == 1) {
     max_idx_.Reshape(bottom[0]->shape());
   }
@@ -46,9 +48,9 @@ void EltwiseLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void EltwiseLayer<Dtype>::Forward_cpu(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  int* mask = NULL;
-  const Dtype* bottom_data_a = NULL;
-  const Dtype* bottom_data_b = NULL;
+  int* mask = nullptr;
+  const Dtype* bottom_data_a = nullptr;
+  const Dtype* bottom_data_b = nullptr;
   const int count = top[0]->count();
   Dtype* top_data = top[0]->mutable_cpu_data();
   switch (op_) {
@@ -101,7 +103,7 @@ void EltwiseLayer<Dtype>::Forward_cpu(
 template <typename Dtype>
 void EltwiseLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  const int* mask = NULL;
+  const int* mask = nullptr;
   const int count = top[0]->count();
   const Dtype* top_data = top[0]->cpu_data();
   const Dtype* top_diff = top[0]->cpu_diff();
@@ -155,7 +157,97 @@ void EltwiseLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(EltwiseLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(EltwiseLayer);
+template <typename Dtype>
+void EltwiseLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
+    int* mask = nullptr;
+    const int count = top[0]->count();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+    switch (op_) {
+    case EltwiseParameter_EltwiseOp_PROD:
+        caffe_gpu_mul(count, bottom[0]->gpu_data(), bottom[1]->gpu_data(),
+            top_data);
+        for (int i = 2; i < bottom.size(); ++i) {
+            caffe_gpu_mul(count, top_data, bottom[i]->gpu_data(), top_data);
+        }
+        break;
+    case EltwiseParameter_EltwiseOp_SUM:
+        caffe_gpu_set(count, Dtype(0.), top_data);
+        // TODO(shelhamer) does cuBLAS optimize to sum for coeff = 1?
+        for (int i = 0; i < bottom.size(); ++i) {
+            caffe_gpu_axpy(count, coeffs_[i], bottom[i]->gpu_data(), top_data);
+        }
+        break;
+    case EltwiseParameter_EltwiseOp_MAX:
+        mask = max_idx_.mutable_gpu_data();
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        forward_kernel(count, bottom[0]->gpu_data(), bottom[1]->gpu_data(), 0, top_data, mask);
+        for (int i = 2; i < bottom.size(); ++i) {
+            // NOLINT_NEXT_LINE(whitespace/operators)
+            forward_kernel(count, top_data, bottom[i]->gpu_data(), i - 1, top_data, mask);
+        }
+        break;
+    default:
+        LOG(FATAL) << "Unknown elementwise operation.";
+    }
+}
+
+
+template <typename Dtype>
+void EltwiseLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    const int* mask = nullptr;
+    const int count = top[0]->count();
+    const Dtype* top_data = top[0]->gpu_data();
+    const Dtype* top_diff = top[0]->gpu_diff();
+    for (int i = 0; i < bottom.size(); ++i) {
+        if (propagate_down[i]) {
+            const Dtype* bottom_data = bottom[i]->gpu_data();
+            Dtype* bottom_diff = bottom[i]->mutable_gpu_diff();
+            switch (op_) {
+            case EltwiseParameter_EltwiseOp_PROD:
+                if (stable_prod_grad_) {
+                    bool initialized = false;
+                    for (int j = 0; j < bottom.size(); ++j) {
+                        if (i == j) { continue; }
+                        if (!initialized) {
+                            caffe_copy(count, bottom[j]->gpu_data(), bottom_diff);
+                            initialized = true;
+                        }
+                        else {
+                            caffe_gpu_mul(count, bottom[j]->gpu_data(), bottom_diff,
+                                bottom_diff);
+                        }
+                    }
+                }
+                else {
+                    caffe_gpu_div(count, top_data, bottom_data, bottom_diff);
+                }
+                caffe_gpu_mul(count, bottom_diff, top_diff, bottom_diff);
+                break;
+            case EltwiseParameter_EltwiseOp_SUM:
+                if (coeffs_[i] == Dtype(1.)) {
+                    caffe_copy(count, top_diff, bottom_diff);
+                }
+                else {
+                    caffe_gpu_scale(count, coeffs_[i], top_diff, bottom_diff);
+                }
+                break;
+            case EltwiseParameter_EltwiseOp_MAX:
+                mask = max_idx_.gpu_data();
+                backward_kernel(count, top_diff, i, mask, bottom_diff);
+                break;
+            default:
+                LOG(FATAL) << "Unknown elementwise operation.";
+            }
+        }
+    }
+}
+extern template void EltwiseLayer<float>::forward_kernel(int, const float*, const float*, int, float*, int*);
+extern template void EltwiseLayer<double>::forward_kernel(int, const double*, const double*, int, double*, int*);
+
+extern template void EltwiseLayer<float>::backward_kernel(int, const float*, const int, const int*, float*);
+extern template void EltwiseLayer<double>::backward_kernel(int, const double*, const int, const int*, double*);
 #endif
 
 INSTANTIATE_CLASS(EltwiseLayer);

@@ -76,7 +76,7 @@ class CAFFE_EXPORT AdaGradSolver : public SGDSolver<Dtype> {
  protected:
   void ComputeUpdateValue(int param_id, Dtype rate) override;
   void constructor_sanity_check() {
-    CHECK_EQ(0, this->param_.momentum())
+    CHECK_EQ(0, this->param_->momentum())
         << "Momentum cannot be used with AdaGrad.";
   }
 
@@ -97,11 +97,11 @@ class CAFFE_EXPORT RMSPropSolver : public SGDSolver<Dtype> {
  protected:
   void ComputeUpdateValue(int param_id, Dtype rate) override;
   void constructor_sanity_check() {
-    CHECK_EQ(0, this->param_.momentum())
+    CHECK_EQ(0, this->param_->momentum())
         << "Momentum cannot be used with RMSProp.";
-    CHECK_GE(this->param_.rms_decay(), 0)
+    CHECK_GE(this->param_->rms_decay(), 0)
         << "rms_decay should lie between 0 and 1.";
-    CHECK_LT(this->param_.rms_decay(), 1)
+    CHECK_LT(this->param_->rms_decay(), 1)
         << "rms_decay should lie between 0 and 1.";
   }
 

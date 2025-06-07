@@ -4,6 +4,8 @@
 
 #include <string>
 
+#include "caffe/proto/caffe.pb.h"
+
 #if (defined(USE_LEVELDB) || defined(USE_LMDB))
 #define USE_ANY_DB
 #endif

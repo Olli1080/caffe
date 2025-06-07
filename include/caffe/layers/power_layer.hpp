@@ -5,7 +5,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/neuron_layer.hpp"
 
@@ -75,11 +75,11 @@ class PowerLayer : public NeuronLayer<Dtype> {
   void Backward_gpu(const vector<Blob<Dtype>*>& top,
                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
 
-  /// @brief @f$ \gamma @f$ from layer_param_.power_param()
+  /// @brief @f$ \gamma @f$ from layer_param_->power_param()
   Dtype power_;
-  /// @brief @f$ \alpha @f$ from layer_param_.power_param()
+  /// @brief @f$ \alpha @f$ from layer_param_->power_param()
   Dtype scale_;
-  /// @brief @f$ \beta @f$ from layer_param_.power_param()
+  /// @brief @f$ \beta @f$ from layer_param_->power_param()
   Dtype shift_;
   /// @brief Result of @f$ \alpha \gamma @f$
   Dtype diff_scale_;

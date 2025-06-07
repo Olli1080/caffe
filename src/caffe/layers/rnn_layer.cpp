@@ -1,3 +1,5 @@
+#include "caffe/layers/rnn_layer.hpp"
+
 #include <string>
 #include <vector>
 
@@ -5,8 +7,9 @@
 #include "caffe/common.hpp"
 #include "caffe/filler.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/layers/rnn_layer.hpp"
+
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -24,7 +27,7 @@ void RNNLayer<Dtype>::RecurrentOutputBlobNames(vector<string>* names) const {
 
 template <typename Dtype>
 void RNNLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
-  const int num_output = this->layer_param_.recurrent_param().num_output();
+  const int num_output = this->layer_param_->recurrent_param().num_output();
   shapes->resize(1);
   (*shapes)[0].Clear();
   (*shapes)[0].add_dim(1);  // a single timestep
@@ -40,12 +43,12 @@ void RNNLayer<Dtype>::OutputBlobNames(vector<string>* names) const {
 
 template <typename Dtype>
 void RNNLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
-  const int num_output = this->layer_param_.recurrent_param().num_output();
+  const int num_output = this->layer_param_->recurrent_param().num_output();
   CHECK_GT(num_output, 0) << "num_output must be positive";
   const FillerParameter& weight_filler =
-      this->layer_param_.recurrent_param().weight_filler();
+      this->layer_param_->recurrent_param().weight_filler();
   const FillerParameter& bias_filler =
-      this->layer_param_.recurrent_param().bias_filler();
+      this->layer_param_->recurrent_param().bias_filler();
 
   // Add generic LayerParameter's (without bottoms/tops) of layer types we'll
   // use to save redundant code.

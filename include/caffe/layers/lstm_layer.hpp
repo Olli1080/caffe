@@ -10,7 +10,7 @@
 #include "caffe/layer.hpp"
 #include "caffe/layers/recurrent_layer.hpp"
 #include "caffe/net.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
 

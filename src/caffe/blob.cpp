@@ -6,6 +6,8 @@
 #include "caffe/syncedmem.hpp"
 #include "caffe/util/math_functions.hpp"
 
+#include "caffe/proto/caffe.pb.h"
+
 namespace caffe {
 
 template <typename Dtype>

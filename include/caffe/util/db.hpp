@@ -4,9 +4,13 @@
 #include <string>
 
 #include "caffe/common.hpp"
-#include "caffe/proto/caffe.pb.h"
 
-namespace caffe { namespace db {
+
+namespace caffe {
+
+enum DataParameter_DB : int;
+
+	namespace db {
 
 enum Mode { READ, WRITE, NEW };
 
@@ -45,7 +49,7 @@ class CAFFE_EXPORT DB {
   DISABLE_COPY_AND_ASSIGN(DB);
 };
 
-CAFFE_EXPORT DB* GetDB(DataParameter::DB backend);
+CAFFE_EXPORT DB* GetDB(DataParameter_DB backend);
 CAFFE_EXPORT DB* GetDB(const string& backend);
 
 }  // namespace db

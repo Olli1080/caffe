@@ -34,8 +34,9 @@ Net<Dtype>::Net(const string& param_file, Phase phase,
   // Set phase, stages and level
   param.mutable_state()->set_phase(phase);
   if (stages != nullptr) {
-    for (int i = 0; i < stages->size(); i++) {
-      param.mutable_state()->add_stage((*stages)[i]);
+    for (const auto& stage : *stages)
+    {
+      param.mutable_state()->add_stage(stage);
     }
   }
   param.mutable_state()->set_level(level);
@@ -157,8 +158,9 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     // Finally, set the backward flag
     layer_need_backward_.push_back(need_backward);
     if (need_backward) {
-      for (int top_id = 0; top_id < top_id_vecs_[layer_id].size(); ++top_id) {
-        blob_need_backward_[top_id_vecs_[layer_id][top_id]] = true;
+      for (int top_id : top_id_vecs_[layer_id])
+      {
+        blob_need_backward_[top_id] = true;
       }
     }
   }
@@ -176,10 +178,10 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     for (int top_id = 0; top_id < top_vecs_[layer_id].size(); ++top_id) {
       const string& blob_name = blob_names_[top_id_vecs_[layer_id][top_id]];
       if (layers_[layer_id]->loss(top_id) ||
-          (blobs_under_loss.find(blob_name) != blobs_under_loss.end())) {
+          (blobs_under_loss.contains(blob_name))) {
         layer_contributes_loss = true;
       }
-      if (blobs_skip_backp.find(blob_name) == blobs_skip_backp.end()) {
+      if (!blobs_skip_backp.contains(blob_name)) {
         layer_skip_propagate_down = false;
       }
       if (layer_contributes_loss && !layer_skip_propagate_down)
@@ -239,12 +241,12 @@ void Net<Dtype>::Init(const NetParameter& in_param) {
     }
   }
   // In the end, all remaining blobs are considered output blobs.
-  for (set<string>::iterator it = available_blobs.begin();
-      it != available_blobs.end(); ++it) {
+  for (const auto& available_blob : available_blobs)
+  {
     LOG_IF(INFO, Caffe::root_solver())
-        << "This network produces output " << *it;
-    net_output_blobs_.push_back(blobs_[blob_name_to_idx[*it]].get());
-    net_output_blob_indices_.push_back(blob_name_to_idx[*it]);
+        << "This network produces output " << available_blob;
+    net_output_blobs_.push_back(blobs_[blob_name_to_idx[available_blob]].get());
+    net_output_blob_indices_.push_back(blob_name_to_idx[available_blob]);
   }
   for (int blob_id = 0; blob_id < blob_names_.size(); ++blob_id) {
     blob_names_index_[blob_names_[blob_id]] = blob_id;
@@ -371,7 +373,7 @@ void Net<Dtype>::AppendTop(const NetParameter& param, const int layer_id,
     top_vecs_[layer_id].push_back(blobs_[(*blob_name_to_idx)[blob_name]].get());
     top_id_vecs_[layer_id].push_back((*blob_name_to_idx)[blob_name]);
   } else if (blob_name_to_idx &&
-             blob_name_to_idx->find(blob_name) != blob_name_to_idx->end()) {
+             blob_name_to_idx->contains(blob_name)) {
     // If we are not doing in-place computation but have duplicated blobs,
     // raise an error.
     LOG(FATAL) << "Top blob '" << blob_name
@@ -400,7 +402,7 @@ int Net<Dtype>::AppendBottom(const NetParameter& param, const int layer_id,
     map<string, int>* blob_name_to_idx) {
   const LayerParameter& layer_param = param.layer(layer_id);
   const string& blob_name = layer_param.bottom(bottom_id);
-  if (available_blobs->find(blob_name) == available_blobs->end()) {
+  if (!available_blobs->contains(blob_name)) {
     LOG(FATAL) << "Unknown bottom blob '" << blob_name << "' (layer '"
                << layer_param.name() << "', bottom index " << bottom_id << ")";
   }
@@ -426,7 +428,7 @@ void Net<Dtype>::AppendParam(const NetParameter& param, const int layer_id,
   const int param_size = layer_param.param_size();
   string param_name =
       (param_size > param_id) ? layer_param.param(param_id).name() : "";
-  if (param_name.size()) {
+  if (!param_name.empty()) {
     param_display_names_.push_back(param_name);
   } else {
     ostringstream param_display_name;
@@ -440,13 +442,13 @@ void Net<Dtype>::AppendParam(const NetParameter& param, const int layer_id,
   ParamSpec default_param_spec;
   const ParamSpec* param_spec = (layer_param.param_size() > param_id) ?
       &layer_param.param(param_id) : &default_param_spec;
-  if (!param_size || !param_name.size() || (param_name.size() &&
-      param_names_index_.find(param_name) == param_names_index_.end())) {
+  if (!param_size || param_name.empty() || (!param_name.empty() &&
+	  !param_names_index_.contains(param_name))) {
     // This layer "owns" this parameter blob -- it is either anonymous
     // (i.e., not given a param_name) or explicitly given a name that we
     // haven't already seen.
     param_owners_.push_back(-1);
-    if (param_name.size()) {
+    if (!param_name.empty()) {
       param_names_index_[param_name] = net_param_id;
     }
     const int learnable_param_id = static_cast<int>(learnable_params_.size());
@@ -799,7 +801,7 @@ void Net<Dtype>::CopyTrainedLayersFromHDF5(const string& trained_filename) {
   int num_layers = hdf5_get_num_links(data_hid);
   for (int i = 0; i < num_layers; ++i) {
     string source_layer_name = hdf5_get_name_by_idx(data_hid, i);
-    if (!layer_names_index_.count(source_layer_name)) {
+    if (!layer_names_index_.contains(source_layer_name)) {
       LOG(INFO) << "Ignoring source layer " << source_layer_name;
       continue;
     }
@@ -957,7 +959,7 @@ void Net<Dtype>::ShareWeights() {
 
 template <typename Dtype>
 bool Net<Dtype>::has_blob(const string& blob_name) const {
-  return blob_names_index_.find(blob_name) != blob_names_index_.end();
+  return blob_names_index_.contains(blob_name);
 }
 
 template <typename Dtype>
@@ -976,7 +978,7 @@ shared_ptr<Blob<Dtype> > Net<Dtype>::blob_by_name(
 
 template <typename Dtype>
 bool Net<Dtype>::has_layer(const string& layer_name) const {
-  return layer_names_index_.find(layer_name) != layer_names_index_.end();
+  return layer_names_index_.contains(layer_name);
 }
 
 template <typename Dtype>

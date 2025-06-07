@@ -1,8 +1,10 @@
+#include "caffe/layers/hinge_loss_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/hinge_loss_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -27,7 +29,7 @@ void HingeLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
     }
   }
   Dtype* loss = top[0]->mutable_cpu_data();
-  switch (this->layer_param_.hinge_loss_param().norm()) {
+  switch (this->layer_param_->hinge_loss_param().norm()) {
   case HingeLossParameter_Norm_L1:
     loss[0] = caffe_cpu_asum(count, bottom_diff) / num;
     break;
@@ -58,7 +60,7 @@ void HingeLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     }
 
     const Dtype loss_weight = top[0]->cpu_diff()[0];
-    switch (this->layer_param_.hinge_loss_param().norm()) {
+    switch (this->layer_param_->hinge_loss_param().norm()) {
     case HingeLossParameter_Norm_L1:
       caffe_cpu_sign(count, bottom_diff, bottom_diff);
       caffe_scal(count, loss_weight / num, bottom_diff);

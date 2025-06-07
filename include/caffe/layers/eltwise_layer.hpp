@@ -5,11 +5,12 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	enum EltwiseParameter_EltwiseOp : int;
 
-/**
+	/**
  * @brief Compute elementwise operations, such as product and sum,
  *        along multiple input Blobs.
  *
@@ -45,6 +46,11 @@ class EltwiseLayer : public Layer<Dtype> {
   Blob<int> max_idx_;
 
   bool stable_prod_grad_;
+
+private:
+
+    void forward_kernel(int count, const Dtype* bottom_data_a, const Dtype* bottom_data_b, int blob_idx, Dtype* top_data, int* mask);
+    void backward_kernel(int count, const Dtype* top_diff, const int blob_idx, const int* mask, Dtype* bottom_diff);
 };
 
 }  // namespace caffe

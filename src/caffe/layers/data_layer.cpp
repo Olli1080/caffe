@@ -1,13 +1,16 @@
+#include "caffe/layers/data_layer.hpp"
+
 #ifdef USE_OPENCV
 #include <opencv2/core/core.hpp>
 #endif  // USE_OPENCV
-#include <stdint.h>
+#include <cstdint>
 
 #include <vector>
 
 #include "caffe/data_transformer.hpp"
-#include "caffe/layers/data_layer.hpp"
+
 #include "caffe/util/benchmark.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -28,7 +31,7 @@ DataLayer<Dtype>::~DataLayer() {
 template <typename Dtype>
 void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const int batch_size = this->layer_param_.data_param().batch_size();
+  const int batch_size = this->layer_param_->data_param().batch_size();
   // Read a data point, and use it to initialize the top blob.
   Datum datum;
   datum.ParseFromString(cursor_->value());
@@ -62,7 +65,7 @@ bool DataLayer<Dtype>::Skip() {
   int rank = Caffe::solver_rank();
   bool keep = (offset_ % size) == rank ||
               // In test mode, only rank 0 runs, so avoid skipping
-              this->layer_param_.phase() == TEST;
+              this->layer_param_->phase() == TEST;
   return !keep;
 }
 
@@ -87,7 +90,7 @@ void DataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   CPUTimer timer;
   CHECK(batch->data_.count());
   CHECK(this->transformed_data_.count());
-  const int batch_size = this->layer_param_.data_param().batch_size();
+  const int batch_size = this->layer_param_->data_param().batch_size();
 
   Datum datum;
   for (int item_id = 0; item_id < batch_size; ++item_id) {

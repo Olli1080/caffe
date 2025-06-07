@@ -1,8 +1,10 @@
+#include "caffe/layers/softmax_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/softmax_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -10,7 +12,7 @@ template <typename Dtype>
 void SoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
   softmax_axis_ =
-      bottom[0]->CanonicalAxisIndex(this->layer_param_.softmax_param().axis());
+      bottom[0]->CanonicalAxisIndex(this->layer_param_->softmax_param().axis());
   top[0]->ReshapeLike(*bottom[0]);
   vector<int> mult_dims(1, bottom[0]->shape(softmax_axis_));
   sum_multiplier_.Reshape(mult_dims);

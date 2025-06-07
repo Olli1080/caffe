@@ -5,7 +5,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/neuron_layer.hpp"
 
@@ -74,6 +74,14 @@ class DropoutLayer : public NeuronLayer<Dtype> {
   /// the scale for undropped inputs at train time @f$ 1 / (1 - p) @f$
   Dtype scale_;
   unsigned int uint_thres_;
+
+private:
+
+#ifndef CPU_ONLY
+    void forward_kernel(int count, const Dtype* bottom_data, unsigned int* mask, Dtype* top_data);
+    void backward_kernel(int count, const Dtype* top_diff, const unsigned int* mask, Dtype* bottom_diff);
+#endif
+
 };
 
 }  // namespace caffe

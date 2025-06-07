@@ -5,14 +5,15 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/loss_layer.hpp"
 #include "caffe/layers/sigmoid_layer.hpp"
 
 namespace caffe {
+	enum LossParameter_NormalizationMode : int;
 
-/**
+	/**
  * @brief Computes the cross-entropy (logistic) loss @f$
  *          E = \frac{-1}{n} \sum\limits_{n=1}^N \left[
  *                  p_n \log \hat{p}_n +
@@ -49,19 +50,19 @@ class SigmoidCrossEntropyLossLayer : public LossLayer<Dtype> {
           sigmoid_layer_(new SigmoidLayer<Dtype>(param)),
           sigmoid_output_(new Blob<Dtype>()) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   inline const char* type() const override { return "SigmoidCrossEntropyLoss"; }
 
  protected:
   /// @copydoc SigmoidCrossEntropyLossLayer
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the sigmoid cross-entropy loss error gradient w.r.t. the
@@ -94,9 +95,9 @@ class SigmoidCrossEntropyLossLayer : public LossLayer<Dtype> {
    *      the labels -- ignored as we can't compute their error gradients
    */
   void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+                    const vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
   void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+                    const vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   /// Read the normalization mode parameter and compute the normalizer based
   /// on the blob size.  If normalization_mode is VALID, the count of valid
@@ -106,13 +107,13 @@ class SigmoidCrossEntropyLossLayer : public LossLayer<Dtype> {
       LossParameter_NormalizationMode normalization_mode, int valid_count);
 
   /// The internal SigmoidLayer used to map predictions to probabilities.
-  shared_ptr<SigmoidLayer<Dtype> > sigmoid_layer_;
+  std::shared_ptr<SigmoidLayer<Dtype> > sigmoid_layer_;
   /// sigmoid_output stores the output of the SigmoidLayer.
-  shared_ptr<Blob<Dtype> > sigmoid_output_;
+  std::shared_ptr<Blob<Dtype> > sigmoid_output_;
   /// bottom vector holder to call the underlying SigmoidLayer::Forward
-  vector<Blob<Dtype>*> sigmoid_bottom_vec_;
+  std::vector<Blob<Dtype>*> sigmoid_bottom_vec_;
   /// top vector holder to call the underlying SigmoidLayer::Forward
-  vector<Blob<Dtype>*> sigmoid_top_vec_;
+  std::vector<Blob<Dtype>*> sigmoid_top_vec_;
 
   /// Whether to ignore instances with a certain label.
   bool has_ignore_label_;
@@ -122,6 +123,16 @@ class SigmoidCrossEntropyLossLayer : public LossLayer<Dtype> {
   LossParameter_NormalizationMode normalization_;
   Dtype normalizer_;
   int outer_num_, inner_num_;
+
+private:
+
+#ifndef CPU_ONLY
+    void forward_kernel(const int nthreads,
+        const Dtype* input_data, const Dtype* target, Dtype* loss,
+        Dtype* counts);
+
+    void backward_kernel(const int count, const Dtype* target, Dtype* diff);
+#endif
 };
 
 }  // namespace caffe

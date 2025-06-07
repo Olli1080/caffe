@@ -1,7 +1,9 @@
+#include "caffe/solver_factory.hpp"
+
 #include <string>
 #include <vector>
 
-#include "caffe/solver_factory.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -46,7 +48,7 @@ vector<string> SolverRegistry<Dtype>::SolverTypeList() {
 // Solver registry should never be instantiated - everything is done with its
 // static variables.
 template <typename Dtype>
-SolverRegistry<Dtype>::SolverRegistry() {}
+SolverRegistry<Dtype>::SolverRegistry() = default;
 
 template <typename Dtype>
 string SolverRegistry<Dtype>::SolverTypeListString() {

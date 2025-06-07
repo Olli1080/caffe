@@ -1,7 +1,9 @@
+#include "caffe/layers/filter_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/filter_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 

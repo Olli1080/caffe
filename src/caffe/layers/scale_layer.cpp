@@ -1,17 +1,20 @@
+#include "caffe/layers/scale_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
 #include "caffe/filler.hpp"
 #include "caffe/layer_factory.hpp"
-#include "caffe/layers/scale_layer.hpp"
+
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const ScaleParameter& param = this->layer_param_.scale_param();
+  const ScaleParameter& param = this->layer_param_->scale_param();
   if (bottom.size() == 1 && this->blobs_.size() > 0) {
     LOG(INFO) << "Skipping parameter initialization";
   } else if (bottom.size() == 1) {
@@ -42,7 +45,7 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     filler->Fill(this->blobs_[0].get());
   }
   if (param.bias_term()) {
-    LayerParameter layer_param(this->layer_param_);
+    LayerParameter layer_param(*this->layer_param_);
     layer_param.set_type("Bias");
     BiasParameter* bias_param = layer_param.mutable_bias_param();
     bias_param->set_axis(param.axis());
@@ -75,7 +78,7 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const ScaleParameter& param = this->layer_param_.scale_param();
+  const ScaleParameter& param = this->layer_param_->scale_param();
   Blob<Dtype>* scale = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
   // Always set axis_ == 0 in special case where scale is a scalar
   // (num_axes == 0). Mathematically equivalent for any choice of axis_, so the
@@ -165,7 +168,7 @@ void ScaleLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
         (in_place ? temp_.mutable_cpu_data() : bottom[0]->mutable_cpu_diff()));
     caffe_mul(top[0]->count(), top_diff, bottom_data, product);
     if (!is_eltwise) {
-      Dtype* sum_result = NULL;
+      Dtype* sum_result = nullptr;
       if (inner_dim_ == 1) {
         sum_result = product;
       } else if (sum_result_.count() == 1) {

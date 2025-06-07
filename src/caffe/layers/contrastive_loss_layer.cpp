@@ -1,8 +1,10 @@
+#include "caffe/layers/contrastive_loss_layer.hpp"
+
 #include <algorithm>
 #include <vector>
 
-#include "caffe/layers/contrastive_loss_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -38,9 +40,9 @@ void ContrastiveLossLayer<Dtype>::Forward_cpu(
       bottom[1]->cpu_data(),  // b
       diff_.mutable_cpu_data());  // a_i-b_i
   const int channels = bottom[0]->channels();
-  Dtype margin = this->layer_param_.contrastive_loss_param().margin();
+  Dtype margin = this->layer_param_->contrastive_loss_param().margin();
   bool legacy_version =
-      this->layer_param_.contrastive_loss_param().legacy_version();
+      this->layer_param_->contrastive_loss_param().legacy_version();
   Dtype loss(0.0);
   for (int i = 0; i < bottom[0]->num(); ++i) {
     dist_sq_.mutable_cpu_data()[i] = caffe_cpu_dot(channels,
@@ -64,9 +66,9 @@ void ContrastiveLossLayer<Dtype>::Forward_cpu(
 template <typename Dtype>
 void ContrastiveLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
-  Dtype margin = this->layer_param_.contrastive_loss_param().margin();
+  Dtype margin = this->layer_param_->contrastive_loss_param().margin();
   bool legacy_version =
-      this->layer_param_.contrastive_loss_param().legacy_version();
+      this->layer_param_->contrastive_loss_param().legacy_version();
   for (int i = 0; i < 2; ++i) {
     if (propagate_down[i]) {
       const Dtype sign = static_cast<Dtype>((i == 0) ? 1 : -1);
@@ -113,7 +115,74 @@ void ContrastiveLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(ContrastiveLossLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ContrastiveLossLayer);
+//INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ContrastiveLossLayer);
+template <typename Dtype>
+void ContrastiveLossLayer<Dtype>::Forward_gpu(
+    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const int count = bottom[0]->count();
+    caffe_gpu_sub(
+        count,
+        bottom[0]->gpu_data(),  // a
+        bottom[1]->gpu_data(),  // b
+        diff_.mutable_gpu_data());  // a_i-b_i
+    caffe_gpu_powx(
+        count,
+        diff_.mutable_gpu_data(),  // a_i-b_i
+        Dtype(2),
+        diff_sq_.mutable_gpu_data());  // (a_i-b_i)^2
+    caffe_gpu_gemv(
+        CblasNoTrans,
+        bottom[0]->num(),
+        bottom[0]->channels(),
+        Dtype(1.0),
+        diff_sq_.gpu_data(),  // (a_i-b_i)^2
+        summer_vec_.gpu_data(),
+        Dtype(0.0),
+        dist_sq_.mutable_gpu_data());  // \Sum (a_i-b_i)^2
+    Dtype margin = this->layer_param_->contrastive_loss_param().margin();
+    bool legacy_version =
+        this->layer_param_->contrastive_loss_param().legacy_version();
+    Dtype loss(0.0);
+    for (int i = 0; i < bottom[0]->num(); ++i) {
+        if (static_cast<int>(bottom[2]->cpu_data()[i])) {  // similar pairs
+            loss += dist_sq_.cpu_data()[i];
+        }
+        else {  // dissimilar pairs
+            if (legacy_version) {
+                loss += std::max(margin - dist_sq_.cpu_data()[i], Dtype(0.0));
+            }
+            else {
+                Dtype dist = std::max(margin - sqrt(dist_sq_.cpu_data()[i]),
+                    Dtype(0.0));
+                loss += dist * dist;
+            }
+        }
+    }
+    loss = loss / static_cast<Dtype>(bottom[0]->num()) / Dtype(2);
+    top[0]->mutable_cpu_data()[0] = loss;
+}
+
+template <typename Dtype>
+void ContrastiveLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    for (int i = 0; i < 2; ++i) {
+        if (propagate_down[i]) {
+            const int count = bottom[0]->count();
+            const int channels = bottom[0]->channels();
+            Dtype margin = this->layer_param_->contrastive_loss_param().margin();
+            const bool legacy_version =
+                this->layer_param_->contrastive_loss_param().legacy_version();
+            const Dtype sign = (i == 0) ? 1 : -1;
+            const Dtype alpha = sign * top[0]->cpu_diff()[0] /
+                static_cast<Dtype>(bottom[0]->num());
+            // NOLINT_NEXT_LINE(whitespace/operators)
+            backward_kernel(count, channels, margin, legacy_version, alpha, bottom, i);
+            CUDA_POST_KERNEL_CHECK;
+        }
+    }
+}
+extern template void ContrastiveLossLayer<float>::backward_kernel(int, int, float, bool, float, const vector<Blob<float>*>&, int);
+extern template void ContrastiveLossLayer<double>::backward_kernel(int, int, double, bool, double, const vector<Blob<double>*>&, int);
 #endif
 
 INSTANTIATE_CLASS(ContrastiveLossLayer);

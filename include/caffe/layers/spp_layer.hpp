@@ -3,13 +3,19 @@
 
 #include <vector>
 
+#include "concat_layer.hpp"
+#include "flatten_layer.hpp"
+#include "pooling_layer.hpp"
+#include "split_layer.hpp"
+
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 namespace caffe {
+	class SPPParameter;
 
-/**
+	/**
  * @brief Does spatial pyramid pooling on the input image
  *        by taking the max, average, etc. within regions
  *        so that the result vector of different sized

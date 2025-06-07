@@ -1,7 +1,9 @@
 #ifdef USE_CUDNN
+#include "caffe/layers/cudnn_lrn_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/cudnn_lrn_layer.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 

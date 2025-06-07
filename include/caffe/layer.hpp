@@ -8,18 +8,13 @@
 #include "caffe/blob.hpp"
 #include "caffe/common.hpp"
 #include "caffe/layer_factory.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 #include "caffe/util/math_functions.hpp"
 
-/**
- Forward declare boost::thread instead of including boost/thread.hpp
- to avoid a boost/NVCC issues (#1009, #1010) on OSX.
- */
-namespace boost { class mutex; }
-
 namespace caffe {
+	enum Phase : int;
 
-/**
+	/**
  * @brief An interface for the units of computation which can be composed into a
  *        Net.
  *
@@ -37,19 +32,8 @@ class CAFFE_EXPORT Layer {
    * to SetUp(), where the dimensions of the bottom blobs are provided to the
    * layer.
    */
-  explicit Layer(const LayerParameter& param)
-    : layer_param_(param) {
-      // Set phase and copy blobs (if there are any).
-      phase_ = param.phase();
-      if (layer_param_.blobs_size() > 0) {
-        blobs_.resize(layer_param_.blobs_size());
-        for (int i = 0; i < layer_param_.blobs_size(); ++i) {
-          blobs_[i].reset(new Blob<Dtype>());
-          blobs_[i]->FromProto(layer_param_.blobs(i));
-        }
-      }
-    }
-  virtual ~Layer() = default;
+  explicit Layer(const LayerParameter& param);
+  virtual ~Layer();
 
   /**
    * @brief Implements common layer setup functionality.
@@ -64,8 +48,8 @@ class CAFFE_EXPORT Layer {
    * Sets up the loss weight multiplier blobs for any non-zero loss weights.
    * This method may not be overridden.
    */
-  void SetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+  void SetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
     CheckBlobCounts(bottom, top);
     LayerSetUp(bottom, top);
     Reshape(bottom, top);
@@ -88,8 +72,8 @@ class CAFFE_EXPORT Layer {
    * <code>Reshape</code>, which will be called before the forward pass to
    * adjust the top blob sizes.
    */
-  virtual void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {}
+  virtual void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {}
 
   /**
    * @brief Adjust the shapes of top blobs and internal buffers to accommodate
@@ -103,8 +87,8 @@ class CAFFE_EXPORT Layer {
    * and making any other necessary adjustments so that the layer can
    * accommodate the bottom blobs.
    */
-  virtual void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) = 0;
+  virtual void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) = 0;
 
   /**
    * @brief Given the bottom blobs, compute the top blobs and the loss.
@@ -123,8 +107,8 @@ class CAFFE_EXPORT Layer {
    *
    * Your layer should implement Forward_cpu and (optionally) Forward_gpu.
    */
-  Dtype Forward(const vector<Blob<Dtype>*>& bottom,
-                const vector<Blob<Dtype>*>& top);
+  Dtype Forward(const std::vector<Blob<Dtype>*>& bottom,
+                const std::vector<Blob<Dtype>*>& top);
 
   /**
    * @brief Given the top blob error gradients, compute the bottom blob error
@@ -147,21 +131,21 @@ class CAFFE_EXPORT Layer {
    *
    * Your layer should implement Backward_cpu and (optionally) Backward_gpu.
    */
-  void Backward(const vector<Blob<Dtype>*>& top,
-                const vector<bool>& propagate_down,
-                const vector<Blob<Dtype>*>& bottom);
+  void Backward(const std::vector<Blob<Dtype>*>& top,
+                const std::vector<bool>& propagate_down,
+                const std::vector<Blob<Dtype>*>& bottom);
 
   /**
    * @brief Returns the vector of learnable parameter blobs.
    */
-  vector<shared_ptr<Blob<Dtype> > >& blobs() {
+  std::vector<std::shared_ptr<Blob<Dtype>>>& blobs() {
     return blobs_;
   }
 
   /**
    * @brief Returns the layer parameter.
    */
-  const LayerParameter& layer_param() const { return layer_param_; }
+  const LayerParameter& layer_param() const;
 
   /**
    * @brief Writes the layer parameter to a protocol buffer
@@ -294,27 +278,27 @@ class CAFFE_EXPORT Layer {
 
  protected:
   /** The protobuf that stores the layer parameters */
-  LayerParameter layer_param_;
+  std::unique_ptr<LayerParameter> layer_param_;
   /** The phase: TRAIN or TEST */
   Phase phase_;
   /** The vector that stores the learnable parameters as a set of blobs. */
-  vector<shared_ptr<Blob<Dtype> > > blobs_;
+  std::vector<std::shared_ptr<Blob<Dtype> > > blobs_;
   /** Vector indicating whether to compute the diff of each param blob. */
-  vector<bool> param_propagate_down_;
+  std::vector<bool> param_propagate_down_;
 
   /** The vector that indicates whether each top blob has a non-zero weight in
    *  the objective function. */
-  vector<Dtype> loss_;
+  std::vector<Dtype> loss_;
 
   /** @brief Using the CPU device, compute the layer output. */
-  virtual void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) = 0;
+  virtual void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) = 0;
   /**
    * @brief Using the GPU device, compute the layer output.
    *        Fall back to Forward_cpu() if unavailable.
    */
-  virtual void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+  virtual void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
     // LOG(WARNING) << "Using CPU code as backup.";
     return Forward_cpu(bottom, top);
   }
@@ -323,17 +307,17 @@ class CAFFE_EXPORT Layer {
    * @brief Using the CPU device, compute the gradients for any parameters and
    *        for the bottom blobs if propagate_down is true.
    */
-  virtual void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down,
-      const vector<Blob<Dtype>*>& bottom) = 0;
+  virtual void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down,
+      const std::vector<Blob<Dtype>*>& bottom) = 0;
   /**
    * @brief Using the GPU device, compute the gradients for any parameters and
    *        for the bottom blobs if propagate_down is true.
    *        Fall back to Backward_cpu() if unavailable.
    */
-  virtual void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down,
-      const vector<Blob<Dtype>*>& bottom) {
+  virtual void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down,
+      const std::vector<Blob<Dtype>*>& bottom) {
     // LOG(WARNING) << "Using CPU code as backup.";
     Backward_cpu(top, propagate_down, bottom);
   }
@@ -343,8 +327,8 @@ class CAFFE_EXPORT Layer {
    * and top Blobs provided as input match the expected numbers specified by
    * the {ExactNum,Min,Max}{Bottom,Top}Blobs() functions.
    */
-  virtual void CheckBlobCounts(const vector<Blob<Dtype>*>& bottom,
-                               const vector<Blob<Dtype>*>& top) {
+  virtual void CheckBlobCounts(const std::vector<Blob<Dtype>*>& bottom,
+                               const std::vector<Blob<Dtype>*>& top) {
     if (ExactNumBottomBlobs() >= 0) {
       CHECK_EQ(ExactNumBottomBlobs(), bottom.size())
           << type() << " Layer takes " << ExactNumBottomBlobs()
@@ -386,21 +370,7 @@ class CAFFE_EXPORT Layer {
    * Called by SetUp to initialize the weights associated with any top blobs in
    * the loss function. Store non-zero loss weights in the diff blob.
    */
-  void SetLossWeights(const vector<Blob<Dtype>*>& top) {
-    const int num_loss_weights = layer_param_.loss_weight_size();
-    if (num_loss_weights) {
-      CHECK_EQ(top.size(), num_loss_weights) << "loss_weight must be "
-          "unspecified or specified once per top blob.";
-      for (int top_id = 0; top_id < top.size(); ++top_id) {
-        const Dtype loss_weight = layer_param_.loss_weight(top_id);
-        if (loss_weight == Dtype(0)) { continue; }
-        this->set_loss(top_id, loss_weight);
-        const int count = top[top_id]->count();
-        Dtype* loss_multiplier = top[top_id]->mutable_cpu_diff();
-        caffe_set(count, loss_weight, loss_multiplier);
-      }
-    }
-  }
+  void SetLossWeights(const std::vector<Blob<Dtype>*>& top);
 
  private:
   DISABLE_COPY_AND_ASSIGN(Layer);

@@ -1,8 +1,11 @@
+#include "caffe/layers/bias_layer.hpp"
+
 #include <vector>
 
 #include "caffe/filler.hpp"
-#include "caffe/layers/bias_layer.hpp"
+
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -13,7 +16,7 @@ void BiasLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     LOG(INFO) << "Skipping parameter initialization";
   } else if (bottom.size() == 1) {
     // bias is a learned parameter; initialize it
-    const BiasParameter& param = this->layer_param_.bias_param();
+    const BiasParameter& param = this->layer_param_->bias_param();
     const int axis = bottom[0]->CanonicalAxisIndex(param.axis());
     const int num_axes = param.num_axes();
     CHECK_GE(num_axes, -1) << "num_axes must be non-negative, "
@@ -39,7 +42,7 @@ void BiasLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 template <typename Dtype>
 void BiasLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  const BiasParameter& param = this->layer_param_.bias_param();
+  const BiasParameter& param = this->layer_param_->bias_param();
   Blob<Dtype>* bias = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
   // Always set axis == 0 in special case where bias is a scalar
   // (num_axes == 0). Mathematically equivalent for any choice of axis, so the

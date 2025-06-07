@@ -1,10 +1,14 @@
+
+#include "caffe/sgd_solvers.hpp"
+
 #include <string>
 #include <vector>
 
-#include "caffe/sgd_solvers.hpp"
 #include "caffe/util/hdf5.hpp"
 #include "caffe/util/io.hpp"
 #include "caffe/util/upgrade_proto.hpp"
+
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -26,43 +30,43 @@ namespace caffe {
 template <typename Dtype>
 Dtype SGDSolver<Dtype>::GetLearningRate() {
   Dtype rate;
-  const string& lr_policy = this->param_.lr_policy();
+  const string& lr_policy = this->param_->lr_policy();
   if (lr_policy == "fixed") {
-    rate = this->param_.base_lr();
+    rate = this->param_->base_lr();
   } else if (lr_policy == "step") {
-    CHECK_GT(this->param_.stepsize(), 0);
-    this->current_step_ = this->iter_ / this->param_.stepsize();
-    CHECK_GE(this->param_.gamma(), 0);
-    rate = static_cast<Dtype>(this->param_.base_lr() *
-        pow(this->param_.gamma(), this->current_step_));
+    CHECK_GT(this->param_->stepsize(), 0);
+    this->current_step_ = this->iter_ / this->param_->stepsize();
+    CHECK_GE(this->param_->gamma(), 0);
+    rate = static_cast<Dtype>(this->param_->base_lr() *
+        pow(this->param_->gamma(), this->current_step_));
   } else if (lr_policy == "exp") {
-    CHECK_GE(this->param_.gamma(), 0);
-    rate = static_cast<Dtype>(this->param_.base_lr() * pow(this->param_.gamma(), this->iter_));
+    CHECK_GE(this->param_->gamma(), 0);
+    rate = static_cast<Dtype>(this->param_->base_lr() * pow(this->param_->gamma(), this->iter_));
   } else if (lr_policy == "inv") {
-    CHECK_GE(this->param_.gamma(), 0);
-    rate = this->param_.base_lr() *
-        pow(Dtype(1) + this->param_.gamma() * this->iter_,
-            - this->param_.power());
+    CHECK_GE(this->param_->gamma(), 0);
+    rate = this->param_->base_lr() *
+        pow(Dtype(1) + this->param_->gamma() * this->iter_,
+            - this->param_->power());
   } else if (lr_policy == "multistep") {
-    if (this->current_step_ < this->param_.stepvalue_size() &&
-          this->iter_ >= this->param_.stepvalue(this->current_step_)) {
-      this->current_step_++;
+    if (this->current_step_ < this->param_->stepvalue_size() &&
+          this->iter_ >= this->param_->stepvalue(this->current_step_)) {
+      ++this->current_step_;
       LOG(INFO) << "MultiStep Status: Iteration " <<
       this->iter_ << ", step = " << this->current_step_;
     }
-    CHECK_GE(this->param_.gamma(), 0);
-    rate = static_cast<Dtype>(this->param_.base_lr() *
-        pow(this->param_.gamma(), this->current_step_));
+    CHECK_GE(this->param_->gamma(), 0);
+    rate = static_cast<Dtype>(this->param_->base_lr() *
+        pow(this->param_->gamma(), this->current_step_));
   } else if (lr_policy == "poly") {
-    rate = this->param_.base_lr() * pow(Dtype(1.) -
-        (Dtype(this->iter_) / Dtype(this->param_.max_iter())),
-        this->param_.power());
+    rate = this->param_->base_lr() * pow(Dtype(1.) -
+        (Dtype(this->iter_) / Dtype(this->param_->max_iter())),
+        this->param_->power());
   } else if (lr_policy == "sigmoid") {
-    CHECK_GE(this->param_.gamma(), 0);
-    CHECK_GT(this->param_.stepsize(), 0);
-    rate = this->param_.base_lr() * (Dtype(1.) /
-        (Dtype(1.) + exp(-this->param_.gamma() * (Dtype(this->iter_) -
-          Dtype(this->param_.stepsize())))));
+    CHECK_GE(this->param_->gamma(), 0);
+    CHECK_GT(this->param_->stepsize(), 0);
+    rate = this->param_->base_lr() * (Dtype(1.) /
+        (Dtype(1.) + exp(-this->param_->gamma() * (Dtype(this->iter_) -
+          Dtype(this->param_->stepsize())))));
   } else {
     LOG(FATAL) << "Unknown learning rate policy: " << lr_policy;
   }
@@ -78,15 +82,15 @@ void SGDSolver<Dtype>::PreSolve() {
   temp_.clear();
   for (int i = 0; i < net_params.size(); ++i) {
     const vector<int>& shape = net_params[i]->shape();
-    history_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
-    update_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
-    temp_.push_back(shared_ptr<Blob<Dtype> >(new Blob<Dtype>(shape)));
+    history_.push_back(std::make_shared<Blob<Dtype>>(shape));
+    update_.push_back(std::make_shared<Blob<Dtype>>(shape));
+    temp_.push_back(std::make_shared<Blob<Dtype>>(shape));
   }
 }
 
 template <typename Dtype>
 void SGDSolver<Dtype>::ClipGradients() {
-  const Dtype clip_gradients = this->param_.clip_gradients();
+  const Dtype clip_gradients = this->param_->clip_gradients();
   if (clip_gradients < 0) { return; }
   const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   Dtype sumsq_diff = 0;
@@ -108,7 +112,7 @@ void SGDSolver<Dtype>::ClipGradients() {
 template <typename Dtype>
 void SGDSolver<Dtype>::ApplyUpdate() {
   Dtype rate = GetLearningRate();
-  if (this->param_.display() && this->iter_ % this->param_.display() == 0) {
+  if (this->param_->display() && this->iter_ % this->param_->display() == 0) {
     LOG_IF(INFO, Caffe::root_solver()) << "Iteration " << this->iter_
         << ", lr = " << rate;
   }
@@ -128,10 +132,10 @@ void SGDSolver<Dtype>::ApplyUpdate() {
 
 template <typename Dtype>
 void SGDSolver<Dtype>::Normalize(int param_id) {
-  if (this->param_.iter_size() == 1) { return; }
+  if (this->param_->iter_size() == 1) { return; }
   // Scale gradient to counterbalance accumulation.
   const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
-  const Dtype accum_normalization = Dtype(1.) / this->param_.iter_size();
+  const Dtype accum_normalization = Dtype(1.) / this->param_->iter_size();
   switch (Caffe::mode()) {
   case Caffe::CPU: {
     caffe_scal(net_params[param_id]->count(), accum_normalization,
@@ -157,8 +161,8 @@ void SGDSolver<Dtype>::Regularize(int param_id) {
   const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_weight_decay =
       this->net_->params_weight_decay();
-  Dtype weight_decay = this->param_.weight_decay();
-  string regularization_type = this->param_.regularization_type();
+  Dtype weight_decay = this->param_->weight_decay();
+  string regularization_type = this->param_->regularization_type();
   Dtype local_decay = weight_decay * net_params_weight_decay[param_id];
   switch (Caffe::mode()) {
   case Caffe::CPU: {
@@ -224,7 +228,7 @@ template <typename Dtype>
 void SGDSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const vector<float>& net_params_lr = this->net_->params_lr();
-  Dtype momentum = this->param_.momentum();
+  Dtype momentum = this->param_->momentum();
   Dtype local_rate = rate * net_params_lr[param_id];
   // Compute the update to history, then copy it to the parameter diff.
   switch (Caffe::mode()) {
@@ -255,7 +259,7 @@ void SGDSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
 
 template <typename Dtype>
 void SGDSolver<Dtype>::SnapshotSolverState(const string& model_filename) {
-  switch (this->param_.snapshot_format()) {
+  switch (this->param_->snapshot_format()) {
     case caffe::SolverParameter_SnapshotFormat_BINARYPROTO:
       SnapshotSolverStateToBinaryProto(model_filename);
       break;

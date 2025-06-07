@@ -5,7 +5,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/neuron_layer.hpp"
 
@@ -78,6 +78,16 @@ class ELULayer : public NeuronLayer<Dtype> {
                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
   void Backward_gpu(const vector<Blob<Dtype>*>& top,
                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+
+private:
+
+#ifndef CPU_ONLY
+    void forward_kernel(int count, const Dtype* in, Dtype* out, Dtype alpha);
+    void backward_kernel(int count, const Dtype* in_diff,
+        const Dtype* out_data, const Dtype* in_data,
+        Dtype* out_diff, Dtype alpha);
+#endif
+
 };
 
 

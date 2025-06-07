@@ -1,6 +1,8 @@
+#include "caffe/sgd_solvers.hpp"
+
 #include <vector>
 
-#include "caffe/sgd_solvers.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -16,8 +18,8 @@ void RMSPropSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
   const vector<float>& net_params_lr = this->net_->params_lr();
 
   // get the learning rate
-  Dtype delta = this->param_.delta();
-  Dtype rms_decay = this->param_.rms_decay();
+  Dtype delta = this->param_->delta();
+  Dtype rms_decay = this->param_->rms_decay();
   Dtype local_rate = rate * net_params_lr[param_id];
 
   switch (Caffe::mode()) {

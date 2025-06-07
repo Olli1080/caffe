@@ -1,9 +1,11 @@
+#include "caffe/layers/pooling_layer.hpp"
+
 #include <algorithm>
 #include <cfloat>
 #include <vector>
 
-#include "caffe/layers/pooling_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
@@ -13,7 +15,7 @@ using std::max;
 template <typename Dtype>
 void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       const vector<Blob<Dtype>*>& top) {
-  PoolingParameter pool_param = this->layer_param_.pooling_param();
+  PoolingParameter pool_param = this->layer_param_->pooling_param();
   if (pool_param.global_pooling()) {
     CHECK(!(pool_param.has_kernel_size() ||
       pool_param.has_kernel_h() || pool_param.has_kernel_w()))
@@ -66,9 +68,9 @@ void PoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << "With Global_pooling: true; only pad = 0 and stride = 1";
   }
   if (pad_h_ != 0 || pad_w_ != 0) {
-    CHECK(this->layer_param_.pooling_param().pool()
+    CHECK(this->layer_param_->pooling_param().pool()
         == PoolingParameter_PoolMethod_AVE
-        || this->layer_param_.pooling_param().pool()
+        || this->layer_param_->pooling_param().pool()
         == PoolingParameter_PoolMethod_MAX)
         << "Padding implemented only for average and max pooling.";
     CHECK_LT(pad_h_, kernel_h_);
@@ -122,17 +124,24 @@ void PoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     top[1]->ReshapeLike(*top[0]);
   }
   // If max pooling, we will initialize the vector index part.
-  if (this->layer_param_.pooling_param().pool() ==
+  if (this->layer_param_->pooling_param().pool() ==
       PoolingParameter_PoolMethod_MAX && top.size() == 1) {
     max_idx_.Reshape(bottom[0]->num(), channels_, pooled_height_,
         pooled_width_);
   }
   // If stochastic pooling, we will initialize the random index part.
-  if (this->layer_param_.pooling_param().pool() ==
+  if (this->layer_param_->pooling_param().pool() ==
       PoolingParameter_PoolMethod_STOCHASTIC) {
     rand_idx_.Reshape(bottom[0]->num(), channels_, pooled_height_,
       pooled_width_);
   }
+}
+
+template <typename Dtype>
+int PoolingLayer<Dtype>::MaxTopBlobs() const
+{
+    return (this->layer_param_->pooling_param().pool() ==
+        PoolingParameter_PoolMethod_MAX) ? 2 : 1;
 }
 
 // TODO(Yangqing): Is there a faster way to do pooling in the channel-first
@@ -145,11 +154,11 @@ void PoolingLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
   const int top_count = top[0]->count();
   // We'll output the mask to top[1] if it's of size >1.
   const bool use_top_mask = top.size() > 1;
-  int* mask = NULL;  // suppress warnings about uninitialized variables
-  Dtype* top_mask = NULL;
+  int* mask = nullptr;  // suppress warnings about uninitialized variables
+  Dtype* top_mask = nullptr;
   // Different pooling methods. We explicitly do the switch outside the for
   // loop to save time, although this results in more code.
-  switch (this->layer_param_.pooling_param().pool()) {
+  switch (this->layer_param_->pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     // Initialize
     if (use_top_mask) {
@@ -252,9 +261,9 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
   caffe_set(bottom[0]->count(), Dtype(0), bottom_diff);
   // We'll output the mask to top[1] if it's of size >1.
   const bool use_top_mask = top.size() > 1;
-  const int* mask = NULL;  // suppress warnings about uninitialized variables
-  const Dtype* top_mask = NULL;
-  switch (this->layer_param_.pooling_param().pool()) {
+  const int* mask = nullptr;  // suppress warnings about uninitialized variables
+  const Dtype* top_mask = nullptr;
+  switch (this->layer_param_->pooling_param().pool()) {
   case PoolingParameter_PoolMethod_MAX:
     // The main loop
     if (use_top_mask) {
@@ -323,7 +332,134 @@ void PoolingLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(PoolingLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(PoolingLayer);
+//INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(PoolingLayer);
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
+    const vector<Blob<Dtype>*>& top) {
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+    int count = top[0]->count();
+    // We'll output the mask to top[1] if it's of size >1.
+    const bool use_top_mask = top.size() > 1;
+    int* mask = nullptr;
+    Dtype* top_mask = nullptr;
+    switch (this->layer_param_->pooling_param().pool()) {
+    case PoolingParameter_PoolMethod_MAX:
+        if (use_top_mask) {
+            top_mask = top[1]->mutable_gpu_data();
+        }
+        else {
+            mask = max_idx_.mutable_gpu_data();
+        }
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        MaxPoolForwardKernel(count, bottom_data, bottom[0]->num(), top_data, mask, top_mask);
+        break;
+    case PoolingParameter_PoolMethod_AVE:
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        AvePoolForwardKernel(count, bottom_data, bottom[0]->num(), top_data);
+        break;
+    case PoolingParameter_PoolMethod_STOCHASTIC:
+        if (this->phase_ == TRAIN) {
+            // We need to create the random index as well.
+            caffe_gpu_rng_uniform(count, Dtype(0), Dtype(1),
+                rand_idx_.mutable_gpu_data());
+            // NOLINT_NEXT_LINE(whitespace/operators)
+            StoPoolForwardTrainKernel(count, bottom_data, bottom[0]->num(), rand_idx_.mutable_gpu_data(), top_data);
+        }
+        else {
+            // NOLINT_NEXT_LINE(whitespace/operators)
+            StoPoolForwardTestKernel(count, bottom_data, bottom[0]->num(), top_data);
+        }
+        break;
+    default:
+        LOG(FATAL) << "Unknown pooling method.";
+    }
+    CUDA_POST_KERNEL_CHECK;
+}
+
+template <typename Dtype>
+void PoolingLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
+    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+    if (!propagate_down[0]) {
+        return;
+    }
+    const Dtype* top_diff = top[0]->gpu_diff();
+    Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+    const int count = bottom[0]->count();
+    caffe_gpu_set(count, Dtype(0.), bottom_diff);
+    // We'll output the mask to top[1] if it's of size >1.
+    const bool use_top_mask = top.size() > 1;
+    const int* mask = nullptr;
+    const Dtype* top_mask = nullptr;
+    switch (this->layer_param_->pooling_param().pool()) {
+    case PoolingParameter_PoolMethod_MAX:
+        if (use_top_mask) {
+            top_mask = top[1]->gpu_data();
+        }
+        else {
+            mask = max_idx_.gpu_data();
+        }
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        MaxPoolBackwardKernel(count, top_diff, mask, top_mask, top[0]->num(), bottom_diff);
+        break;
+    case PoolingParameter_PoolMethod_AVE:
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        AvePoolBackwardKernel(count, top_diff, top[0]->num(), bottom_diff);
+        break;
+    case PoolingParameter_PoolMethod_STOCHASTIC:
+        // NOLINT_NEXT_LINE(whitespace/operators)
+        StoPoolBackwardKernel(count, rand_idx_.gpu_data(), top_diff, top[0]->num(), bottom_diff);
+        break;
+    default:
+        LOG(FATAL) << "Unknown pooling method.";
+    }
+    CUDA_POST_KERNEL_CHECK;
+}
+extern template void PoolingLayer<float>::MaxPoolForwardKernel(const int,
+    const float* const, const int,
+    float* const, int*, float*);
+extern template void PoolingLayer<double>::MaxPoolForwardKernel(const int,
+    const double* const, const int,
+    double* const, int*, double*);
+
+extern template void PoolingLayer<float>::AvePoolForwardKernel(const int,
+    const float* const, const int,
+    float* const);
+extern template void PoolingLayer<double>::AvePoolForwardKernel(const int,
+    const double* const, const int,
+    double* const);
+
+extern template void PoolingLayer<float>::StoPoolForwardTrainKernel(const int,
+    const float* const,
+    const int, float* const, float* const);
+extern template void PoolingLayer<double>::StoPoolForwardTrainKernel(const int,
+    const double* const,
+    const int, double* const, double* const);
+
+extern template void PoolingLayer<float>::StoPoolForwardTestKernel(const int,
+    const float* const,
+    const int, float* const);
+extern template void PoolingLayer<double>::StoPoolForwardTestKernel(const int,
+    const double* const,
+    const int, double* const);
+
+extern template void PoolingLayer<float>::MaxPoolBackwardKernel(const int, const float* const,
+    const int* const, const float* const, const int, float* const);
+extern template void PoolingLayer<double>::MaxPoolBackwardKernel(const int, const double* const,
+    const int* const, const double* const, const int, double* const);
+
+extern template void PoolingLayer<float>::AvePoolBackwardKernel(const int, const float* const,
+    const int, float* const);
+extern template void PoolingLayer<double>::AvePoolBackwardKernel(const int, const double* const,
+    const int, double* const);
+
+extern template void PoolingLayer<float>::StoPoolBackwardKernel(const int,
+    const float* const, const float* const,
+    const int, float* const);
+extern template void PoolingLayer<double>::StoPoolBackwardKernel(const int,
+    const double* const, const double* const,
+    const int, double* const);
 #endif
 
 INSTANTIATE_CLASS(PoolingLayer);

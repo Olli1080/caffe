@@ -11,6 +11,7 @@
             ]
         },
         "opencv",
-        "cudnn"
+        "cudnn",
+        "boost-python"
     ]
 }

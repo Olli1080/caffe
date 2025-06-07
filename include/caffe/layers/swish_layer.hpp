@@ -5,7 +5,7 @@
 
 #include "caffe/blob.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 
 #include "caffe/layers/neuron_layer.hpp"
 #include "caffe/layers/sigmoid_layer.hpp"
@@ -34,10 +34,10 @@ class SwishLayer : public NeuronLayer<Dtype> {
         sigmoid_input_(new Blob<Dtype>()),
         sigmoid_output_(new Blob<Dtype>()) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   inline const char* type() const override { return "Swish"; }
 
@@ -52,10 +52,10 @@ class SwishLayer : public NeuronLayer<Dtype> {
    *        y = x \sigma (\beta x)
    *      @f$.
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the sigmoid inputs.
@@ -75,21 +75,29 @@ class SwishLayer : public NeuronLayer<Dtype> {
    *              \sigma (\beta x)(1 - \beta y))
    *      @f$ if propagate_down[0]
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   /// The internal SigmoidLayer
-  shared_ptr<SigmoidLayer<Dtype> > sigmoid_layer_;
+  std::shared_ptr<SigmoidLayer<Dtype> > sigmoid_layer_;
   /// sigmoid_input_ stores the input of the SigmoidLayer.
-  shared_ptr<Blob<Dtype> > sigmoid_input_;
+  std::shared_ptr<Blob<Dtype> > sigmoid_input_;
   /// sigmoid_output_ stores the output of the SigmoidLayer.
-  shared_ptr<Blob<Dtype> > sigmoid_output_;
+  std::shared_ptr<Blob<Dtype> > sigmoid_output_;
   /// bottom vector holder to call the underlying SigmoidLayer::Forward
-  vector<Blob<Dtype>*> sigmoid_bottom_vec_;
+  std::vector<Blob<Dtype>*> sigmoid_bottom_vec_;
   /// top vector holder to call the underlying SigmoidLayer::Forward
-  vector<Blob<Dtype>*> sigmoid_top_vec_;
+  std::vector<Blob<Dtype>*> sigmoid_top_vec_;
+
+private:
+
+#ifndef CPU_ONLY
+    void backward_kernel(const int n, const Dtype* in_diff,
+        const Dtype* out_data, const Dtype* sigmoid_output_data, Dtype* out_diff,
+        const Dtype beta);
+#endif
 };
 
 }  // namespace caffe

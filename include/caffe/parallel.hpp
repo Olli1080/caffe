@@ -11,7 +11,7 @@
 #include "caffe/common.hpp"
 #include "caffe/internal_thread.hpp"
 #include "caffe/layer.hpp"
-#include "caffe/proto/caffe.pb.h"
+
 #include "caffe/solver.hpp"
 #include "caffe/syncedmem.hpp"
 #include "caffe/util/blocking_queue.hpp"

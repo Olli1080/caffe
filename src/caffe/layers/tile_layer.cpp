@@ -1,14 +1,16 @@
+#include "caffe/layers/tile_layer.hpp"
+
 #include <vector>
 
-#include "caffe/layers/tile_layer.hpp"
 #include "caffe/util/math_functions.hpp"
+#include "caffe/proto/caffe.pb.h"
 
 namespace caffe {
 
 template <typename Dtype>
 void TileLayer<Dtype>::Reshape(
     const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
-  const TileParameter& tile_param = this->layer_param_.tile_param();
+  const TileParameter& tile_param = this->layer_param_->tile_param();
   axis_ = bottom[0]->CanonicalAxisIndex(tile_param.axis());
   CHECK(tile_param.has_tiles()) << "Number of tiles must be specified";
   tiles_ = tile_param.tiles();

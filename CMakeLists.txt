@@ -99,7 +99,7 @@ if(NOT CPU_ONLY)
 
   add_compile_options("$<$<COMPILE_LANGUAGE:CUDA>:-Xcompiler=/wd4506>")
   add_compile_options("$<$<AND:$<COMPILE_LANGUAGE:CUDA>,$<CUDA_COMPILER_ID:NVIDIA>>:-Wno-deprecated-gpu-targets>")
-  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=1394 -Xcudafe --diag_suppress=1388 -Xcudafe --diag_suppress=550 --threads=0")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcudafe --diag_suppress=1394 -Xcudafe --diag_suppress=1388 -Xcudafe --diag_suppress=550 --threads=${NVCC_THREADS}")
 endif()
 
 # ---[ Subdirectories

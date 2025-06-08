@@ -75,10 +75,7 @@ Caffe::RNG::RNG() : generator_(new Generator()) { }
 
 Caffe::RNG::RNG(unsigned int seed) : generator_(new Generator(seed)) { }
 
-Caffe::RNG& Caffe::RNG::operator=(const RNG& other) {
-  generator_ = other.generator_;
-  return *this;
-}
+Caffe::RNG& Caffe::RNG::operator=(const RNG& other) = default;
 
 void* Caffe::RNG::generator() const {
   return static_cast<void*>(generator_->rng());

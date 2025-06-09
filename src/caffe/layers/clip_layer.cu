@@ -51,7 +51,7 @@ template void ClipLayer<double>::forward_kernel(int, const double*, double*, dou
 
 template void ClipLayer<float>::backward_kernel(int, const float*, const float*, float*, float, float);
 template void ClipLayer<double>::backward_kernel(int, const double*, const double*, double*, double, double);
-INSTANTIATE_LAYER_GPU_FUNCS(ClipLayer);
+//INSTANTIATE_LAYER_GPU_FUNCS(ClipLayer);
 
 
 }  // namespace caffe

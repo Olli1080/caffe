@@ -64,8 +64,8 @@ class HingeLossLayer : public LossLayer<Dtype> {
 
  protected:
   /// @copydoc HingeLossLayer
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the hinge loss error gradient w.r.t. the predictions.
@@ -94,8 +94,8 @@ class HingeLossLayer : public LossLayer<Dtype> {
    *   -# @f$ (N \times 1 \times 1 \times 1) @f$
    *      the labels -- ignored as we can't compute their error gradients
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 };
 
 

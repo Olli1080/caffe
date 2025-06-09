@@ -38,10 +38,10 @@ class CAFFE_EXPORT TanHLayer : public NeuronLayer<Dtype> {
    *        y = \frac{\exp(2x) - 1}{\exp(2x) + 1}
    *      @f$
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the sigmoid inputs.
@@ -62,10 +62,10 @@ class CAFFE_EXPORT TanHLayer : public NeuronLayer<Dtype> {
    *            = \frac{\partial E}{\partial y} (1 - y^2)
    *      @f$ if propagate_down[0]
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 };
 
 }  // namespace caffe

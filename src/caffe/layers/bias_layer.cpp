@@ -10,8 +10,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void BiasLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void BiasLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   if (bottom.size() == 1 && this->blobs_.size() > 0) {
     LOG(INFO) << "Skipping parameter initialization";
   } else if (bottom.size() == 1) {
@@ -27,21 +27,21 @@ void BiasLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
           << "starting with bottom[0] axis = " << axis;
     }
     this->blobs_.resize(1);
-    const vector<int>::const_iterator& shape_start =
+    const std::vector<int>::const_iterator& shape_start =
         bottom[0]->shape().begin() + axis;
-    const vector<int>::const_iterator& shape_end =
+    const std::vector<int>::const_iterator& shape_end =
         (num_axes == -1) ? bottom[0]->shape().end() : (shape_start + num_axes);
-    vector<int> bias_shape(shape_start, shape_end);
+    std::vector<int> bias_shape(shape_start, shape_end);
     this->blobs_[0].reset(new Blob<Dtype>(bias_shape));
-    shared_ptr<Filler<Dtype> > filler(GetFiller<Dtype>(param.filler()));
+    std::shared_ptr<Filler<Dtype> > filler(GetFiller<Dtype>(param.filler()));
     filler->Fill(this->blobs_[0].get());
   }
   this->param_propagate_down_.resize(this->blobs_.size(), true);
 }
 
 template <typename Dtype>
-void BiasLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void BiasLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const BiasParameter& param = this->layer_param_->bias_param();
   Blob<Dtype>* bias = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
   // Always set axis == 0 in special case where bias is a scalar
@@ -65,15 +65,15 @@ void BiasLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   if (bottom[0] != top[0]) {
     top[0]->ReshapeLike(*bottom[0]);
   }
-  bias_multiplier_.Reshape(vector<int>(1, inner_dim_));
+  bias_multiplier_.Reshape(std::vector<int>(1, inner_dim_));
   if (bias_multiplier_.cpu_data()[inner_dim_ - 1] != Dtype(1)) {
     caffe_set(inner_dim_, Dtype(1), bias_multiplier_.mutable_cpu_data());
   }
 }
 
 template <typename Dtype>
-void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void BiasLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bias_data =
       ((bottom.size() > 1) ? bottom[1] : this->blobs_[0].get())->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
@@ -90,8 +90,8 @@ void BiasLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void BiasLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void BiasLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0] && bottom[0] != top[0]) {
     const Dtype* top_diff = top[0]->cpu_diff();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();

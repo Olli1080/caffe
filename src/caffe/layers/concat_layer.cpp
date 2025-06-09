@@ -8,16 +8,16 @@
 namespace caffe {
 
 template <typename Dtype>
-void ConcatLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ConcatLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const ConcatParameter& concat_param = this->layer_param_->concat_param();
   CHECK(!(concat_param.has_axis() && concat_param.has_concat_dim()))
       << "Either axis or concat_dim should be specified; not both.";
 }
 
 template <typename Dtype>
-void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ConcatLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const int num_axes = bottom[0]->num_axes();
   const ConcatParameter& concat_param = this->layer_param_->concat_param();
   if (concat_param.has_concat_dim()) {
@@ -32,7 +32,7 @@ void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
     concat_axis_ = bottom[0]->CanonicalAxisIndex(concat_param.axis());
   }
   // Initialize with the first blob.
-  vector<int> top_shape = bottom[0]->shape();
+  std::vector<int> top_shape = bottom[0]->shape();
   num_concats_ = bottom[0]->count(0, concat_axis_);
   concat_input_size_ = bottom[0]->count(concat_axis_ + 1);
   int bottom_count_sum = bottom[0]->count();
@@ -56,8 +56,8 @@ void ConcatLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ConcatLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   if (bottom.size() == 1) { return; }
   Dtype* top_data = top[0]->mutable_cpu_data();
   int offset_concat_axis = 0;
@@ -76,8 +76,8 @@ void ConcatLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ConcatLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void ConcatLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   if (bottom.size() == 1) { return; }
   const Dtype* top_diff = top[0]->cpu_diff();
   int offset_concat_axis = 0;

@@ -34,14 +34,14 @@ class CAFFE_EXPORT DeconvolutionLayer : public BaseConvolutionLayer<Dtype> {
   [[nodiscard]] const char* type() const override { return "Deconvolution"; }
 
  protected:
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
   bool reverse_dimensions() override { return true; }
   void compute_output_shape() override;
 };

@@ -28,10 +28,10 @@ class ScaleLayer: public Layer<Dtype> {
   explicit ScaleLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "Scale"; }
   // Scale
@@ -59,18 +59,18 @@ class ScaleLayer: public Layer<Dtype> {
    *      Equivalent to tiling @f$ y @f$ to have the same shape as @f$ x @f$,
    *      then computing the elementwise product.
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
-  shared_ptr<Layer<Dtype> > bias_layer_;
-  vector<Blob<Dtype>*> bias_bottom_vec_;
-  vector<bool> bias_propagate_down_;
+  std::shared_ptr<Layer<Dtype> > bias_layer_;
+  std::vector<Blob<Dtype>*> bias_bottom_vec_;
+  std::vector<bool> bias_propagate_down_;
   int bias_param_id_;
 
   Blob<Dtype> sum_multiplier_;

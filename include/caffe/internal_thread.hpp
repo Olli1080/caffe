@@ -39,7 +39,7 @@ class CAFFE_EXPORT InternalThread {
   void entry(int device, Caffe::Brew mode, unsigned int rand_seed,
       int solver_count, int solver_rank, bool multiprocess);
 
-  shared_ptr<std::thread> thread_;
+  std::shared_ptr<std::thread> thread_;
   bool stop_requested = false;
 };
 

@@ -22,17 +22,17 @@ class CAFFE_EXPORT MemoryDataLayer : public BaseDataLayer<Dtype> {
   explicit MemoryDataLayer(const LayerParameter& param)
       : BaseDataLayer<Dtype>(param), has_new_data_(false) {}
 
-  void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                      const vector<Blob<Dtype>*>& top) override;
+  void DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                      const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "MemoryData"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
   [[nodiscard]] int ExactNumTopBlobs() const override { return 2; }
 
-  virtual void AddDatumVector(const vector<Datum>& datum_vector);
+  virtual void AddDatumVector(const std::vector<Datum>& datum_vector);
 #ifdef USE_OPENCV
-  virtual void AddMatVector(const vector<cv::Mat>& mat_vector,
-      const vector<int>& labels);
+  virtual void AddMatVector(const std::vector<cv::Mat>& mat_vector,
+      const std::vector<int>& labels);
 #endif  // USE_OPENCV
 
   // Reset should accept const pointers, but can't, because the memory
@@ -46,8 +46,8 @@ class CAFFE_EXPORT MemoryDataLayer : public BaseDataLayer<Dtype> {
   [[nodiscard]] int width() const { return width_; }
 
  protected:
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   int batch_size_, channels_, height_, width_, size_;
   Dtype* data_;

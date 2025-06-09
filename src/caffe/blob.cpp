@@ -13,7 +13,7 @@ namespace caffe {
 template <typename Dtype>
 void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
     const int width) {
-  vector<int> shape(4);
+  std::vector<int> shape(4);
   shape[0] = num;
   shape[1] = channels;
   shape[2] = height;
@@ -22,7 +22,7 @@ void Blob<Dtype>::Reshape(const int num, const int channels, const int height,
 }
 
 template <typename Dtype>
-void Blob<Dtype>::Reshape(const vector<int>& shape) {
+void Blob<Dtype>::Reshape(const std::vector<int>& shape) {
   CHECK_LE(shape.size(), kMaxBlobAxes);
   count_ = 1;
   shape_.resize(shape.size());
@@ -49,7 +49,7 @@ void Blob<Dtype>::Reshape(const vector<int>& shape) {
 template <typename Dtype>
 void Blob<Dtype>::Reshape(const BlobShape& shape) {
   CHECK_LE(shape.dim_size(), kMaxBlobAxes);
-  vector<int> shape_vec(shape.dim_size());
+  std::vector<int> shape_vec(shape.dim_size());
   for (int i = 0; i < shape.dim_size(); ++i) {
     shape_vec[i] = static_cast<int>(shape.dim(i));
   }
@@ -70,7 +70,7 @@ Blob<Dtype>::Blob(const int num, const int channels, const int height,
 }
 
 template <typename Dtype>
-Blob<Dtype>::Blob(const vector<int>& shape)
+Blob<Dtype>::Blob(const std::vector<int>& shape)
   // capacity_ must be initialized before calling Reshape
   : capacity_(0) {
   Reshape(shape);
@@ -424,7 +424,7 @@ bool Blob<Dtype>::ShapeEquals(const BlobProto& other) {
            LegacyShape(-2) == other.height() &&
            LegacyShape(-1) == other.width();
   }
-  vector<int> other_shape(other.shape().dim_size());
+  std::vector<int> other_shape(other.shape().dim_size());
   for (int i = 0; i < other.shape().dim_size(); ++i) {
     other_shape[i] = static_cast<int>(other.shape().dim(i));
   }
@@ -467,7 +467,7 @@ void Blob<Dtype>::CopyFrom(const Blob& source, bool copy_diff, bool reshape) {
 template <typename Dtype>
 void Blob<Dtype>::FromProto(const BlobProto& proto, bool reshape) {
   if (reshape) {
-    vector<int> shape;
+    std::vector<int> shape;
     if (proto.has_num() || proto.has_channels() ||
         proto.has_height() || proto.has_width()) {
       // Using deprecated 4D Blob dimensions --

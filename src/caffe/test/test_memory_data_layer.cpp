@@ -154,7 +154,7 @@ TYPED_TEST(MemoryDataLayerTest, AddDatumVectorDefaultTransform) {
     const Dtype* data = this->data_blob_->cpu_data();
     size_t index = 0;
     for (int i = 0; i < this->batch_size_; ++i) {
-      const string& data_string = datum_vector[offset + i].data();
+      const std::string& data_string = datum_vector[offset + i].data();
       EXPECT_EQ(offset + i, this->label_blob_->cpu_data()[i]);
       for (int c = 0; c < this->channels_; ++c) {
         for (int h = 0; h < this->height_; ++h) {

@@ -40,7 +40,7 @@ uint32_t swap_endian(uint32_t val) {
 }
 
 void convert_dataset(const char* image_filename, const char* label_filename,
-        const char* db_path, const string& db_backend) {
+        const char* db_path, const std::string& db_backend) {
   // Open files
   std::ifstream image_file(image_filename, std::ios::in | std::ios::binary);
   std::ifstream label_file(label_filename, std::ios::in | std::ios::binary);
@@ -127,7 +127,7 @@ int main(int argc, char** argv) {
         "or directly use data/mnist/get_mnist.sh\n");
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  const string& db_backend = FLAGS_backend;
+  const std::string& db_backend = FLAGS_backend;
 
   if (argc != 4) {
     gflags::ShowUsageWithFlagsRestrict(argv[0],

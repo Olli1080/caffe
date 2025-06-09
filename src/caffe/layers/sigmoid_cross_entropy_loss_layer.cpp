@@ -137,7 +137,7 @@ STUB_GPU(SigmoidCrossEntropyLossLayer);
 #else
 template <typename Dtype>
 void SigmoidCrossEntropyLossLayer<Dtype>::Forward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
     // The forward pass computes the sigmoid outputs.
     sigmoid_bottom_vec_[0] = bottom[0];
     sigmoid_layer_->Forward(sigmoid_bottom_vec_, sigmoid_top_vec_);
@@ -173,8 +173,8 @@ void SigmoidCrossEntropyLossLayer<Dtype>::Forward_gpu(
 
 template <typename Dtype>
 void SigmoidCrossEntropyLossLayer<Dtype>::Backward_gpu(
-    const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+    const std::vector<Blob<Dtype>*>& top, const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
     if (propagate_down[1]) {
         LOG(FATAL) << this->type()
             << " Layer cannot backpropagate to label inputs.";

@@ -1,9 +1,10 @@
+#include "caffe/util/math_functions.hpp"
+
 #include <random>
 #include <limits>
 #include <cmath>
 
 #include "caffe/common.hpp"
-#include "caffe/util/math_functions.hpp"
 #include "caffe/util/rng.hpp"
 
 namespace caffe {
@@ -239,6 +240,10 @@ unsigned int caffe_rng_rand() {
   return (*caffe_rng())();
 }
 
+#if defined(_MSC_VER)
+# pragma warning(push)
+# pragma warning(disable: 4244)
+#endif
 template <typename Dtype>
 Dtype caffe_nextafter(const Dtype b) {
   return std::nextafter<Dtype, Dtype>(
@@ -251,6 +256,10 @@ float caffe_nextafter(const float b);
 template
 double caffe_nextafter(const double b);
 
+
+#if defined(_MSC_VER)
+# pragma warning(pop)
+#endif
 template <typename Dtype>
 void caffe_rng_uniform(const int n, const Dtype a, const Dtype b, Dtype* r) {
   CHECK_GE(n, 0);

@@ -17,7 +17,7 @@ class ConstantFillerTest : public ::testing::Test {
     filler_param_.set_value(10.);
     filler_.reset(new ConstantFiller<Dtype>(filler_param_));
   }
-  virtual void test_params(const vector<int>& shape) {
+  virtual void test_params(const std::vector<int>& shape) {
     EXPECT_TRUE(blob_);
     blob_->Reshape(shape);
     filler_->Fill(blob_);
@@ -77,7 +77,7 @@ class UniformFillerTest : public ::testing::Test {
     filler_param_.set_max(2.);
     filler_.reset(new UniformFiller<Dtype>(filler_param_));
   }
-  virtual void test_params(const vector<int>& shape) {
+  virtual void test_params(const std::vector<int>& shape) {
     EXPECT_TRUE(blob_);
     blob_->Reshape(shape);
     filler_->Fill(blob_);
@@ -135,7 +135,7 @@ class PositiveUnitballFillerTest : public ::testing::Test {
         filler_param_() {
     filler_.reset(new PositiveUnitballFiller<Dtype>(filler_param_));
   }
-  virtual void test_params(const vector<int>& shape) {
+  virtual void test_params(const std::vector<int>& shape) {
     EXPECT_TRUE(blob_);
     blob_->Reshape(shape);
     filler_->Fill(blob_);
@@ -205,7 +205,7 @@ class GaussianFillerTest : public ::testing::Test {
     filler_param_.set_std(0.1);
     filler_.reset(new GaussianFiller<Dtype>(filler_param_));
   }
-  virtual void test_params(const vector<int>& shape,
+  virtual void test_params(const std::vector<int>& shape,
       const Dtype tolerance = Dtype(5), const int repetitions = 100) {
     // Tests for statistical properties should be ran multiple times.
     EXPECT_TRUE(blob_);
@@ -214,7 +214,7 @@ class GaussianFillerTest : public ::testing::Test {
       test_params_iter(shape, tolerance);
     }
   }
-  virtual void test_params_iter(const vector<int>& shape,
+  virtual void test_params_iter(const std::vector<int>& shape,
       const Dtype tolerance) {
     // This test has a configurable tolerance parameter - by default it was
     // equal to 5.0 which is very loose - allowing some tuning (e.g. for tests
@@ -289,7 +289,7 @@ class XavierFillerTest : public ::testing::Test {
         filler_param_() {
   }
   virtual void test_params(FillerParameter_VarianceNorm variance_norm,
-      Dtype n, const vector<int>& shape, const int repetitions = 100) {
+      Dtype n, const std::vector<int>& shape, const int repetitions = 100) {
     EXPECT_TRUE(blob_);
     blob_->Reshape(shape);
     for (int i = 0; i < repetitions; ++i) {
@@ -397,7 +397,7 @@ class MSRAFillerTest : public ::testing::Test {
         filler_param_() {
   }
   virtual void test_params(FillerParameter_VarianceNorm variance_norm,
-      Dtype n, const vector<int>& shape, const int repetitions = 100) {
+      Dtype n, const std::vector<int>& shape, const int repetitions = 100) {
     EXPECT_TRUE(blob_);
     blob_->Reshape(shape);
     for (int i = 0; i < repetitions; ++i) {
@@ -504,7 +504,7 @@ class BilinearFillerTest : public ::testing::Test {
     : blob_(new Blob<Dtype>()),
       filler_param_() {
   }
-  virtual void test_params(const vector<int>& shape) {
+  virtual void test_params(const std::vector<int>& shape) {
     EXPECT_TRUE(blob_);
     blob_->Reshape(shape);
     filler_.reset(new BilinearFiller<Dtype>(filler_param_));

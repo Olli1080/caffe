@@ -64,7 +64,7 @@ private:
 
 CAFFE_EXPORT bool ReadProtoFromTextFile(const char* filename, Message* proto);
 
-CAFFE_EXPORT inline bool ReadProtoFromTextFile(const string& filename, Message* proto) {
+CAFFE_EXPORT inline bool ReadProtoFromTextFile(const std::string& filename, Message* proto) {
   return ReadProtoFromTextFile(filename.c_str(), proto);
 }
 
@@ -72,18 +72,18 @@ CAFFE_EXPORT inline void ReadProtoFromTextFileOrDie(const char* filename, Messag
   CHECK(ReadProtoFromTextFile(filename, proto));
 }
 
-CAFFE_EXPORT inline void ReadProtoFromTextFileOrDie(const string& filename, Message* proto) {
+CAFFE_EXPORT inline void ReadProtoFromTextFileOrDie(const std::string& filename, Message* proto) {
   ReadProtoFromTextFileOrDie(filename.c_str(), proto);
 }
 
 CAFFE_EXPORT void WriteProtoToTextFile(const Message& proto, const char* filename);
-CAFFE_EXPORT inline void WriteProtoToTextFile(const Message& proto, const string& filename) {
+CAFFE_EXPORT inline void WriteProtoToTextFile(const Message& proto, const std::string& filename) {
   WriteProtoToTextFile(proto, filename.c_str());
 }
 
 CAFFE_EXPORT bool ReadProtoFromBinaryFile(const char* filename, Message* proto);
 
-CAFFE_EXPORT inline bool ReadProtoFromBinaryFile(const string& filename, Message* proto) {
+CAFFE_EXPORT inline bool ReadProtoFromBinaryFile(const std::string& filename, Message* proto) {
   return ReadProtoFromBinaryFile(filename.c_str(), proto);
 }
 
@@ -91,7 +91,7 @@ CAFFE_EXPORT inline void ReadProtoFromBinaryFileOrDie(const char* filename, Mess
   CHECK(ReadProtoFromBinaryFile(filename, proto));
 }
 
-CAFFE_EXPORT inline void ReadProtoFromBinaryFileOrDie(const string& filename,
+CAFFE_EXPORT inline void ReadProtoFromBinaryFileOrDie(const std::string& filename,
                                          Message* proto) {
   ReadProtoFromBinaryFileOrDie(filename.c_str(), proto);
 }
@@ -99,13 +99,13 @@ CAFFE_EXPORT inline void ReadProtoFromBinaryFileOrDie(const string& filename,
 
 CAFFE_EXPORT void WriteProtoToBinaryFile(const Message& proto, const char* filename);
 CAFFE_EXPORT inline void WriteProtoToBinaryFile(
-    const Message& proto, const string& filename) {
+    const Message& proto, const std::string& filename) {
   WriteProtoToBinaryFile(proto, filename.c_str());
 }
 
-CAFFE_EXPORT bool ReadFileToDatum(const string& filename, const int label, Datum* datum);
+CAFFE_EXPORT bool ReadFileToDatum(const std::string& filename, const int label, Datum* datum);
 
-CAFFE_EXPORT inline bool ReadFileToDatum(const string& filename, Datum* datum) {
+CAFFE_EXPORT inline bool ReadFileToDatum(const std::string& filename, Datum* datum) {
   return ReadFileToDatum(filename, -1, datum);
 }
 
@@ -113,16 +113,16 @@ CAFFE_EXPORT bool DecodeDatumNative(Datum* datum);
 CAFFE_EXPORT bool DecodeDatum(Datum* datum, bool is_color);
 
 #ifdef USE_OPENCV
-cv::Mat ReadImageToCVMat(const string& filename,
+cv::Mat ReadImageToCVMat(const std::string& filename,
     const int height, const int width, const bool is_color);
 
-cv::Mat ReadImageToCVMat(const string& filename,
+cv::Mat ReadImageToCVMat(const std::string& filename,
     const int height, const int width);
 
-cv::Mat ReadImageToCVMat(const string& filename,
+cv::Mat ReadImageToCVMat(const std::string& filename,
     const bool is_color);
 
-cv::Mat ReadImageToCVMat(const string& filename);
+cv::Mat ReadImageToCVMat(const std::string& filename);
 
 cv::Mat DecodeDatumToCVMatNative(const Datum& datum);
 cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color);
@@ -130,32 +130,32 @@ cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color);
 void CVMatToDatum(const cv::Mat& cv_img, Datum* datum);
 
 
-CAFFE_EXPORT bool ReadImageToDatum(const string& filename, const int label,
+CAFFE_EXPORT bool ReadImageToDatum(const std::string& filename, const int label,
     const int height, const int width, const bool is_color,
     const std::string & encoding, Datum* datum);
 
-CAFFE_EXPORT inline bool ReadImageToDatum(const string& filename, const int label,
+CAFFE_EXPORT inline bool ReadImageToDatum(const std::string& filename, const int label,
     const int height, const int width, const bool is_color, Datum* datum) {
   return ReadImageToDatum(filename, label, height, width, is_color,
                           "", datum);
 }
 
-CAFFE_EXPORT inline bool ReadImageToDatum(const string& filename, const int label,
+CAFFE_EXPORT inline bool ReadImageToDatum(const std::string& filename, const int label,
     const int height, const int width, Datum* datum) {
   return ReadImageToDatum(filename, label, height, width, true, datum);
 }
 
-CAFFE_EXPORT inline bool ReadImageToDatum(const string& filename, const int label,
+CAFFE_EXPORT inline bool ReadImageToDatum(const std::string& filename, const int label,
     const bool is_color, Datum* datum) {
   return ReadImageToDatum(filename, label, 0, 0, is_color, datum);
 }
 
-CAFFE_EXPORT inline bool ReadImageToDatum(const string& filename, const int label,
+CAFFE_EXPORT inline bool ReadImageToDatum(const std::string& filename, const int label,
     Datum* datum) {
   return ReadImageToDatum(filename, label, 0, 0, true, datum);
 }
 
-CAFFE_EXPORT inline bool ReadImageToDatum(const string& filename, const int label,
+CAFFE_EXPORT inline bool ReadImageToDatum(const std::string& filename, const int label,
     const std::string & encoding, Datum* datum) {
   return ReadImageToDatum(filename, label, 0, 0, true, encoding, datum);
 }

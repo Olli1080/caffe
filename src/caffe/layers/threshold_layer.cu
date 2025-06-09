@@ -1,6 +1,6 @@
-#include <vector>
-
 #include "caffe/layers/threshold_layer.hpp"
+
+#include <vector>
 
 namespace caffe {
 
@@ -13,8 +13,8 @@ __global__ void ThresholdForward(const int n, const Dtype threshold,
 }
 
 template <typename Dtype>
-void ThresholdLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void ThresholdLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->gpu_data();
   Dtype* top_data = top[0]->mutable_gpu_data();
   const int count = bottom[0]->count();

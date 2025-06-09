@@ -57,7 +57,7 @@ class LMDBTransaction : public Transaction {
  public:
   explicit LMDBTransaction(MDB_env* mdb_env)
     : mdb_env_(mdb_env) { }
-  virtual void Put(const string& key, const string& value);
+  virtual void Put(const std::string& key, const std::string& value);
   virtual void Commit();
 
  private:
@@ -73,7 +73,7 @@ class LMDB : public DB {
  public:
   LMDB() : mdb_env_(NULL) { }
   virtual ~LMDB() { Close(); }
-  virtual void Open(const string& source, Mode mode);
+  virtual void Open(const std::string& source, Mode mode);
   virtual void Close() {
     if (mdb_env_ != NULL) {
       mdb_dbi_close(mdb_env_, mdb_dbi_);

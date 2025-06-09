@@ -41,8 +41,8 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
   explicit ContrastiveLossLayer(const LayerParameter& param)
       : LossLayer<Dtype>(param), diff_() {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 3; }
   [[nodiscard]] const char* type() const override { return "ContrastiveLoss"; }
@@ -57,10 +57,10 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
 
  protected:
   /// @copydoc ContrastiveLossLayer
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the Contrastive error gradient w.r.t. the inputs.
@@ -87,10 +87,10 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
    *      the features @f$b@f$; Backward fills their diff with gradients if
    *      propagate_down[1]
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   Blob<Dtype> diff_;  // cached for backward pass
   Blob<Dtype> dist_sq_;  // cached for backward pass
@@ -99,7 +99,7 @@ class ContrastiveLossLayer : public LossLayer<Dtype> {
 
 private:
 #ifndef CPU_ONLY
-    void backward_kernel(int count, int channels, Dtype margin, bool legacy_version, Dtype alpha, const vector<Blob<Dtype>*>& bottom, int i);
+    void backward_kernel(int count, int channels, Dtype margin, bool legacy_version, Dtype alpha, const std::vector<Blob<Dtype>*>& bottom, int i);
 #endif
 };
 

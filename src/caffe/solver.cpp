@@ -51,7 +51,7 @@ Solver<Dtype>::Solver(const SolverParameter& param)
 }
 
 template <typename Dtype>
-Solver<Dtype>::Solver(const string& param_file)
+Solver<Dtype>::Solver(const std::string& param_file)
     : net_(), callbacks_(), requested_early_exit_(false) {
   SolverParameter param;
   ReadSolverParamsFromTextFileOrDie(param_file, &param);
@@ -81,7 +81,7 @@ void Solver<Dtype>::Init(const SolverParameter& param) {
 // Load weights from the caffemodel(s) specified in "weights" solver parameter
 // into the train and test nets.
 template <typename Dtype>
-void LoadNetWeights(shared_ptr<Net<Dtype> > net,
+void LoadNetWeights(std::shared_ptr<Net<Dtype> > net,
     const std::string& model_list) {
   for (const auto& word : std::views::split(model_list, ','))
   {
@@ -95,7 +95,7 @@ template <typename Dtype>
 void Solver<Dtype>::InitTrainNet() {
   const int num_train_nets = param_->has_net() + param_->has_net_param() +
       param_->has_train_net() + param_->has_train_net_param();
-  const string field_names = "net, net_param, train_net, train_net_param";
+  const std::string field_names = "net, net_param, train_net, train_net_param";
   CHECK_GE(num_train_nets, 1) << "SolverParameter must specify a train net "
       << "using one of these fields: " << field_names;
   CHECK_LE(num_train_nets, 1) << "SolverParameter must not contain more than "
@@ -167,8 +167,8 @@ void Solver<Dtype>::InitTestNets() {
     CHECK_GT(param_->test_interval(), 0);
   }
   int test_net_id = 0;
-  vector<string> sources(num_test_net_instances);
-  vector<NetParameter> net_params(num_test_net_instances);
+  std::vector<std::string> sources(num_test_net_instances);
+  std::vector<NetParameter> net_params(num_test_net_instances);
   for (int i = 0; i < num_test_net_params; ++i, ++test_net_id) {
       sources[test_net_id] = "test_net_param";
       net_params[test_net_id].CopyFrom(param_->test_net_param(i));
@@ -258,16 +258,16 @@ void Solver<Dtype>::Step(int iters) {
           << param_->display() << " iters), loss = " << smoothed_loss_;
       iteration_timer_.Start();
       iterations_last_ = static_cast<float>(iter_);
-      const vector<Blob<Dtype>*>& result = net_->output_blobs();
+      const std::vector<Blob<Dtype>*>& result = net_->output_blobs();
       int score_index = 0;
       for (int j = 0; j < result.size(); ++j) {
         const Dtype* result_vec = result[j]->cpu_data();
-        const string& output_name =
+        const std::string& output_name =
             net_->blob_names()[net_->output_blob_indices()[j]];
         const Dtype loss_weight =
             net_->blob_loss_weights()[net_->output_blob_indices()[j]];
         for (int k = 0; k < result[j]->count(); ++k) {
-          ostringstream loss_msg_stream;
+          std::ostringstream loss_msg_stream;
           if (loss_weight) {
             loss_msg_stream << " (* " << loss_weight
                             << " = " << loss_weight * result_vec[k] << " loss)";
@@ -365,9 +365,9 @@ void Solver<Dtype>::Test(const int test_net_id) {
             << ", Testing net (#" << test_net_id << ")";
   CHECK_NOTNULL(test_nets_[test_net_id].get())->
       ShareTrainedLayersWith(net_.get());
-  vector<Dtype> test_score;
-  vector<int> test_score_output_id;
-  const shared_ptr<Net<Dtype> >& test_net = test_nets_[test_net_id];
+  std::vector<Dtype> test_score;
+  std::vector<int> test_score_output_id;
+  const std::shared_ptr<Net<Dtype> >& test_net = test_nets_[test_net_id];
   Dtype loss = 0;
   for (int i = 0; i < param_->test_iter(test_net_id); ++i) {
     SolverAction::Enum request = GetRequestedAction();
@@ -386,7 +386,7 @@ void Solver<Dtype>::Test(const int test_net_id) {
     }
 
     Dtype iter_loss;
-    const vector<Blob<Dtype>*>& result =
+    const std::vector<Blob<Dtype>*>& result =
         test_net->Forward(&iter_loss);
     if (param_->test_compute_loss()) {
       loss += iter_loss;
@@ -420,9 +420,9 @@ void Solver<Dtype>::Test(const int test_net_id) {
   for (int i = 0; i < test_score.size(); ++i) {
     const int output_blob_index =
         test_net->output_blob_indices()[test_score_output_id[i]];
-    const string& output_name = test_net->blob_names()[output_blob_index];
+    const std::string& output_name = test_net->blob_names()[output_blob_index];
     const Dtype loss_weight = test_net->blob_loss_weights()[output_blob_index];
-    ostringstream loss_msg_stream;
+    std::ostringstream loss_msg_stream;
     const Dtype mean_score = test_score[i] / param_->test_iter(test_net_id);
     if (loss_weight) {
       loss_msg_stream << " (* " << loss_weight
@@ -436,7 +436,7 @@ void Solver<Dtype>::Test(const int test_net_id) {
 template <typename Dtype>
 void Solver<Dtype>::Snapshot() {
   CHECK(Caffe::root_solver());
-  string model_filename;
+  std::string model_filename;
   switch (param_->snapshot_format()) {
   case caffe::SolverParameter_SnapshotFormat_BINARYPROTO:
     model_filename = SnapshotToBinaryProto();
@@ -462,7 +462,7 @@ void Solver<Dtype>::CheckSnapshotWritePermissions() {
   if (Caffe::root_solver() && param_->snapshot()) {
     CHECK(param_->has_snapshot_prefix())
         << "In solver params, snapshot is specified but snapshot_prefix is not";
-    string probe_filename = SnapshotFilename(".tempfile");
+    std::string probe_filename = SnapshotFilename(".tempfile");
     std::ofstream probe_ofs(probe_filename.c_str());
     if (probe_ofs.good()) {
       probe_ofs.close();
@@ -476,14 +476,14 @@ void Solver<Dtype>::CheckSnapshotWritePermissions() {
 }
 
 template <typename Dtype>
-string Solver<Dtype>::SnapshotFilename(const string& extension) {
+std::string Solver<Dtype>::SnapshotFilename(const std::string& extension) {
   return param_->snapshot_prefix() + "_iter_" + caffe::format_int(iter_)
     + extension;
 }
 
 template <typename Dtype>
-string Solver<Dtype>::SnapshotToBinaryProto() {
-  string model_filename = SnapshotFilename(".caffemodel");
+std::string Solver<Dtype>::SnapshotToBinaryProto() {
+  std::string model_filename = SnapshotFilename(".caffemodel");
   LOG(INFO) << "Snapshotting to binary proto file " << model_filename;
   NetParameter net_param;
   net_->ToProto(&net_param, param_->snapshot_diff());
@@ -492,8 +492,8 @@ string Solver<Dtype>::SnapshotToBinaryProto() {
 }
 
 template <typename Dtype>
-string Solver<Dtype>::SnapshotToHDF5() {
-  string model_filename = SnapshotFilename(".caffemodel.h5");
+std::string Solver<Dtype>::SnapshotToHDF5() {
+  std::string model_filename = SnapshotFilename(".caffemodel.h5");
   LOG(INFO) << "Snapshotting to HDF5 file " << model_filename;
   net_->ToHDF5(model_filename, param_->snapshot_diff());
   return model_filename;
@@ -501,7 +501,7 @@ string Solver<Dtype>::SnapshotToHDF5() {
 
 template <typename Dtype>
 void Solver<Dtype>::Restore(const char* state_file) {
-  string state_filename(state_file);
+  std::string state_filename(state_file);
   if (state_filename.size() >= 3 &&
       state_filename.ends_with(".h5")) {
     RestoreSolverStateFromHDF5(state_filename);

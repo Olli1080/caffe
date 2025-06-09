@@ -9,8 +9,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void DropoutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void DropoutLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
   threshold_ = this->layer_param_->dropout_param().dropout_ratio();
   DCHECK(threshold_ > 0.);
@@ -20,8 +20,8 @@ void DropoutLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void DropoutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void DropoutLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::Reshape(bottom, top);
   // Set up the cache for random number generation
   // ReshapeLike does not work because rand_vec_ is of Dtype uint
@@ -29,8 +29,8 @@ void DropoutLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void DropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void DropoutLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   unsigned int* mask = rand_vec_.mutable_cpu_data();
@@ -47,9 +47,9 @@ void DropoutLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void DropoutLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void DropoutLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
     const Dtype* top_diff = top[0]->cpu_diff();
     Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
@@ -70,8 +70,8 @@ void DropoutLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 STUB_GPU(DropoutLayer);
 #else
 template <typename Dtype>
-void DropoutLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void DropoutLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
     const Dtype* bottom_data = bottom[0]->gpu_data();
     Dtype* top_data = top[0]->mutable_gpu_data();
     const int count = bottom[0]->count();
@@ -90,9 +90,9 @@ void DropoutLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void DropoutLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void DropoutLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
     if (propagate_down[0]) {
         const Dtype* top_diff = top[0]->gpu_diff();
         Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();

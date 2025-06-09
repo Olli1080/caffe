@@ -30,27 +30,27 @@ class GradientChecker {
   // layers.
   // Note that after the gradient check, we do not guarantee that the data
   // stored in the layer parameters and the blobs are unchanged.
-  void CheckGradient(Layer<Dtype>* layer, const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top, int check_bottom = -1) {
+  void CheckGradient(Layer<Dtype>* layer, const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top, int check_bottom = -1) {
       layer->SetUp(bottom, top);
       CheckGradientSingle(layer, bottom, top, check_bottom, -1, -1);
   }
   void CheckGradientExhaustive(Layer<Dtype>* layer,
-      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+      const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top,
       int check_bottom = -1);
 
   // CheckGradientEltwise can be used to test layers that perform element-wise
   // computation only (e.g., neuron layers) -- where (d y_i) / (d x_j) = 0 when
   // i != j.
   void CheckGradientEltwise(Layer<Dtype>* layer,
-      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top);
+      const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top);
 
   // Checks the gradient of a single output with respect to particular input
   // blob(s).  If check_bottom = i >= 0, check only the ith bottom Blob.
   // If check_bottom == -1, check everything -- all bottom Blobs and all
   // param Blobs.  Otherwise (if check_bottom < -1), check only param Blobs.
   void CheckGradientSingle(Layer<Dtype>* layer,
-      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+      const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top,
       int check_bottom, int top_id, int top_data_id, bool element_wise = false);
 
   // Checks the gradient of a network. This network should not have any data
@@ -58,11 +58,11 @@ class GradientChecker {
   // such cases yet. All input blobs and parameter blobs are going to be
   // checked, layer-by-layer to avoid numerical problems to accumulate.
   void CheckGradientNet(const Net<Dtype>& net,
-      const vector<Blob<Dtype>*>& input);
+      const std::vector<Blob<Dtype>*>& input);
 
  protected:
   Dtype GetObjAndGradient(const Layer<Dtype>& layer,
-      const vector<Blob<Dtype>*>& top, int top_id = -1, int top_data_id = -1);
+      const std::vector<Blob<Dtype>*>& top, int top_id = -1, int top_data_id = -1);
   Dtype stepsize_;
   Dtype threshold_;
   unsigned int seed_;
@@ -73,7 +73,7 @@ class GradientChecker {
 
 template <typename Dtype>
 void GradientChecker<Dtype>::CheckGradientSingle(Layer<Dtype>* layer,
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top,
     int check_bottom, int top_id, int top_data_id, bool element_wise) {
   if (element_wise) {
     CHECK_EQ(0, layer->blobs().size());
@@ -188,7 +188,7 @@ void GradientChecker<Dtype>::CheckGradientSingle(Layer<Dtype>* layer,
 
 template <typename Dtype>
 void GradientChecker<Dtype>::CheckGradientExhaustive(Layer<Dtype>* layer,
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top,
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top,
     int check_bottom) {
   layer->SetUp(bottom, top);
   CHECK_GT(top.size(), 0) << "Exhaustive mode requires at least one top blob.";
@@ -204,7 +204,7 @@ void GradientChecker<Dtype>::CheckGradientExhaustive(Layer<Dtype>* layer,
 
 template <typename Dtype>
 void GradientChecker<Dtype>::CheckGradientEltwise(Layer<Dtype>* layer,
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   layer->SetUp(bottom, top);
   CHECK_GT(top.size(), 0) << "Eltwise mode requires at least one top blob.";
   const int check_bottom = -1;
@@ -218,8 +218,8 @@ void GradientChecker<Dtype>::CheckGradientEltwise(Layer<Dtype>* layer,
 
 template <typename Dtype>
 void GradientChecker<Dtype>::CheckGradientNet(
-    const Net<Dtype>& net, const vector<Blob<Dtype>*>& input) {
-  const vector<shared_ptr<Layer<Dtype> > >& layers = net.layers();
+    const Net<Dtype>& net, const std::vector<Blob<Dtype>*>& input) {
+  const std::vector<std::shared_ptr<Layer<Dtype> > >& layers = net.layers();
   vector<vector<Blob<Dtype>*> >& bottom_vecs = net.bottom_vecs();
   vector<vector<Blob<Dtype>*> >& top_vecs = net.top_vecs();
   for (int i = 0; i < layers.size(); ++i) {
@@ -231,7 +231,7 @@ void GradientChecker<Dtype>::CheckGradientNet(
 
 template <typename Dtype>
 Dtype GradientChecker<Dtype>::GetObjAndGradient(const Layer<Dtype>& layer,
-    const vector<Blob<Dtype>*>& top, int top_id, int top_data_id) {
+    const std::vector<Blob<Dtype>*>& top, int top_id, int top_data_id) {
   Dtype loss = 0;
   if (top_id < 0) {
     // the loss will be half of the sum of squares of all outputs

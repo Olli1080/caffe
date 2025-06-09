@@ -21,7 +21,7 @@ DataTransformer<Dtype>::DataTransformer(const TransformationParameter& param,
   if (param_->has_mean_file()) {
     CHECK_EQ(param_->mean_value_size(), 0) <<
       "Cannot specify mean_file and mean_value at the same time";
-    const string& mean_file = param.mean_file();
+    const std::string& mean_file = param.mean_file();
     if (Caffe::root_solver()) {
       LOG(INFO) << "Loading mean file from: " << mean_file;
     }
@@ -42,7 +42,7 @@ DataTransformer<Dtype>::DataTransformer(const TransformationParameter& param,
 template<typename Dtype>
 void DataTransformer<Dtype>::Transform(const Datum& datum,
                                        Dtype* transformed_data) {
-  const string& data = datum.data();
+  const std::string& data = datum.data();
   const int datum_channels = datum.channels();
   const int datum_height = datum.height();
   const int datum_width = datum.width();
@@ -199,7 +199,7 @@ void DataTransformer<Dtype>::Transform(const Datum& datum,
 }
 
 template<typename Dtype>
-void DataTransformer<Dtype>::Transform(const vector<Datum> & datum_vector,
+void DataTransformer<Dtype>::Transform(const std::vector<Datum> & datum_vector,
                                        Blob<Dtype>* transformed_blob) {
   const int datum_num = static_cast<int>(datum_vector.size());
   const int num = transformed_blob->num();
@@ -220,7 +220,7 @@ void DataTransformer<Dtype>::Transform(const vector<Datum> & datum_vector,
 
 #ifdef USE_OPENCV
 template<typename Dtype>
-void DataTransformer<Dtype>::Transform(const vector<cv::Mat> & mat_vector,
+void DataTransformer<Dtype>::Transform(const std::vector<cv::Mat> & mat_vector,
                                        Blob<Dtype>* transformed_blob) {
   const int mat_num = mat_vector.size();
   const int num = transformed_blob->num();
@@ -456,7 +456,7 @@ void DataTransformer<Dtype>::Transform(Blob<Dtype>* input_blob,
 }
 
 template<typename Dtype>
-vector<int> DataTransformer<Dtype>::InferBlobShape(const Datum& datum) {
+std::vector<int> DataTransformer<Dtype>::InferBlobShape(const Datum& datum) {
   if (datum.encoded()) {
 #ifdef USE_OPENCV
     CHECK(!(param_->force_color() && param_->force_gray()))
@@ -483,7 +483,7 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(const Datum& datum) {
   CHECK_GE(datum_height, crop_size);
   CHECK_GE(datum_width, crop_size);
   // Build BlobShape.
-  vector<int> shape(4);
+  std::vector<int> shape(4);
   shape[0] = 1;
   shape[1] = datum_channels;
   shape[2] = (crop_size)? crop_size: datum_height;
@@ -492,12 +492,12 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(const Datum& datum) {
 }
 
 template<typename Dtype>
-vector<int> DataTransformer<Dtype>::InferBlobShape(
-    const vector<Datum> & datum_vector) {
+std::vector<int> DataTransformer<Dtype>::InferBlobShape(
+    const std::vector<Datum> & datum_vector) {
   const int num = static_cast<int>(datum_vector.size());
   CHECK_GT(num, 0) << "There is no datum to in the vector";
   // Use first datum in the vector to InferBlobShape.
-  vector<int> shape = InferBlobShape(datum_vector[0]);
+  std::vector<int> shape = InferBlobShape(datum_vector[0]);
   // Adjust num to the size of the vector.
   shape[0] = num;
   return shape;
@@ -505,7 +505,7 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(
 
 #ifdef USE_OPENCV
 template<typename Dtype>
-vector<int> DataTransformer<Dtype>::InferBlobShape(const cv::Mat& cv_img) {
+std::vector<int> DataTransformer<Dtype>::InferBlobShape(const cv::Mat& cv_img) {
   const int crop_size = param_->crop_size();
   const int img_channels = cv_img.channels();
   const int img_height = cv_img.rows;
@@ -515,7 +515,7 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(const cv::Mat& cv_img) {
   CHECK_GE(img_height, crop_size);
   CHECK_GE(img_width, crop_size);
   // Build BlobShape.
-  vector<int> shape(4);
+  std::vector<int> shape(4);
   shape[0] = 1;
   shape[1] = img_channels;
   shape[2] = (crop_size)? crop_size: img_height;
@@ -524,12 +524,12 @@ vector<int> DataTransformer<Dtype>::InferBlobShape(const cv::Mat& cv_img) {
 }
 
 template<typename Dtype>
-vector<int> DataTransformer<Dtype>::InferBlobShape(
-    const vector<cv::Mat> & mat_vector) {
+std::vector<int> DataTransformer<Dtype>::InferBlobShape(
+    const std::vector<cv::Mat> & mat_vector) {
   const int num = mat_vector.size();
   CHECK_GT(num, 0) << "There is no cv_img to in the vector";
   // Use first cv_img in the vector to InferBlobShape.
-  vector<int> shape = InferBlobShape(mat_vector[0]);
+  std::vector<int> shape = InferBlobShape(mat_vector[0]);
   // Adjust num to the size of the vector.
   shape[0] = num;
   return shape;

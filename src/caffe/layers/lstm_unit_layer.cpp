@@ -20,8 +20,8 @@ inline Dtype tanh(Dtype x) {
 }
 
 template <typename Dtype>
-void LSTMUnitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void LSTMUnitLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const int num_instances = bottom[0]->shape(1);
   for (int i = 0; i < bottom.size(); ++i) {
     if (i == 2) {
@@ -40,8 +40,8 @@ void LSTMUnitLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void LSTMUnitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void LSTMUnitLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const int num = bottom[0]->shape(1);
   const int x_dim = hidden_dim_ * 4;
   const Dtype* C_prev = bottom[0]->cpu_data();
@@ -71,8 +71,8 @@ void LSTMUnitLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void LSTMUnitLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void LSTMUnitLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   CHECK(!propagate_down[2]) << "Cannot backpropagate to sequence indicators.";
   if (!propagate_down[0] && !propagate_down[1]) { return; }
 

@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void CuDNNReLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void CuDNNReLULayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   ReLULayer<Dtype>::LayerSetUp(bottom, top);
   // initialize cuDNN
   CUDNN_CHECK(cudnnCreate(&handle_));
@@ -20,8 +20,8 @@ void CuDNNReLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CuDNNReLULayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void CuDNNReLULayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   ReLULayer<Dtype>::Reshape(bottom, top);
   const int N = bottom[0]->num();
   const int K = bottom[0]->channels();
@@ -45,8 +45,8 @@ CuDNNReLULayer<Dtype>::~CuDNNReLULayer() {
 STUB_GPU(CuDNNReLULayer);
 #else
 template <typename Dtype>
-void CuDNNReLULayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void CuDNNReLULayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
     // Fallback to standard Caffe for leaky ReLU.
     if (ReLULayer<Dtype>::layer_param_->relu_param().negative_slope() != 0) {
         return ReLULayer<Dtype>::Forward_gpu(bottom, top);
@@ -72,9 +72,9 @@ void CuDNNReLULayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CuDNNReLULayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void CuDNNReLULayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
     if (!propagate_down[0]) {
         return;
     }

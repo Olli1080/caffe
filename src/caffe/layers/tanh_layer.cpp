@@ -9,8 +9,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void TanHLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void TanHLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
@@ -20,9 +20,9 @@ void TanHLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void TanHLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void TanHLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
     const Dtype* top_data = top[0]->cpu_data();
     const Dtype* top_diff = top[0]->cpu_diff();

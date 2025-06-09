@@ -14,8 +14,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void RecurrentLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom[0]->num_axes(), 2)
       << "bottom[0] must have at least 2 axes -- (#timesteps, #streams, ...)";
   T_ = bottom[0]->shape(0);
@@ -33,11 +33,11 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   expose_hidden_ = this->layer_param_->recurrent_param().expose_hidden();
 
   // Get (recurrent) input/output names.
-  vector<string> output_names;
+  std::vector<std::string> output_names;
   OutputBlobNames(&output_names);
-  vector<string> recur_input_names;
+  std::vector<std::string> recur_input_names;
   RecurrentInputBlobNames(&recur_input_names);
-  vector<string> recur_output_names;
+  std::vector<std::string> recur_output_names;
   RecurrentOutputBlobNames(&recur_output_names);
   const int num_recur_blobs = static_cast<int>(recur_input_names.size());
   CHECK_EQ(num_recur_blobs, recur_output_names.size());
@@ -85,7 +85,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   this->FillUnrolledNet(&net_param);
 
   // Prepend this layer's name to the names of each layer in the unrolled net.
-  const string& layer_name = this->layer_param_->name();
+  const std::string& layer_name = this->layer_param_->name();
   if (layer_name.size()) {
     for (int i = 0; i < net_param.layer_size(); ++i) {
       LayerParameter* layer = net_param.mutable_layer(i);
@@ -96,7 +96,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // Add "pseudo-losses" to all outputs to force backpropagation.
   // (Setting force_backward is too aggressive as we may not need to backprop to
   // all inputs, e.g., the sequence continuation indicators.)
-  vector<string> pseudo_losses(output_names.size());
+  std::vector<std::string> pseudo_losses(output_names.size());
   for (int i = 0; i < output_names.size(); ++i) {
     LayerParameter* layer = net_param.add_layer();
     pseudo_losses[i] = output_names[i] + "_pseudoloss";
@@ -175,7 +175,7 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   // Check that the last output_names.size() layers are the pseudo-losses;
   // set last_layer_index so that we don't actually run these layers.
-  const vector<string>& layer_names = unrolled_net_->layer_names();
+  const std::vector<std::string>& layer_names = unrolled_net_->layer_names();
   last_layer_index_ = static_cast<int>(layer_names.size() - 1 - pseudo_losses.size());
   for (int i = last_layer_index_ + 1, j = 0; i < layer_names.size(); ++i, ++j) {
     CHECK_EQ(layer_names[i], pseudo_losses[j]);
@@ -183,8 +183,8 @@ void RecurrentLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void RecurrentLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom[0]->num_axes(), 2)
       << "bottom[0] must have at least 2 axes -- (#timesteps, #streams, ...)";
   CHECK_EQ(T_, bottom[0]->shape(0)) << "input number of timesteps changed";
@@ -194,12 +194,12 @@ void RecurrentLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   CHECK_EQ(T_, bottom[1]->shape(0));
   CHECK_EQ(N_, bottom[1]->shape(1));
   x_input_blob_->ReshapeLike(*bottom[0]);
-  vector<int> cont_shape = bottom[1]->shape();
+  std::vector<int> cont_shape = bottom[1]->shape();
   cont_input_blob_->Reshape(cont_shape);
   if (static_input_) {
     x_static_input_blob_->ReshapeLike(*bottom[2]);
   }
-  vector<BlobShape> recur_input_shapes;
+  std::vector<BlobShape> recur_input_shapes;
   RecurrentInputShapes(&recur_input_shapes);
   CHECK_EQ(recur_input_shapes.size(), recur_input_blobs_.size());
   for (int i = 0; i < recur_input_shapes.size(); ++i) {
@@ -246,8 +246,8 @@ void RecurrentLayer<Dtype>::Reset() {
 }
 
 template <typename Dtype>
-void RecurrentLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void RecurrentLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   // Hacky fix for test time: reshare all the internal shared blobs, which may
   // currently point to a stale owner blob that was dropped when Solver::Test
   // called test_net->ShareTrainedLayersWith(net_.get()).
@@ -278,8 +278,8 @@ void RecurrentLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void RecurrentLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void RecurrentLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   CHECK(!propagate_down[1]) << "Cannot backpropagate to sequence indicators.";
 
   // TODO: skip backpropagation to inputs and parameters inside the unrolled
@@ -294,8 +294,8 @@ void RecurrentLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 STUB_GPU_FORWARD(RecurrentLayer, Forward);
 #else
 template <typename Dtype>
-void RecurrentLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void RecurrentLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
     // Hacky fix for test time... reshare all the shared blobs.
     // TODO: somehow make this work non-hackily.
     if (this->phase_ == TEST) {

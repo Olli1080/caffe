@@ -107,7 +107,7 @@ static mxArray* blob_to_mx_mat(const Blob<float>* blob,
 }
 
 // Convert vector<int> to matlab row vector
-static mxArray* int_vec_to_mx_vec(const vector<int>& int_vec) {
+static mxArray* int_vec_to_mx_vec(const std::vector<int>& int_vec) {
   mxArray* mx_vec = mxCreateDoubleMatrix(int_vec.size(), 1, mxREAL);
   double* vec_mem_ptr = mxGetPr(mx_vec);
   for (int i = 0; i < int_vec.size(); i++) {
@@ -117,7 +117,7 @@ static mxArray* int_vec_to_mx_vec(const vector<int>& int_vec) {
 }
 
 // Convert vector<string> to matlab cell vector of strings
-static mxArray* str_vec_to_mx_strcell(const vector<std::string>& str_vec) {
+static mxArray* str_vec_to_mx_strcell(const std::vector<std::string>& str_vec) {
   mxArray* mx_strcell = mxCreateCellMatrix(str_vec.size(), 1);
   for (int i = 0; i < str_vec.size(); i++) {
     mxSetCell(mx_strcell, i, mxCreateString(str_vec[i].c_str()));
@@ -171,7 +171,7 @@ static mxArray* ptr_to_handle(const T* ptr) {
 
 // Convert a vector of shared_ptr in C++ to handle struct vector
 template <typename T>
-static mxArray* ptr_vec_to_handle_vec(const vector<shared_ptr<T> >& ptr_vec) {
+static mxArray* ptr_vec_to_handle_vec(const std::vector<std::shared_ptr<T> >& ptr_vec) {
   mxArray* mx_handle_vec = create_handle_vec<T>(ptr_vec.size());
   for (int i = 0; i < ptr_vec.size(); i++) {
     setup_handle(ptr_vec[i].get(), i, mx_handle_vec);

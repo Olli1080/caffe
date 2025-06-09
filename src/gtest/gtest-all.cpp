@@ -171,7 +171,7 @@ class GTEST_API_ SingleFailureChecker {
   // The constructor remembers the arguments.
   SingleFailureChecker(const TestPartResultArray* results,
                        TestPartResult::Type type,
-                       const string& substr);
+                       const std::string& substr);
   ~SingleFailureChecker();
  private:
   const TestPartResultArray* const results_;
@@ -1910,7 +1910,7 @@ AssertionResult HasOneFailure(const char* /* results_expr */,
                               const char* /* substr_expr */,
                               const TestPartResultArray& results,
                               TestPartResult::Type type,
-                              const string& substr) {
+                              const std::string& substr) {
   const String expected(type == TestPartResult::kFatalFailure ?
                         "1 fatal failure" :
                         "1 non-fatal failure");
@@ -1947,7 +1947,7 @@ AssertionResult HasOneFailure(const char* /* results_expr */,
 SingleFailureChecker:: SingleFailureChecker(
     const TestPartResultArray* results,
     TestPartResult::Type type,
-    const string& substr)
+    const std::string& substr)
     : results_(results),
       type_(type),
       substr_(substr) {}
@@ -3488,7 +3488,7 @@ bool Test::HasNonfatalFailure() {
 
 // Constructs a TestInfo object. It assumes ownership of the test factory
 // object.
-// TODO(vladl@google.com): Make a_test_case_name and a_name const string&'s
+// TODO(vladl@google.com): Make a_test_case_name and a_name const std::string&'s
 // to signify they cannot be NULLs.
 TestInfo::TestInfo(const char* a_test_case_name,
                    const char* a_name,
@@ -4335,7 +4335,7 @@ class XmlUnitTestResultPrinter : public EmptyTestEventListener {
   static String EscapeXml(const char* str, bool is_attribute);
 
   // Returns the given string with all characters invalid in XML removed.
-  static string RemoveInvalidXmlCharacters(const string& str);
+  static string RemoveInvalidXmlCharacters(const std::string& str);
 
   // Convenience wrapper around EscapeXml when str is an attribute value.
   static String EscapeXmlAttribute(const char* str) {
@@ -4469,7 +4469,7 @@ String XmlUnitTestResultPrinter::EscapeXml(const char* str, bool is_attribute) {
 // Returns the given string with all characters invalid in XML removed.
 // Currently invalid characters are dropped from the string. An
 // alternative is to replace them with certain characters such as . or ?.
-string XmlUnitTestResultPrinter::RemoveInvalidXmlCharacters(const string& str) {
+string XmlUnitTestResultPrinter::RemoveInvalidXmlCharacters(const std::string& str) {
   string output;
   output.reserve(str.size());
   for (string::const_iterator it = str.begin(); it != str.end(); ++it)
@@ -4635,7 +4635,7 @@ class StreamingListener : public EmptyTestEventListener {
   // Escapes '=', '&', '%', and '\n' characters in str as "%xx".
   static string UrlEncode(const char* str);
 
-  StreamingListener(const string& host, const string& port)
+  StreamingListener(const std::string& host, const std::string& port)
       : sockfd_(-1), host_name_(host), port_num_(port) {
     MakeConnection();
     Send("gtest_streaming_protocol_version=1.0\n");
@@ -4716,7 +4716,7 @@ class StreamingListener : public EmptyTestEventListener {
   }
 
   // Sends a string to the socket.
-  void Send(const string& message) {
+  void Send(const std::string& message) {
     GTEST_CHECK_(sockfd_ != -1)
         << "Send() can be called only when there is a connection.";
 
@@ -5315,7 +5315,7 @@ void UnitTestImpl::ConfigureXmlOutput() {
 // Initializes event listeners for streaming test results in String form.
 // Must not be called before InitGoogleTest.
 void UnitTestImpl::ConfigureStreamingOutput() {
-  const string& target = GTEST_FLAG(stream_result_to);
+  const std::string& target = GTEST_FLAG(stream_result_to);
   if (!target.empty()) {
     const size_t pos = target.find(':');
     if (pos != string::npos) {

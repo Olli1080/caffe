@@ -28,8 +28,8 @@ class WindowDataLayer : public BasePrefetchingDataLayer<Dtype> {
       : BasePrefetchingDataLayer<Dtype>(param) {}
 
   ~WindowDataLayer() override;
-  void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                      const vector<Blob<Dtype>*>& top) override;
+  void DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                      const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "WindowData"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
@@ -39,17 +39,17 @@ class WindowDataLayer : public BasePrefetchingDataLayer<Dtype> {
   virtual unsigned int PrefetchRand();
   void load_batch(Batch<Dtype>* batch) override;
 
-  shared_ptr<Caffe::RNG> prefetch_rng_;
-  vector<std::pair<std::string, vector<int> > > image_database_;
+  std::shared_ptr<Caffe::RNG> prefetch_rng_;
+  std::vector<std::pair<std::string, std::vector<int> > > image_database_;
   enum WindowField { IMAGE_INDEX, LABEL, OVERLAP, X1, Y1, X2, Y2, NUM };
-  vector<vector<float> > fg_windows_;
-  vector<vector<float> > bg_windows_;
+  std::vector<std::vector<float> > fg_windows_;
+  std::vector<std::vector<float> > bg_windows_;
   Blob<Dtype> data_mean_;
-  vector<Dtype> mean_values_;
+  std::vector<Dtype> mean_values_;
   bool has_mean_file_;
   bool has_mean_values_;
   bool cache_images_;
-  vector<std::pair<std::string, Datum > > image_database_cache_;
+  std::vector<std::pair<std::string, Datum > > image_database_cache_;
 };
 
 }  // namespace caffe

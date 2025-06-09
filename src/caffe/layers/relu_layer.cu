@@ -43,13 +43,6 @@ template void ReLULayer<double>::forward_kernel(int, const double*, double*, dou
 
 template void ReLULayer<float>::backward_kernel(int, const float*, const float*, float*, float);
 template void ReLULayer<double>::backward_kernel(int, const double*, const double*, double*, double);
-//#ifdef CPU_ONLY
-//STUB_GPU(ReLULayer);
-//#else
-//INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ReLULayer);
-//#endif
-
-//INSTANTIATE_LAYER_GPU_FUNCS(ReLULayer);
 
 
 }  // namespace caffe

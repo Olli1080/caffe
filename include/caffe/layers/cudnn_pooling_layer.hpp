@@ -21,20 +21,20 @@ class CAFFE_EXPORT CuDNNPoolingLayer : public PoolingLayer<Dtype> {
   explicit CuDNNPoolingLayer(const LayerParameter& param)
       : PoolingLayer<Dtype>(param), handles_setup_(false) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
   ~CuDNNPoolingLayer() override;
   // Currently, cuDNN does not support the extra top blob.
   inline int MinTopBlobs() const override { return -1; }
   inline int ExactNumTopBlobs() const override { return 1; }
 
  protected:
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   bool handles_setup_;
   cudnnHandle_t handle_;

@@ -22,27 +22,27 @@ class EltwiseLayer : public Layer<Dtype> {
   explicit EltwiseLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "Eltwise"; }
   [[nodiscard]] int MinBottomBlobs() const override { return 2; }
   [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
 
  protected:
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   EltwiseParameter_EltwiseOp op_;
-  vector<Dtype> coeffs_;
+  std::vector<Dtype> coeffs_;
   Blob<int> max_idx_;
 
   bool stable_prod_grad_;

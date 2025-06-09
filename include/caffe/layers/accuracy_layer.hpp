@@ -29,10 +29,10 @@ class AccuracyLayer : public Layer<Dtype> {
   explicit AccuracyLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "Accuracy"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 2; }
@@ -67,15 +67,15 @@ class AccuracyLayer : public Layer<Dtype> {
    *         \end{array} \right.
    *      @f$
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
 
 
   /// @brief Not implemented -- AccuracyLayer cannot be used as a loss.
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-       const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+       const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override
   {
     for (bool i : propagate_down)
     {
@@ -83,8 +83,8 @@ class AccuracyLayer : public Layer<Dtype> {
     }
   }
 
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   int label_axis_, outer_num_, inner_num_;
 

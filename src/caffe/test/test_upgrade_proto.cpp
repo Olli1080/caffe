@@ -19,7 +19,7 @@ namespace caffe {
 class PaddingLayerUpgradeTest : public ::testing::Test {
  protected:
   void RunPaddingUpgradeTest(
-      const string& input_param_string, const string& output_param_string) {
+      const std::string& input_param_string, const std::string& output_param_string) {
     // Test that UpgradeV0PaddingLayers called on the proto specified by
     // input_param_string results in the proto specified by
     // output_param_string.
@@ -42,7 +42,7 @@ class PaddingLayerUpgradeTest : public ::testing::Test {
 };
 
 TEST_F(PaddingLayerUpgradeTest, TestSimple) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -118,7 +118,7 @@ TEST_F(PaddingLayerUpgradeTest, TestSimple) {
       "  bottom: 'fc8' "
       "  bottom: 'label' "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -190,7 +190,7 @@ TEST_F(PaddingLayerUpgradeTest, TestSimple) {
 }
 
 TEST_F(PaddingLayerUpgradeTest, TestTwoTops) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -289,7 +289,7 @@ TEST_F(PaddingLayerUpgradeTest, TestTwoTops) {
       "  bottom: 'fc8' "
       "  bottom: 'label' "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -385,7 +385,7 @@ TEST_F(PaddingLayerUpgradeTest, TestTwoTops) {
 }
 
 TEST_F(PaddingLayerUpgradeTest, TestImageNet) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -750,7 +750,7 @@ TEST_F(PaddingLayerUpgradeTest, TestImageNet) {
       "  bottom: 'fc8' "
       "  bottom: 'label' "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -1089,7 +1089,7 @@ TEST_F(PaddingLayerUpgradeTest, TestImageNet) {
 class NetUpgradeTest : public ::testing::Test {
  protected:
   void RunV0UpgradeTest(
-      const string& input_param_string, const string& output_param_string) {
+      const std::string& input_param_string, const std::string& output_param_string) {
     // Test that UpgradeV0Net called on the NetParameter proto specified by
     // input_param_string results in the NetParameter proto specified by
     // output_param_string.
@@ -1106,7 +1106,7 @@ class NetUpgradeTest : public ::testing::Test {
   }
 
   void RunV1UpgradeTest(
-      const string& input_param_string, const string& output_param_string) {
+      const std::string& input_param_string, const std::string& output_param_string) {
     // Test that UpgradeV0Net called on the NetParameter proto specified by
     // input_param_string results in the NetParameter proto specified by
     // output_param_string.
@@ -1124,7 +1124,7 @@ class NetUpgradeTest : public ::testing::Test {
 };
 
 TEST_F(NetUpgradeTest, TestSimple) {
-  const string& v0_proto =
+  const std::string& v0_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -1200,7 +1200,7 @@ TEST_F(NetUpgradeTest, TestSimple) {
       "  bottom: 'fc8' "
       "  bottom: 'label' "
       "} ";
-  const string& expected_v1_proto =
+  const std::string& expected_v1_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  name: 'data' "
@@ -1270,7 +1270,7 @@ TEST_F(NetUpgradeTest, TestSimple) {
       "} ";
   this->RunV0UpgradeTest(v0_proto, expected_v1_proto);
 
-  const string& expected_v2_proto =
+  const std::string& expected_v2_proto =
       "name: 'CaffeNet' "
       "layer { "
       "  name: 'data' "
@@ -1351,7 +1351,7 @@ TEST_F(NetUpgradeTest, TestSimple) {
 
 // Test any layer or parameter upgrades not covered by other tests.
 TEST_F(NetUpgradeTest, TestAllParams) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'CaffeNet' "
       "input: 'input_data' "
       "input_dim: 64 "
@@ -1609,7 +1609,7 @@ TEST_F(NetUpgradeTest, TestAllParams) {
       "    type: 'tanh' "
       "  } "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'CaffeNet' "
       "input: 'input_data' "
       "input_dim: 64 "
@@ -1851,7 +1851,7 @@ TEST_F(NetUpgradeTest, TestAllParams) {
 }
 
 TEST_F(NetUpgradeTest, TestImageNet) {
-  const string& v0_proto =
+  const std::string& v0_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  layer { "
@@ -2216,7 +2216,7 @@ TEST_F(NetUpgradeTest, TestImageNet) {
       "  bottom: 'fc8' "
       "  bottom: 'label' "
       "} ";
-  const string& expected_v1_proto =
+  const std::string& expected_v1_proto =
       "name: 'CaffeNet' "
       "layers { "
       "  name: 'data' "
@@ -2537,7 +2537,7 @@ TEST_F(NetUpgradeTest, TestImageNet) {
       "} ";
   this->RunV0UpgradeTest(v0_proto, expected_v1_proto);
 
-  const string& expected_v2_proto =
+  const std::string& expected_v2_proto =
       "name: 'CaffeNet' "
       "layer { "
       "  name: 'data' "
@@ -2929,7 +2929,7 @@ TEST_F(NetUpgradeTest, TestUpgradeV1LayerType) {
 class SolverTypeUpgradeTest : public ::testing::Test {
  protected:
   void RunSolverTypeUpgradeTest(
-      const string& input_param_string, const string& output_param_string) {
+      const std::string& input_param_string, const std::string& output_param_string) {
     // Test upgrading old solver_type field (enum) to new type field (string)
     SolverParameter input_param;
     CHECK(google::protobuf::TextFormat::ParseFromString(
@@ -2950,7 +2950,7 @@ TEST_F(SolverTypeUpgradeTest, TestSimple) {
   const char* new_type_vec[6] = { "SGD", "AdaGrad", "Nesterov", "RMSProp",
       "AdaDelta", "Adam" };
   for (int i = 0; i < 6; ++i) {
-    const string& input_proto =
+    const std::string& input_proto =
         "net: 'examples/mnist/lenet_train_test.prototxt' "
         "weights: 'examples/mnist/lenet_train_test1.caffemodel' "
         "weights: 'examples/mnist/lenet_train_test2.caffemodel' "
@@ -2968,7 +2968,7 @@ TEST_F(SolverTypeUpgradeTest, TestSimple) {
         "snapshot_prefix: 'examples/mnist/lenet_rmsprop' "
         "solver_mode: GPU "
         "solver_type: " + std::string(old_type_vec[i]) + " ";
-    const string& expected_output_proto =
+    const std::string& expected_output_proto =
         "net: 'examples/mnist/lenet_train_test.prototxt' "
         "weights: 'examples/mnist/lenet_train_test1.caffemodel' "
         "weights: 'examples/mnist/lenet_train_test2.caffemodel' "

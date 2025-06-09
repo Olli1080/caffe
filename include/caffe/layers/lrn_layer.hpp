@@ -25,37 +25,37 @@ class CAFFE_EXPORT LRNLayer : public Layer<Dtype> {
   explicit LRNLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "LRN"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
   [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }
 
  protected:
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
-  virtual void CrossChannelForward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void CrossChannelForward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void WithinChannelForward(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top);
-  virtual void CrossChannelBackward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void CrossChannelBackward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
-  virtual void WithinChannelBackward(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom);
+  virtual void CrossChannelForward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top);
+  virtual void CrossChannelForward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top);
+  virtual void WithinChannelForward(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top);
+  virtual void CrossChannelBackward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom);
+  virtual void CrossChannelBackward_gpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom);
+  virtual void WithinChannelBackward(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom);
 
   int size_;
   int pre_pad_;
@@ -72,22 +72,22 @@ class CAFFE_EXPORT LRNLayer : public Layer<Dtype> {
   Blob<Dtype> scale_;
 
   // Fields used for normalization WITHIN_CHANNEL
-  shared_ptr<SplitLayer<Dtype> > split_layer_;
-  vector<Blob<Dtype>*> split_top_vec_;
-  shared_ptr<PowerLayer<Dtype> > square_layer_;
+  std::shared_ptr<SplitLayer<Dtype> > split_layer_;
+  std::vector<Blob<Dtype>*> split_top_vec_;
+  std::shared_ptr<PowerLayer<Dtype> > square_layer_;
   Blob<Dtype> square_input_;
   Blob<Dtype> square_output_;
-  vector<Blob<Dtype>*> square_bottom_vec_;
-  vector<Blob<Dtype>*> square_top_vec_;
-  shared_ptr<PoolingLayer<Dtype> > pool_layer_;
+  std::vector<Blob<Dtype>*> square_bottom_vec_;
+  std::vector<Blob<Dtype>*> square_top_vec_;
+  std::shared_ptr<PoolingLayer<Dtype> > pool_layer_;
   Blob<Dtype> pool_output_;
-  vector<Blob<Dtype>*> pool_top_vec_;
-  shared_ptr<PowerLayer<Dtype> > power_layer_;
+  std::vector<Blob<Dtype>*> pool_top_vec_;
+  std::shared_ptr<PowerLayer<Dtype> > power_layer_;
   Blob<Dtype> power_output_;
-  vector<Blob<Dtype>*> power_top_vec_;
-  shared_ptr<EltwiseLayer<Dtype> > product_layer_;
+  std::vector<Blob<Dtype>*> power_top_vec_;
+  std::shared_ptr<EltwiseLayer<Dtype> > product_layer_;
   Blob<Dtype> product_input_;
-  vector<Blob<Dtype>*> product_bottom_vec_;
+  std::vector<Blob<Dtype>*> product_bottom_vec_;
 };
 
 }  // namespace caffe

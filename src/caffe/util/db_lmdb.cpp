@@ -7,7 +7,7 @@
 
 namespace caffe { namespace db {
 
-void LMDB::Open(const string& source, Mode mode) {
+void LMDB::Open(const std::string& source, Mode mode) {
   MDB_CHECK(mdb_env_create(&mdb_env_));
   if (mode == NEW) {
     CHECK_EQ(mkdir(source.c_str(), 0744), 0) << "mkdir " << source << " failed";
@@ -48,7 +48,7 @@ LMDBTransaction* LMDB::NewTransaction() {
   return new LMDBTransaction(mdb_env_);
 }
 
-void LMDBTransaction::Put(const string& key, const string& value) {
+void LMDBTransaction::Put(const std::string& key, const std::string& value) {
   keys.push_back(key);
   values.push_back(value);
 }

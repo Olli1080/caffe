@@ -14,19 +14,19 @@
 namespace caffe {
 
 template <typename Dtype>
-void RNNLayer<Dtype>::RecurrentInputBlobNames(vector<string>* names) const {
+void RNNLayer<Dtype>::RecurrentInputBlobNames(std::vector<std::string>* names) const {
   names->resize(1);
   (*names)[0] = "h_0";
 }
 
 template <typename Dtype>
-void RNNLayer<Dtype>::RecurrentOutputBlobNames(vector<string>* names) const {
+void RNNLayer<Dtype>::RecurrentOutputBlobNames(std::vector<std::string>* names) const {
   names->resize(1);
   (*names)[0] = "h_" + format_int(this->T_);
 }
 
 template <typename Dtype>
-void RNNLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
+void RNNLayer<Dtype>::RecurrentInputShapes(std::vector<BlobShape>* shapes) const {
   const int num_output = this->layer_param_->recurrent_param().num_output();
   shapes->resize(1);
   (*shapes)[0].Clear();
@@ -36,7 +36,7 @@ void RNNLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
 }
 
 template <typename Dtype>
-void RNNLayer<Dtype>::OutputBlobNames(vector<string>* names) const {
+void RNNLayer<Dtype>::OutputBlobNames(std::vector<std::string>* names) const {
   names->resize(1);
   (*names)[0] = "o";
 }
@@ -81,7 +81,7 @@ void RNNLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   slice_param.set_type("Slice");
   slice_param.mutable_slice_param()->set_axis(0);
 
-  vector<BlobShape> input_shapes;
+  std::vector<BlobShape> input_shapes;
   RecurrentInputShapes(&input_shapes);
   CHECK_EQ(1, input_shapes.size());
 
@@ -148,8 +148,8 @@ void RNNLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   output_concat_layer.mutable_concat_param()->set_axis(0);
 
   for (int t = 1; t <= this->T_; ++t) {
-    string tm1s = format_int(t - 1);
-    string ts = format_int(t);
+    std::string tm1s = format_int(t - 1);
+    std::string ts = format_int(t);
 
     cont_slice_param->add_top("cont_" + ts);
     x_slice_param->add_top("W_xh_x_" + ts);

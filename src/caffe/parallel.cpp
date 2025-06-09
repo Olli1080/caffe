@@ -22,7 +22,7 @@ enum Op {
 };
 
 template<typename Dtype>
-static void apply_buffers(const vector<Blob<Dtype>*>& blobs,
+static void apply_buffers(const std::vector<Blob<Dtype>*>& blobs,
                           Dtype* buffer, size_t total_size, Op op) {
   Dtype* ptr = buffer;
   for (int i = 0; i < blobs.size(); ++i) {
@@ -56,7 +56,7 @@ static void apply_buffers(const vector<Blob<Dtype>*>& blobs,
 
 // Buffer size necessary to store given blobs
 template<typename Dtype>
-static size_t total_size(const vector<Blob<Dtype>*>& params) {
+static size_t total_size(const std::vector<Blob<Dtype>*>& params) {
   size_t size = 0;
   for (int i = 0; i < params.size(); ++i)
     size += params[i]->count();
@@ -83,7 +83,7 @@ GPUParams<Dtype>::GPUParams(shared_ptr<Solver<Dtype> > root_solver, int device)
   CUDA_CHECK(cudaMalloc(&data_, size_ * sizeof(Dtype)));
 
   // Copy blob values
-  const vector<Blob<Dtype>*>& net =
+  const std::vector<Blob<Dtype>*>& net =
     root_solver->net()->learnable_params();
   apply_buffers(net, data_, size_, copy);
 
@@ -101,7 +101,7 @@ GPUParams<Dtype>::~GPUParams() {
 
 template<typename Dtype>
 void GPUParams<Dtype>::Configure(Solver<Dtype>* solver) const {
-  const vector<Blob<Dtype>*>& net =
+  const std::vector<Blob<Dtype>*>& net =
     solver->net()->learnable_params();
   apply_buffers(net, data_, size_, replace_gpu);
   apply_buffers(net, diff_, size_, replace_gpu_diff);
@@ -122,7 +122,7 @@ NCCL<Dtype>::NCCL(shared_ptr<Solver<Dtype> > solver)
 }
 
 template<typename Dtype>
-NCCL<Dtype>::NCCL(shared_ptr<Solver<Dtype> > solver, const string& uid)
+NCCL<Dtype>::NCCL(shared_ptr<Solver<Dtype> > solver, const std::string& uid)
   : GPUParams<Dtype>(solver, getDevice()),
     solver_(solver), barrier_() {
   this->Configure(solver.get());
@@ -325,7 +325,7 @@ class Worker : public InternalThread {
 };
 
 template<typename Dtype>
-void NCCL<Dtype>::Run(const vector<int>& gpus, const char* restore) {
+void NCCL<Dtype>::Run(const std::vector<int>& gpus, const char* restore) {
   std::barrier barrier(static_cast<int>(gpus.size()));
   vector<NCCL<Dtype>*> nccls(gpus.size());
   // Create workers

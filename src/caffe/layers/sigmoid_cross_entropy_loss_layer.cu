@@ -59,6 +59,5 @@ template void SigmoidCrossEntropyLossLayer<double>::forward_kernel(const int, co
 
 template void SigmoidCrossEntropyLossLayer<float>::backward_kernel(const int, const float*, float*);
 template void SigmoidCrossEntropyLossLayer<double>::backward_kernel(const int, const double*, double*);
-//INSTANTIATE_LAYER_GPU_FUNCS(SigmoidCrossEntropyLossLayer);
 
 }  // namespace caffe

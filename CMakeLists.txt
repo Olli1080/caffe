@@ -13,10 +13,18 @@ project(Caffe C CXX)
 set(CAFFE_TARGET_VERSION "1.0.0" CACHE STRING "Caffe logical version")
 set(CAFFE_TARGET_SOVERSION "1.0.0" CACHE STRING "Caffe soname version")
 add_compile_definitions(
-	CAFFE_VERSION=${CAFFE_TARGET_VERSION}
-	GLOG_NO_ABBREVIATED_SEVERITIES
-   NOMINMAX
+  PUBLIC
+	  CAFFE_VERSION=${CAFFE_TARGET_VERSION}
+    GLOG_USE_GLOG_EXPORT
+  PRIVATE
+    GLOG_NO_ABBREVIATED_SEVERITIES
+  #PRIVATE
+    #NOMINMAX
 )
+add_compile_options(
+  $<$<AND:$<CXX_COMPILER_ID:MSVC>,$<COMPILE_LANGUAGE:CXX>>:/MP>
+)
+#add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/MP>)
 
 # ---[ Using cmake scripts and modules
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules)
@@ -33,6 +41,7 @@ include(cmake/TargetResolvePrerequesites.cmake)
 
 # ---[ Options
 caffe_option(CPU_ONLY  "Build Caffe without CUDA support" OFF) # TODO: rename to USE_CUDA
+option(BUILD_EXAMPLES "Build Caffe examples" OFF)
 caffe_option(USE_CUDNN "Build Caffe with cuDNN library support" ON IF NOT CPU_ONLY)
 caffe_option(USE_NCCL "Build Caffe with NCCL library support" OFF)
 caffe_option(BUILD_SHARED_LIBS "Build shared libraries" ON)
@@ -46,7 +55,9 @@ caffe_option(USE_LEVELDB "Build with levelDB" OFF)
 caffe_option(USE_LMDB "Build with lmdb" OFF)
 caffe_option(ALLOW_LMDB_NOLOCK "Allow MDB_NOLOCK when reading LMDB files (only if necessary)" OFF)
 caffe_option(USE_OPENMP "Link with OpenMP (when your BLAS wants OpenMP and you get linker errors)" OFF)
-caffe_option(NVCC_THREADS "Amount of threads use for compiling with nvcc" 1)
+
+set(NVCC_THREADS "1" CACHE STRING "Amount of threads use for compiling with nvcc")
+#option(NVCC_THREADS "Amount of threads use for compiling with nvcc" 1)
 
 # This code is taken from https://github.com/sh1r0/caffe-android-lib
 caffe_option(USE_HDF5 "Build with hdf5" ON)
@@ -106,7 +117,11 @@ endif()
 add_subdirectory(src/gtest)
 add_subdirectory(src/caffe)
 add_subdirectory(tools)
-add_subdirectory(examples)
+
+if(BUILD_EXAMPLES)
+  add_subdirectory(examples)  
+endif(BUILD_EXAMPLES)
+
 add_subdirectory(python)
 add_subdirectory(matlab)
 add_subdirectory(docs)

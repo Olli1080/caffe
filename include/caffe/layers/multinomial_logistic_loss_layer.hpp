@@ -46,15 +46,15 @@ class MultinomialLogisticLossLayer : public LossLayer<Dtype> {
   explicit MultinomialLogisticLossLayer(const LayerParameter& param)
       : LossLayer<Dtype>(param) {}
 
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "MultinomialLogisticLoss"; }
 
  protected:
   /// @copydoc MultinomialLogisticLossLayer
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the multinomial logistic loss error gradient w.r.t. the
@@ -84,8 +84,8 @@ class MultinomialLogisticLossLayer : public LossLayer<Dtype> {
    *   -# @f$ (N \times 1 \times 1 \times 1) @f$
    *      the labels -- ignored as we can't compute their error gradients
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 };
 
 }  // namespace caffe

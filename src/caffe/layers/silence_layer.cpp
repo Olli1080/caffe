@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void SilenceLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void SilenceLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   for (int i = 0; i < bottom.size(); ++i) {
     if (propagate_down[i]) {
       caffe_set(bottom[i]->count(), Dtype(0),
@@ -21,7 +21,22 @@ void SilenceLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(SilenceLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(SilenceLayer);
+template <typename Dtype>
+void SilenceLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
+    // Do nothing.
+}
+
+template <typename Dtype>
+void SilenceLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
+    for (int i = 0; i < bottom.size(); ++i) {
+        if (propagate_down[i]) {
+            caffe_gpu_set(bottom[i]->count(), Dtype(0),
+                bottom[i]->mutable_gpu_diff());
+        }
+    }
+}
 #endif
 
 INSTANTIATE_CLASS(SilenceLayer);

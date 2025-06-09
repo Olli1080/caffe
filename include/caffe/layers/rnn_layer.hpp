@@ -36,10 +36,10 @@ class RNNLayer : public RecurrentLayer<Dtype> {
 
  protected:
   void FillUnrolledNet(NetParameter* net_param) const override;
-  void RecurrentInputBlobNames(vector<string>* names) const override;
-  void RecurrentOutputBlobNames(vector<string>* names) const override;
-  void RecurrentInputShapes(vector<BlobShape>* shapes) const override;
-  void OutputBlobNames(vector<string>* names) const override;
+  void RecurrentInputBlobNames(std::vector<std::string>* names) const override;
+  void RecurrentOutputBlobNames(std::vector<std::string>* names) const override;
+  void RecurrentInputShapes(std::vector<BlobShape>* shapes) const override;
+  void OutputBlobNames(std::vector<std::string>* names) const override;
 };
 
 }  // namespace caffe

@@ -18,8 +18,8 @@ __global__ void BRForward(const int count, const int inner_dim, const Dtype* in,
 }
 
 template<typename Dtype>
-void BatchReindexLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                                           const vector<Blob<Dtype>*>& top) {
+void BatchReindexLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                                           const std::vector<Blob<Dtype>*>& top) {
   check_batch_reindex(bottom[0]->shape(0), bottom[1]->count(),
                       bottom[1]->cpu_data());
   if (top[0]->count() == 0) {
@@ -52,17 +52,17 @@ __global__ void BRBackward(const int count, const int inner_dim,
 
 template<typename Dtype>
 void BatchReindexLayer<Dtype>::Backward_gpu(
-    const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+    const std::vector<Blob<Dtype>*>& top, const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   CHECK(!propagate_down[1]) << "Cannot backprop to index.";
   if (!propagate_down[0]) {
     return;
   }
 
-  vector<std::pair<int, int> > mapping;
+  std::vector<std::pair<int, int> > mapping;
   const Dtype* perm = bottom[1]->cpu_data();
   for (int i = 0; i < bottom[1]->count(); ++i) {
-    mapping.push_back(pair<int, int>(static_cast<int>(perm[i]), i));
+    mapping.emplace_back(static_cast<int>(perm[i]), i);
   }
   std::sort(mapping.begin(), mapping.end(), pair_sort_first());
 
@@ -73,7 +73,7 @@ void BatchReindexLayer<Dtype>::Backward_gpu(
   // k'th element of `begins` points to the location in `top_indexes` where the
   // list for the k'th example begin, and the k'th element of `counts` is the
   // length of that list.
-  vector<int> shape;
+  std::vector<int> shape;
   shape.push_back(bottom[1]->count());
   Blob<Dtype> top_indexes(shape);
   shape[0] = bottom[0]->shape(0);

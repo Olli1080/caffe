@@ -52,10 +52,10 @@ class InfogainLossLayer : public LossLayer<Dtype> {
   explicit InfogainLossLayer(const LayerParameter& param)
       : LossLayer<Dtype>(param), infogain_() {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   // InfogainLossLayer takes 2-3 bottom Blobs; if there are 3 the third should
   // be the infogain matrix.  (Otherwise the infogain matrix is loaded from a
@@ -74,8 +74,8 @@ class InfogainLossLayer : public LossLayer<Dtype> {
 
  protected:
   /// @copydoc InfogainLossLayer
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the infogain loss error gradient w.r.t. the predictions.
@@ -109,8 +109,8 @@ class InfogainLossLayer : public LossLayer<Dtype> {
    *      (\b optional) the information gain matrix -- ignored as its error
    *      gradient computation is not implemented.
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   /// Read the normalization mode parameter and compute the normalizer based
   /// on the blob size.  If normalization_mode is VALID, the count of valid
@@ -122,13 +122,13 @@ class InfogainLossLayer : public LossLayer<Dtype> {
   virtual void sum_rows_of_H(const Blob<Dtype>* H);
 
   /// The internal SoftmaxLayer used to map predictions to a distribution.
-  shared_ptr<Layer<Dtype> > softmax_layer_;
+  std::shared_ptr<Layer<Dtype> > softmax_layer_;
   /// prob stores the output probability predictions from the SoftmaxLayer.
   Blob<Dtype> prob_;
   /// bottom vector holder used in call to the underlying SoftmaxLayer::Forward
-  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  std::vector<Blob<Dtype>*> softmax_bottom_vec_;
   /// top vector holder used in call to the underlying SoftmaxLayer::Forward
-  vector<Blob<Dtype>*> softmax_top_vec_;
+  std::vector<Blob<Dtype>*> softmax_top_vec_;
 
   Blob<Dtype> infogain_;
   Blob<Dtype> sum_rows_H_;  // cache the row sums of H.

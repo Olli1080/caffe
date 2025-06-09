@@ -21,7 +21,7 @@ class SolverTest : public MultiDeviceTest<TypeParam> {
   typedef typename TypeParam::Dtype Dtype;
 
  protected:
-  virtual void InitSolverFromProtoString(const string& proto) {
+  virtual void InitSolverFromProtoString(const std::string& proto) {
     SolverParameter param;
     CHECK(google::protobuf::TextFormat::ParseFromString(proto, &param));
     // Set the solver_mode according to current Caffe::mode.
@@ -44,7 +44,7 @@ class SolverTest : public MultiDeviceTest<TypeParam> {
 TYPED_TEST_CASE(SolverTest, TestDtypesAndDevices);
 
 TYPED_TEST(SolverTest, TestInitTrainTestNets) {
-  const string& proto =
+  const std::string& proto =
      "test_interval: 10 "
      "test_iter: 10 "
      "test_state: { stage: 'with-softmax' }"

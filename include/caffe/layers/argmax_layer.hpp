@@ -38,10 +38,10 @@ class ArgMaxLayer : public Layer<Dtype> {
   explicit ArgMaxLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "ArgMax"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
@@ -60,11 +60,11 @@ class ArgMaxLayer : public Layer<Dtype> {
    *       y_n = \arg\max\limits_i x_{ni}
    *      @f$ (for @f$ K = 1 @f$).
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
   /// @brief Not implemented (non-differentiable function)
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override {
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override {
     NOT_IMPLEMENTED;
   }
   bool out_max_val_;

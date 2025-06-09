@@ -24,15 +24,15 @@ class NetTest : public MultiDeviceTest<TypeParam> {
  protected:
   NetTest() : seed_(1701) {}
 
-  virtual void InitNetFromProtoString(const string& proto) {
+  virtual void InitNetFromProtoString(const std::string& proto) {
     NetParameter param;
     CHECK(google::protobuf::TextFormat::ParseFromString(proto, &param));
     net_.reset(new Net<Dtype>(param));
   }
 
-  virtual void InitNetFromProtoFileWithState(const string& proto,
+  virtual void InitNetFromProtoFileWithState(const std::string& proto,
       Phase phase = caffe::TRAIN, const int level = 0,
-      const vector<string>* stages = nullptr) {
+      const std::vector<string>* stages = nullptr) {
     NetParameter param;
     CHECK(google::protobuf::TextFormat::ParseFromString(proto, &param));
     TemporaryDirectory temporary_directory;
@@ -44,7 +44,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   virtual void CopyNetBlobs(const bool copy_diff,
       vector<shared_ptr<Blob<Dtype> > >* blobs_copy) {
     CHECK(net_);
-    const vector<shared_ptr<Blob<Dtype> > >& net_blobs = net_->blobs();
+    const std::vector<std::shared_ptr<Blob<Dtype> > >& net_blobs = net_->blobs();
     blobs_copy->clear();
     blobs_copy->resize(net_blobs.size());
     const bool kReshape = true;
@@ -57,7 +57,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   virtual void CopyNetParams(const bool copy_diff,
       vector<shared_ptr<Blob<Dtype> > >* params_copy) {
     CHECK(net_);
-    const vector<shared_ptr<Blob<Dtype> > >& net_params = net_->params();
+    const std::vector<std::shared_ptr<Blob<Dtype> > >& net_params = net_->params();
     params_copy->clear();
     params_copy->resize(net_params.size());
     const bool kReshape = true;
@@ -209,7 +209,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
     if (loss_weight) {
       loss_weight_stream << "  loss_weight: " << *loss_weight << " ";
     }
-    const string& proto =
+    const std::string& proto =
         "name: 'TrickyTestNetwork' "
         "layer { "
         "  name: 'data' "
@@ -384,7 +384,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   }
 
   virtual void InitSharedWeightsNet() {
-    const string& proto =
+    const std::string& proto =
         "name: 'SharedWeightsNetwork' "
         "layer { "
         "  name: 'data' "
@@ -441,7 +441,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   }
 
   virtual void InitDiffDataUnsharedWeightsNet() {
-    const string& proto =
+    const std::string& proto =
         "name: 'DiffDataUnsharedWeightsNetwork' "
         "layer { "
         "  name: 'data' "
@@ -503,7 +503,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   }
 
   virtual void InitDiffDataSharedWeightsNet() {
-    const string& proto =
+    const std::string& proto =
         "name: 'DiffDataSharedWeightsNetwork' "
         "layer { "
         "  name: 'data' "
@@ -565,7 +565,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   }
 
   virtual void InitReshapableNet() {
-    const string& proto =
+    const std::string& proto =
         "name: 'ReshapableNetwork' "
         "layer { "
         "  name: 'data' "
@@ -784,7 +784,7 @@ class NetTest : public MultiDeviceTest<TypeParam> {
   }
 
   virtual void InitAllInOneNet(Phase phase = caffe::TRAIN,
-      const int level = 0, const vector<string>* stages = nullptr) {
+      const int level = 0, const std::vector<string>* stages = nullptr) {
     string proto =
       "name: 'All-in-one Network'"
       "layer { "
@@ -881,7 +881,7 @@ TYPED_TEST(NetTest, TestGetLayerByName) {
 
 TYPED_TEST(NetTest, TestBottomNeedBackward) {
   this->InitTinyNet();
-  const vector<vector<bool> >& bottom_need_backward =
+  const std::vector<std::vector<bool> >& bottom_need_backward =
       this->net_->bottom_need_backward();
   EXPECT_EQ(3, bottom_need_backward.size());
   EXPECT_EQ(0, bottom_need_backward[0].size());
@@ -895,7 +895,7 @@ TYPED_TEST(NetTest, TestBottomNeedBackward) {
 TYPED_TEST(NetTest, TestBottomNeedBackwardForce) {
   const bool force_backward = true;
   this->InitTinyNet(force_backward);
-  const vector<vector<bool> >& bottom_need_backward =
+  const std::vector<std::vector<bool> >& bottom_need_backward =
       this->net_->bottom_need_backward();
   EXPECT_EQ(3, bottom_need_backward.size());
   EXPECT_EQ(0, bottom_need_backward[0].size());
@@ -909,7 +909,7 @@ TYPED_TEST(NetTest, TestBottomNeedBackwardForce) {
 TYPED_TEST(NetTest, TestBottomNeedBackwardEuclideanForce) {
   const bool force_backward = true;
   this->InitTinyNetEuclidean(force_backward);
-  const vector<vector<bool> >& bottom_need_backward =
+  const std::vector<std::vector<bool> >& bottom_need_backward =
       this->net_->bottom_need_backward();
   EXPECT_EQ(3, bottom_need_backward.size());
   EXPECT_EQ(0, bottom_need_backward[0].size());
@@ -922,7 +922,7 @@ TYPED_TEST(NetTest, TestBottomNeedBackwardEuclideanForce) {
 
 TYPED_TEST(NetTest, TestBottomNeedBackwardTricky) {
   this->InitTrickyNet();
-  const vector<vector<bool> >& bottom_need_backward =
+  const std::vector<std::vector<bool> >& bottom_need_backward =
       this->net_->bottom_need_backward();
   EXPECT_EQ(4, bottom_need_backward.size());
   EXPECT_EQ(0, bottom_need_backward[0].size());
@@ -966,7 +966,7 @@ TYPED_TEST(NetTest, TestLossWeight) {
     const Dtype error_margin = kErrorMargin * fabs(kLossWeights[i]);
     EXPECT_NEAR(loss * kLossWeights[i], weighted_loss, error_margin)
         << "loss weight = " << kLossWeights[i];
-    const vector<shared_ptr<Blob<Dtype> > >& weighted_blobs =
+    const std::vector<std::shared_ptr<Blob<Dtype> > >& weighted_blobs =
         this->net_->blobs();
     ASSERT_EQ(blob_grads.size(), weighted_blobs.size());
     for (int j = 0; j < blob_grads.size(); ++j) {
@@ -976,7 +976,7 @@ TYPED_TEST(NetTest, TestLossWeight) {
                     weighted_blobs[j]->cpu_diff()[k], error_margin);
       }
     }
-    const vector<shared_ptr<Blob<Dtype> > >& weighted_params =
+    const std::vector<std::shared_ptr<Blob<Dtype> > >& weighted_params =
         this->net_->params();
     ASSERT_EQ(param_grads.size(), weighted_params.size());
     for (int j = 0; j < param_grads.size(); ++j) {
@@ -1064,12 +1064,12 @@ TYPED_TEST(NetTest, TestComboLossWeight) {
   this->InitUnsharedWeightsNet(&loss_weight, &midnet_loss_weight,
                                kForceBackward);
   const Dtype loss_main_3 = this->net_->ForwardBackward();
-  const vector<shared_ptr<Blob<Dtype> > >& blob_grads_loss_3 =
+  const std::vector<std::shared_ptr<Blob<Dtype> > >& blob_grads_loss_3 =
       this->net_->blobs();
   ASSERT_EQ(blob_grads.size(), blob_grads_loss_3.size());
   ASSERT_EQ(blob_grads_loss_2.size(), blob_grads_loss_3.size());
   for (int j = 0; j < blob_grads.size(); ++j) {
-    const string& blob_name = this->net_->blob_names()[j];
+    const std::string& blob_name = this->net_->blob_names()[j];
     bool grad_should_change = true;
     if (blob_name == "innerproduct1_innerproduct1_0_split_0") {
       grad_should_change = false;
@@ -1108,13 +1108,13 @@ TYPED_TEST(NetTest, TestComboLossWeight) {
   this->InitUnsharedWeightsNet(&loss_weight, &midnet_loss_weight,
                                kForceBackward);
   const Dtype loss_midnet_3 = this->net_->ForwardBackward();
-  const vector<shared_ptr<Blob<Dtype> > >& blob_grads_midnet_loss_3 =
+  const std::vector<std::shared_ptr<Blob<Dtype> > >& blob_grads_midnet_loss_3 =
       this->net_->blobs();
   ASSERT_EQ(blob_grads.size(), blob_grads_midnet_loss_3.size());
   ASSERT_EQ(blob_grads_loss_2.size(), blob_grads_midnet_loss_3.size());
-  const vector<string>& blob_names = this->net_->blob_names();
+  const std::vector<std::string>& blob_names = this->net_->blob_names();
   for (int j = 0; j < blob_grads.size(); ++j) {
-    const string& blob_name = blob_names[j];
+    const std::string& blob_name = blob_names[j];
     bool grad_should_change = false;
     if (blob_name == "innerproduct1" ||
         blob_name == "innerproduct1_innerproduct1_0_split_0" ||
@@ -1355,7 +1355,7 @@ TYPED_TEST(NetTest, TestParamPropagateDown) {
       kBiasTerm, blobs_lr_w1, blobs_lr_w2, blobs_lr_b1, blobs_lr_b2);
   this->net_->Forward();
   this->net_->Backward();
-  const vector<shared_ptr<Blob<Dtype> > >& params = this->net_->params();
+  const std::vector<std::shared_ptr<Blob<Dtype> > >& params = this->net_->params();
   const int num_params = params.size();
   ASSERT_EQ(4, num_params);
   const Dtype kNonZeroTestMin = 1e-3;
@@ -1375,7 +1375,7 @@ TYPED_TEST(NetTest, TestParamPropagateDown) {
       kBiasTerm, blobs_lr_w1, blobs_lr_w2, blobs_lr_b1, blobs_lr_b2);
   this->net_->Forward();
   this->net_->Backward();
-  const vector<shared_ptr<Blob<Dtype> > >& params2 = this->net_->params();
+  const std::vector<std::shared_ptr<Blob<Dtype> > >& params2 = this->net_->params();
   ASSERT_EQ(num_params, params2.size());
   for (int i = 0; i < num_params; ++i) {
     const Dtype param_asum =
@@ -1391,7 +1391,7 @@ TYPED_TEST(NetTest, TestParamPropagateDown) {
       kBiasTerm, blobs_lr_w1, blobs_lr_w2, blobs_lr_b1, blobs_lr_b2);
   this->net_->Forward();
   this->net_->Backward();
-  const vector<shared_ptr<Blob<Dtype> > >& params3 = this->net_->params();
+  const std::vector<std::shared_ptr<Blob<Dtype> > >& params3 = this->net_->params();
   ASSERT_EQ(num_params, params3.size());
   for (int i = 0; i < num_params; ++i) {
     const Dtype param_asum =
@@ -1410,7 +1410,7 @@ TYPED_TEST(NetTest, TestParamPropagateDown) {
       kBiasTerm, blobs_lr_w1, blobs_lr_w2, blobs_lr_b1, blobs_lr_b2);
   this->net_->Forward();
   this->net_->Backward();
-  const vector<shared_ptr<Blob<Dtype> > >& params4 = this->net_->params();
+  const std::vector<std::shared_ptr<Blob<Dtype> > >& params4 = this->net_->params();
   ASSERT_EQ(num_params, params4.size());
   for (int i = 0; i < num_params; ++i) {
     const Dtype param_asum =
@@ -1460,7 +1460,7 @@ TYPED_TEST(NetTest, TestFromTo) {
 class FilterNetTest : public ::testing::Test {
  protected:
   void RunFilterNetTest(
-      const string& input_param_string, const string& filtered_param_string) {
+      const std::string& input_param_string, const std::string& filtered_param_string) {
     NetParameter input_param;
     CHECK(google::protobuf::TextFormat::ParseFromString(
         input_param_string, &input_param));
@@ -1480,7 +1480,7 @@ class FilterNetTest : public ::testing::Test {
 };
 
 TEST_F(FilterNetTest, TestNoFilter) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -1504,7 +1504,7 @@ TEST_F(FilterNetTest, TestNoFilter) {
 }
 
 TEST_F(FilterNetTest, TestFilterLeNetTrainTest) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'LeNet' "
       "layer { "
       "  name: 'mnist' "
@@ -1662,7 +1662,7 @@ TEST_F(FilterNetTest, TestFilterLeNetTrainTest) {
       "  bottom: 'label' "
       "  top: 'loss' "
       "} ";
-  const string& output_proto_test =
+  const std::string& output_proto_test =
       "name: 'LeNet' "
       "layer { "
       "  name: 'mnist' "
@@ -1746,7 +1746,7 @@ TEST_F(FilterNetTest, TestFilterLeNetTrainTest) {
 }
 
 TEST_F(FilterNetTest, TestFilterOutByStage) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -1767,7 +1767,7 @@ TEST_F(FilterNetTest, TestFilterOutByStage) {
       "  bottom: 'innerprod' "
       "  bottom: 'label' "
       "} ";
-  const string& output_proto =
+  const std::string& output_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'innerprod' "
@@ -1785,7 +1785,7 @@ TEST_F(FilterNetTest, TestFilterOutByStage) {
 }
 
 TEST_F(FilterNetTest, TestFilterOutByStage2) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -1806,7 +1806,7 @@ TEST_F(FilterNetTest, TestFilterOutByStage2) {
       "  bottom: 'innerprod' "
       "  bottom: 'label' "
       "} ";
-  const string& output_proto =
+  const std::string& output_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -1824,7 +1824,7 @@ TEST_F(FilterNetTest, TestFilterOutByStage2) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByStage) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { stage: 'mystage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -1850,7 +1850,7 @@ TEST_F(FilterNetTest, TestFilterInByStage) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByStage2) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -1875,7 +1875,7 @@ TEST_F(FilterNetTest, TestFilterInByStage2) {
 }
 
 TEST_F(FilterNetTest, TestFilterOutByMultipleStage) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { stage: 'mystage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -1898,7 +1898,7 @@ TEST_F(FilterNetTest, TestFilterOutByMultipleStage) {
       "  bottom: 'label' "
       "  include: { stage: 'mystage' } "
       "} ";
-  const string& output_proto =
+  const std::string& output_proto =
       "state: { stage: 'mystage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -1918,7 +1918,7 @@ TEST_F(FilterNetTest, TestFilterOutByMultipleStage) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByMultipleStage) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { stage: 'mystage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -1946,7 +1946,7 @@ TEST_F(FilterNetTest, TestFilterInByMultipleStage) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByMultipleStage2) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { stage: 'mystage' stage: 'myotherstage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -1973,7 +1973,7 @@ TEST_F(FilterNetTest, TestFilterInByMultipleStage2) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByNotStage) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { stage: 'mystage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2000,7 +2000,7 @@ TEST_F(FilterNetTest, TestFilterInByNotStage) {
 }
 
 TEST_F(FilterNetTest, TestFilterOutByNotStage) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { stage: 'mystage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2023,7 +2023,7 @@ TEST_F(FilterNetTest, TestFilterOutByNotStage) {
       "  bottom: 'label' "
       "  include: { not_stage: 'mystage' } "
       "} ";
-  const string& output_proto =
+  const std::string& output_proto =
       "state: { stage: 'mystage' } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2036,7 +2036,7 @@ TEST_F(FilterNetTest, TestFilterOutByNotStage) {
 }
 
 TEST_F(FilterNetTest, TestFilterOutByMinLevel) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2057,7 +2057,7 @@ TEST_F(FilterNetTest, TestFilterOutByMinLevel) {
       "  bottom: 'innerprod' "
       "  bottom: 'label' "
       "} ";
-  const string& output_proto =
+  const std::string& output_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2075,7 +2075,7 @@ TEST_F(FilterNetTest, TestFilterOutByMinLevel) {
 }
 
 TEST_F(FilterNetTest, TestFilterOutByMaxLevel) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2096,7 +2096,7 @@ TEST_F(FilterNetTest, TestFilterOutByMaxLevel) {
       "  bottom: 'innerprod' "
       "  bottom: 'label' "
       "} ";
-  const string& output_proto =
+  const std::string& output_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2114,7 +2114,7 @@ TEST_F(FilterNetTest, TestFilterOutByMaxLevel) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByMinLevel) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2139,7 +2139,7 @@ TEST_F(FilterNetTest, TestFilterInByMinLevel) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByMinLevel2) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { level: 7 } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2165,7 +2165,7 @@ TEST_F(FilterNetTest, TestFilterInByMinLevel2) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByMaxLevel) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2190,7 +2190,7 @@ TEST_F(FilterNetTest, TestFilterInByMaxLevel) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByMaxLevel2) {
-  const string& input_proto =
+  const std::string& input_proto =
       "state: { level: -7 } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2216,7 +2216,7 @@ TEST_F(FilterNetTest, TestFilterInByMaxLevel2) {
 }
 
 TEST_F(FilterNetTest, TestFilterInOutByIncludeMultiRule) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2238,11 +2238,11 @@ TEST_F(FilterNetTest, TestFilterInOutByIncludeMultiRule) {
       "  bottom: 'label' "
       "  include: { min_level: 2  phase: TEST } "
       "} ";
-  const string& input_proto_train =
+  const std::string& input_proto_train =
       "state: { level: 4  phase: TRAIN } " + input_proto;
-  const string& input_proto_test =
+  const std::string& input_proto_test =
       "state: { level: 4  phase: TEST } " + input_proto;
-  const string& output_proto_train =
+  const std::string& output_proto_train =
       "state: { level: 4  phase: TRAIN } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2258,7 +2258,7 @@ TEST_F(FilterNetTest, TestFilterInOutByIncludeMultiRule) {
       "  top: 'innerprod' "
       "  include: { min_level: 2  phase: TRAIN } "
       "} ";
-  const string& output_proto_test =
+  const std::string& output_proto_test =
       "state: { level: 4  phase: TEST } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2279,7 +2279,7 @@ TEST_F(FilterNetTest, TestFilterInOutByIncludeMultiRule) {
 }
 
 TEST_F(FilterNetTest, TestFilterInByIncludeMultiRule) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2303,16 +2303,16 @@ TEST_F(FilterNetTest, TestFilterInByIncludeMultiRule) {
       "  include: { min_level: 2  phase: TEST } "
       "  include: { phase: TRAIN } "
       "} ";
-  const string& input_proto_train =
+  const std::string& input_proto_train =
       "state: { level: 2  phase: TRAIN } " + input_proto;
-  const string& input_proto_test =
+  const std::string& input_proto_test =
       "state: { level: 2  phase: TEST } " + input_proto;
   this->RunFilterNetTest(input_proto_train, input_proto_train);
   this->RunFilterNetTest(input_proto_test, input_proto_test);
 }
 
 TEST_F(FilterNetTest, TestFilterInOutByExcludeMultiRule) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -2334,11 +2334,11 @@ TEST_F(FilterNetTest, TestFilterInOutByExcludeMultiRule) {
       "  bottom: 'label' "
       "  exclude: { min_level: 2  phase: TEST } "
       "} ";
-  const string& input_proto_train =
+  const std::string& input_proto_train =
       "state: { level: 4  phase: TRAIN } " + input_proto;
-  const string& input_proto_test =
+  const std::string& input_proto_test =
       "state: { level: 4  phase: TEST } " + input_proto;
-  const string& output_proto_train =
+  const std::string& output_proto_train =
       "state: { level: 4  phase: TRAIN } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2354,7 +2354,7 @@ TEST_F(FilterNetTest, TestFilterInOutByExcludeMultiRule) {
       "  bottom: 'label' "
       "  exclude: { min_level: 2  phase: TEST } "
       "} ";
-  const string& output_proto_test =
+  const std::string& output_proto_test =
       "state: { level: 4  phase: TEST } "
       "name: 'TestNetwork' "
       "layer { "
@@ -2498,8 +2498,8 @@ TYPED_TEST(NetTest, TestForcePropagateDown) {
   this->InitForcePropNet(false);
   vector<bool> layer_need_backward = this->net_->layer_need_backward();
   for (int layer_id = 0; layer_id < this->net_->layers().size(); ++layer_id) {
-    const string& layer_name = this->net_->layer_names()[layer_id];
-    const vector<bool> need_backward =
+    const std::string& layer_name = this->net_->layer_names()[layer_id];
+    const std::vector<bool> need_backward =
         this->net_->bottom_need_backward()[layer_id];
     if (layer_name == "data") {
       ASSERT_EQ(need_backward.size(), 0);
@@ -2520,8 +2520,8 @@ TYPED_TEST(NetTest, TestForcePropagateDown) {
   this->InitForcePropNet(true);
   layer_need_backward = this->net_->layer_need_backward();
   for (int layer_id = 0; layer_id < this->net_->layers().size(); ++layer_id) {
-    const string& layer_name = this->net_->layer_names()[layer_id];
-    const vector<bool> need_backward =
+    const std::string& layer_name = this->net_->layer_names()[layer_id];
+    const std::vector<bool> need_backward =
         this->net_->bottom_need_backward()[layer_id];
     if (layer_name == "data") {
       ASSERT_EQ(need_backward.size(), 0);
@@ -2548,7 +2548,7 @@ TYPED_TEST(NetTest, TestAllInOneNetTrain) {
   bool found_data = false;
   bool found_loss = false;
   for (int i = 0; i < this->net_->layers().size(); ++i) {
-    const string& layer_name = this->net_->layer_names()[i];
+    const std::string& layer_name = this->net_->layer_names()[i];
     if (layer_name == "train-data") {
       found_data = true;
     } else if (layer_name == "loss") {
@@ -2569,7 +2569,7 @@ TYPED_TEST(NetTest, TestAllInOneNetVal) {
   bool found_data = false;
   bool found_loss = false;
   for (int i = 0; i < this->net_->layers().size(); ++i) {
-    const string& layer_name = this->net_->layer_names()[i];
+    const std::string& layer_name = this->net_->layer_names()[i];
     if (layer_name == "val-data") {
       found_data = true;
     } else if (layer_name == "loss") {
@@ -2589,7 +2589,7 @@ TYPED_TEST(NetTest, TestAllInOneNetDeploy) {
   this->InitAllInOneNet(caffe::TEST, 0, &stages);
   bool found_data = false;
   for (int i = 0; i < this->net_->layers().size(); ++i) {
-    const string& layer_name = this->net_->layer_names()[i];
+    const std::string& layer_name = this->net_->layer_names()[i];
     if (layer_name == "deploy-data") {
       found_data = true;
     } else {

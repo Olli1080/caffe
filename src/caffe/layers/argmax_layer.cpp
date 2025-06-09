@@ -10,8 +10,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void ArgMaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ArgMaxLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const ArgMaxParameter& argmax_param = this->layer_param_->argmax_param();
   out_max_val_ = argmax_param.out_max_val();
   top_k_ = argmax_param.top_k();
@@ -32,8 +32,8 @@ void ArgMaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ArgMaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ArgMaxLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   int num_top_axes = bottom[0]->num_axes();
   num_top_axes = std::max(num_top_axes, 3);
   std::vector<int> shape(num_top_axes, 1);
@@ -54,8 +54,8 @@ void ArgMaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ArgMaxLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void ArgMaxLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   int dim, axis_dist;

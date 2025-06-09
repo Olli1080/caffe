@@ -14,8 +14,8 @@ void rmsprop_update_gpu(int N, Dtype* g, Dtype* h, Dtype rms_decay,
 
 template <typename Dtype>
 void RMSPropSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
-  const vector<float>& net_params_lr = this->net_->params_lr();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<float>& net_params_lr = this->net_->params_lr();
 
   // get the learning rate
   Dtype delta = this->param_->delta();

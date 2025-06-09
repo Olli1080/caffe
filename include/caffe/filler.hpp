@@ -57,7 +57,7 @@ class GaussianFiller : public Filler<Dtype> {
   void Fill(Blob<Dtype>* blob) override;
 
  protected:
-  shared_ptr<SyncedMemory> rand_vec_;
+  std::shared_ptr<SyncedMemory> rand_vec_;
 };
 
 /** @brief Fills a Blob with values @f$ x \in [0, 1] @f$

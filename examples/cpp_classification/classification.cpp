@@ -20,15 +20,15 @@ typedef std::pair<string, float> Prediction;
 
 class Classifier {
  public:
-  Classifier(const string& model_file,
-             const string& trained_file,
-             const string& mean_file,
-             const string& label_file);
+  Classifier(const std::string& model_file,
+             const std::string& trained_file,
+             const std::string& mean_file,
+             const std::string& label_file);
 
   std::vector<Prediction> Classify(const cv::Mat& img, int N = 5);
 
  private:
-  void SetMean(const string& mean_file);
+  void SetMean(const std::string& mean_file);
 
   std::vector<float> Predict(const cv::Mat& img);
 
@@ -38,17 +38,17 @@ class Classifier {
                   std::vector<cv::Mat>* input_channels);
 
  private:
-  shared_ptr<Net<float> > net_;
+  std::shared_ptr<Net<float>> net_;
   cv::Size input_geometry_;
   int num_channels_;
   cv::Mat mean_;
   std::vector<string> labels_;
 };
 
-Classifier::Classifier(const string& model_file,
-                       const string& trained_file,
-                       const string& mean_file,
-                       const string& label_file) {
+Classifier::Classifier(const std::string& model_file,
+                       const std::string& trained_file,
+                       const std::string& mean_file,
+                       const std::string& label_file) {
 #ifdef CPU_ONLY
   Caffe::set_mode(Caffe::CPU);
 #else
@@ -117,7 +117,7 @@ std::vector<Prediction> Classifier::Classify(const cv::Mat& img, int N) {
 }
 
 /* Load the mean file in binaryproto format. */
-void Classifier::SetMean(const string& mean_file) {
+void Classifier::SetMean(const std::string& mean_file) {
   BlobProto blob_proto;
   ReadProtoFromBinaryFileOrDie(mean_file.c_str(), &blob_proto);
 

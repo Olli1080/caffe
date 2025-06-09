@@ -77,13 +77,13 @@ void HDF5DataLayer<Dtype>::LoadHDF5FileData(const char* filename) {
 }
 
 template <typename Dtype>
-void HDF5DataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void HDF5DataLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   // Refuse transformation parameters since HDF5 is totally generic.
   CHECK(!this->layer_param_->has_transform_param()) <<
       this->type() << " does not transform data.";
   // Read the source to parse the filenames.
-  const string& source = this->layer_param_->hdf5_data_param().source();
+  const std::string& source = this->layer_param_->hdf5_data_param().source();
   LOG(INFO) << "Loading list of HDF5 filenames from: " << source;
   hdf_filenames_.clear();
   std::ifstream source_file(source.c_str());
@@ -121,7 +121,7 @@ void HDF5DataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // Reshape blobs.
   const int batch_size = this->layer_param_->hdf5_data_param().batch_size();
   const int top_size = this->layer_param_->top_size();
-  vector<int> top_shape;
+  std::vector<int> top_shape;
   for (int i = 0; i < top_size; ++i) {
     top_shape.resize(hdf_blobs_[i]->num_axes());
     top_shape[0] = batch_size;
@@ -165,8 +165,8 @@ void HDF5DataLayer<Dtype>::Next() {
 }
 
 template <typename Dtype>
-void HDF5DataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void HDF5DataLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const int batch_size = this->layer_param_->hdf5_data_param().batch_size();
   for (int i = 0; i < batch_size; ++i) {
     while (Skip()) {
@@ -186,8 +186,8 @@ void HDF5DataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 STUB_GPU_FORWARD(HDF5DataLayer, Forward);
 #else
 template <typename Dtype>
-void HDF5DataLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void HDF5DataLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
     const int batch_size = this->layer_param_->hdf5_data_param().batch_size();
     for (int i = 0; i < batch_size; ++i) {
         while (Skip()) {

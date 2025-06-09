@@ -29,18 +29,18 @@ class CAFFE_EXPORT CuDNNDeconvolutionLayer : public DeconvolutionLayer<Dtype> {
       handles_setup_(false),
       shapes_ready_(false) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
   ~CuDNNDeconvolutionLayer() override;
 
  protected:
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down,
-                    const vector<Blob<Dtype>*>& bottom) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down,
+                    const std::vector<Blob<Dtype>*>& bottom) override;
 
   void findOptimalAlgorithm(int index, size_t workspace_limit_bytes);
   void getWorkSpaces(int index);
@@ -55,10 +55,10 @@ class CAFFE_EXPORT CuDNNDeconvolutionLayer : public DeconvolutionLayer<Dtype> {
   cudnnConvolutionBwdFilterAlgo_t *bwd_filter_algo_;
   cudnnConvolutionBwdDataAlgo_t *bwd_data_algo_;
 
-  vector<cudnnTensorDescriptor_t> bottom_descs_, top_descs_;
+  std::vector<cudnnTensorDescriptor_t> bottom_descs_, top_descs_;
   cudnnTensorDescriptor_t bias_desc_;
   cudnnFilterDescriptor_t filter_desc_;
-  vector<cudnnConvolutionDescriptor_t> conv_descs_;
+  std::vector<cudnnConvolutionDescriptor_t> conv_descs_;
   int bottom_offset_, top_offset_, bias_offset_;
 
   std::vector<int> cudnn_shape_;

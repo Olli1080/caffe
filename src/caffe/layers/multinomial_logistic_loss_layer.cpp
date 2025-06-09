@@ -11,7 +11,7 @@ namespace caffe {
 
 template <typename Dtype>
 void MultinomialLogisticLossLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::Reshape(bottom, top);
   CHECK_EQ(bottom[1]->channels(), 1);
   CHECK_EQ(bottom[1]->height(), 1);
@@ -20,7 +20,7 @@ void MultinomialLogisticLossLayer<Dtype>::Reshape(
 
 template <typename Dtype>
 void MultinomialLogisticLossLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   const Dtype* bottom_label = bottom[1]->cpu_data();
   int num = bottom[0]->num();
@@ -37,8 +37,8 @@ void MultinomialLogisticLossLayer<Dtype>::Forward_cpu(
 
 template <typename Dtype>
 void MultinomialLogisticLossLayer<Dtype>::Backward_cpu(
-    const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+    const std::vector<Blob<Dtype>*>& top, const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[1]) {
     LOG(FATAL) << this->type()
                << " Layer cannot backpropagate to label inputs.";

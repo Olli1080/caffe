@@ -11,8 +11,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void MemoryDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-     const vector<Blob<Dtype>*>& top) {
+void MemoryDataLayer<Dtype>::DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+     const std::vector<Blob<Dtype>*>& top) {
   batch_size_ = this->layer_param_->memory_data_param().batch_size();
   channels_ = this->layer_param_->memory_data_param().channels();
   height_ = this->layer_param_->memory_data_param().height();
@@ -21,7 +21,7 @@ void MemoryDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK_GT(batch_size_ * size_, 0) <<
       "batch_size, channels, height, and width must be specified and"
       " positive in memory_data_param";
-  vector<int> label_shape(1, batch_size_);
+  std::vector<int> label_shape(1, batch_size_);
   top[0]->Reshape(batch_size_, channels_, height_, width_);
   top[1]->Reshape(label_shape);
   added_data_.Reshape(batch_size_, channels_, height_, width_);
@@ -33,7 +33,7 @@ void MemoryDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void MemoryDataLayer<Dtype>::AddDatumVector(const vector<Datum>& datum_vector) {
+void MemoryDataLayer<Dtype>::AddDatumVector(const std::vector<Datum>& datum_vector) {
   CHECK(!has_new_data_) <<
       "Can't add data until current data has been consumed.";
   int num = static_cast<int>(datum_vector.size());
@@ -57,8 +57,8 @@ void MemoryDataLayer<Dtype>::AddDatumVector(const vector<Datum>& datum_vector) {
 
 #ifdef USE_OPENCV
 template <typename Dtype>
-void MemoryDataLayer<Dtype>::AddMatVector(const vector<cv::Mat>& mat_vector,
-    const vector<int>& labels) {
+void MemoryDataLayer<Dtype>::AddMatVector(const std::vector<cv::Mat>& mat_vector,
+    const std::vector<int>& labels) {
   int num = static_cast<int>(mat_vector.size());
   CHECK(!has_new_data_) <<
       "Can't add mat until current data has been consumed.";
@@ -107,8 +107,8 @@ void MemoryDataLayer<Dtype>::set_batch_size(int new_size) {
 }
 
 template <typename Dtype>
-void MemoryDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void MemoryDataLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   CHECK(data_) << "MemoryDataLayer needs to be initialized by calling Reset";
   top[0]->Reshape(batch_size_, channels_, height_, width_);
   top[1]->Reshape(batch_size_, 1, 1, 1);

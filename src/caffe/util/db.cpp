@@ -33,7 +33,7 @@ DB* GetDB(DataParameter::DB backend) {
   }
 }
 
-DB* GetDB(const string& backend) {
+DB* GetDB(const std::string& backend) {
 #ifdef USE_LEVELDB
   if (backend == "leveldb") {
     return new LevelDB();

@@ -43,8 +43,8 @@ class EuclideanLossLayer : public LossLayer<Dtype> {
   explicit EuclideanLossLayer(const LayerParameter& param)
       : LossLayer<Dtype>(param), diff_() {}
 
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "EuclideanLoss"; }
   /**
@@ -58,10 +58,10 @@ class EuclideanLossLayer : public LossLayer<Dtype> {
 
  protected:
   /// @copydoc EuclideanLossLayer
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the Euclidean error gradient w.r.t. the inputs.
@@ -96,10 +96,10 @@ class EuclideanLossLayer : public LossLayer<Dtype> {
    *          \frac{1}{n} \sum\limits_{n=1}^N (y_n - \hat{y}_n)
    *      @f$ if propagate_down[1]
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   Blob<Dtype> diff_;
 };

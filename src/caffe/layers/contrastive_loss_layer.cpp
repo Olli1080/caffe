@@ -10,7 +10,7 @@ namespace caffe {
 
 template <typename Dtype>
 void ContrastiveLossLayer<Dtype>::LayerSetUp(
-  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+  const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   CHECK_EQ(bottom[0]->channels(), bottom[1]->channels());
   CHECK_EQ(bottom[0]->height(), 1);
@@ -31,8 +31,8 @@ void ContrastiveLossLayer<Dtype>::LayerSetUp(
 
 template <typename Dtype>
 void ContrastiveLossLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   int count = bottom[0]->count();
   caffe_sub(
       count,
@@ -64,8 +64,8 @@ void ContrastiveLossLayer<Dtype>::Forward_cpu(
 }
 
 template <typename Dtype>
-void ContrastiveLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void ContrastiveLossLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   Dtype margin = this->layer_param_->contrastive_loss_param().margin();
   bool legacy_version =
       this->layer_param_->contrastive_loss_param().legacy_version();
@@ -118,7 +118,7 @@ STUB_GPU(ContrastiveLossLayer);
 //INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ContrastiveLossLayer);
 template <typename Dtype>
 void ContrastiveLossLayer<Dtype>::Forward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
     const int count = bottom[0]->count();
     caffe_gpu_sub(
         count,
@@ -163,8 +163,8 @@ void ContrastiveLossLayer<Dtype>::Forward_gpu(
 }
 
 template <typename Dtype>
-void ContrastiveLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void ContrastiveLossLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
     for (int i = 0; i < 2; ++i) {
         if (propagate_down[i]) {
             const int count = bottom[0]->count();
@@ -181,8 +181,8 @@ void ContrastiveLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
         }
     }
 }
-extern template void ContrastiveLossLayer<float>::backward_kernel(int, int, float, bool, float, const vector<Blob<float>*>&, int);
-extern template void ContrastiveLossLayer<double>::backward_kernel(int, int, double, bool, double, const vector<Blob<double>*>&, int);
+extern template void ContrastiveLossLayer<float>::backward_kernel(int, int, float, bool, float, const std::vector<Blob<float>*>&, int);
+extern template void ContrastiveLossLayer<double>::backward_kernel(int, int, double, bool, double, const std::vector<Blob<double>*>&, int);
 #endif
 
 INSTANTIATE_CLASS(ContrastiveLossLayer);

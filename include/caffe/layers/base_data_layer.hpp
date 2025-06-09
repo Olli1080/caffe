@@ -25,19 +25,19 @@ class CAFFE_EXPORT BaseDataLayer : public Layer<Dtype> {
   // LayerSetUp: implements common data layer setup functionality, and calls
   // DataLayerSetUp to do special data layer setup for individual layer types.
   // This method may not be overridden except by the BasePrefetchingDataLayer.
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
-  virtual void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {}
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
+  virtual void DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {}
   // Data layers have no bottoms, so reshaping is trivial.
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override {}
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override {}
 
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-	  const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override {}
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+	  const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override {}
 
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override {}
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override {}
 
  protected:
   std::unique_ptr<TransformationParameter> transform_param_;
@@ -59,19 +59,19 @@ class CAFFE_EXPORT BasePrefetchingDataLayer :
   // LayerSetUp: implements common data layer setup functionality, and calls
   // DataLayerSetUp to do special data layer setup for individual layer types.
   // This method may not be overridden.
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
 
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
 
  protected:
   void InternalThreadEntry() override;
   virtual void load_batch(Batch<Dtype>* batch) = 0;
 
-  vector<shared_ptr<Batch<Dtype> > > prefetch_;
+  std::vector<std::shared_ptr<Batch<Dtype> > > prefetch_;
   BlockingQueue<Batch<Dtype>*> prefetch_free_;
   BlockingQueue<Batch<Dtype>*> prefetch_full_;
   Batch<Dtype>* prefetch_current_;

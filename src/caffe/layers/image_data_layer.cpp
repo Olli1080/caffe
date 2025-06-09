@@ -27,21 +27,21 @@ ImageDataLayer<Dtype>::~ImageDataLayer<Dtype>() {
 }
 
 template <typename Dtype>
-void ImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ImageDataLayer<Dtype>::DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const int new_height = this->layer_param_->image_data_param().new_height();
   const int new_width  = this->layer_param_->image_data_param().new_width();
   const bool is_color  = this->layer_param_->image_data_param().is_color();
-  string root_folder = this->layer_param_->image_data_param().root_folder();
+  std::string root_folder = this->layer_param_->image_data_param().root_folder();
 
   CHECK((new_height == 0 && new_width == 0) ||
       (new_height > 0 && new_width > 0)) << "Current implementation requires "
       "new_height and new_width to be set at the same time.";
   // Read the file with filenames and labels
-  const string& source = this->layer_param_->image_data_param().source();
+  const std::string& source = this->layer_param_->image_data_param().source();
   LOG(INFO) << "Opening file " << source;
   std::ifstream infile(source.c_str());
-  string line;
+  std::string line;
   size_t pos;
   int label;
   while (std::getline(infile, line)) {
@@ -80,7 +80,7 @@ void ImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
                                     new_height, new_width, is_color);
   CHECK(cv_img.data) << "Could not load " << lines_[lines_id_].first;
   // Use data_transformer to infer the expected blob shape from a cv_image.
-  vector<int> top_shape = this->data_transformer_->InferBlobShape(cv_img);
+  std::vector<int> top_shape = this->data_transformer_->InferBlobShape(cv_img);
   this->transformed_data_.Reshape(top_shape);
   // Reshape prefetch_data and top[0] according to the batch_size.
   const int batch_size = this->layer_param_->image_data_param().batch_size();
@@ -95,7 +95,7 @@ void ImageDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << top[0]->channels() << "," << top[0]->height() << ","
       << top[0]->width();
   // label
-  vector<int> label_shape(1, batch_size);
+  std::vector<int> label_shape(1, batch_size);
   top[1]->Reshape(label_shape);
   for (int i = 0; i < this->prefetch_.size(); ++i) {
     this->prefetch_[i]->label_.Reshape(label_shape);
@@ -124,7 +124,7 @@ void ImageDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
   const int new_height = image_data_param.new_height();
   const int new_width = image_data_param.new_width();
   const bool is_color = image_data_param.is_color();
-  string root_folder = image_data_param.root_folder();
+  std::string root_folder = image_data_param.root_folder();
 
   // Reshape according to the first image of each batch
   // on single input batches allows for inputs of varying dimension.
@@ -132,7 +132,7 @@ void ImageDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       new_height, new_width, is_color);
   CHECK(cv_img.data) << "Could not load " << lines_[lines_id_].first;
   // Use data_transformer to infer the expected blob shape from a cv_img.
-  vector<int> top_shape = this->data_transformer_->InferBlobShape(cv_img);
+  std::vector<int> top_shape = this->data_transformer_->InferBlobShape(cv_img);
   this->transformed_data_.Reshape(top_shape);
   // Reshape batch according to the batch_size.
   top_shape[0] = batch_size;

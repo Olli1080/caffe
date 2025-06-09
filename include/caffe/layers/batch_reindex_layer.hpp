@@ -23,8 +23,8 @@ class BatchReindexLayer : public Layer<Dtype> {
   explicit BatchReindexLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "BatchReindex"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 2; }
@@ -43,10 +43,10 @@ class BatchReindexLayer : public Layer<Dtype> {
    *        y = x_1[x_2]
    *      @f$
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the reordered input.
@@ -63,10 +63,10 @@ class BatchReindexLayer : public Layer<Dtype> {
    *   - This layer cannot backprop to x_2, i.e. propagate_down[1] must be
    *     false.
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
  private:
   struct pair_sort_first {

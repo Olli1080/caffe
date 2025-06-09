@@ -29,15 +29,15 @@ DataLayer<Dtype>::~DataLayer() {
 }
 
 template <typename Dtype>
-void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void DataLayer<Dtype>::DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const int batch_size = this->layer_param_->data_param().batch_size();
   // Read a data point, and use it to initialize the top blob.
   Datum datum;
   datum.ParseFromString(cursor_->value());
 
   // Use data_transformer to infer the expected blob shape from datum.
-  vector<int> top_shape = this->data_transformer_->InferBlobShape(datum);
+  std::vector<int> top_shape = this->data_transformer_->InferBlobShape(datum);
   this->transformed_data_.Reshape(top_shape);
   // Reshape top[0] and prefetch_data according to the batch_size.
   top_shape[0] = batch_size;
@@ -51,7 +51,7 @@ void DataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << top[0]->width();
   // label
   if (this->output_labels_) {
-    vector<int> label_shape(1, batch_size);
+    std::vector<int> label_shape(1, batch_size);
     top[1]->Reshape(label_shape);
     for (int i = 0; i < this->prefetch_.size(); ++i) {
       this->prefetch_[i]->label_.Reshape(label_shape);
@@ -105,7 +105,7 @@ void DataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       // Reshape according to the first datum of each batch
       // on single input batches allows for inputs of varying dimension.
       // Use data_transformer to infer the expected blob shape from datum.
-      vector<int> top_shape = this->data_transformer_->InferBlobShape(datum);
+      std::vector<int> top_shape = this->data_transformer_->InferBlobShape(datum);
       this->transformed_data_.Reshape(top_shape);
       // Reshape batch according to the batch_size.
       top_shape[0] = batch_size;

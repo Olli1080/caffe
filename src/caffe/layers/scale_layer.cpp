@@ -12,8 +12,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ScaleLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const ScaleParameter& param = this->layer_param_->scale_param();
   if (bottom.size() == 1 && this->blobs_.size() > 0) {
     LOG(INFO) << "Skipping parameter initialization";
@@ -29,11 +29,11 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
           << "starting with bottom[0] axis = " << axis_;
     }
     this->blobs_.resize(1);
-    const vector<int>::const_iterator& shape_start =
+    const std::vector<int>::const_iterator& shape_start =
         bottom[0]->shape().begin() + axis_;
-    const vector<int>::const_iterator& shape_end =
+    const std::vector<int>::const_iterator& shape_end =
         (num_axes == -1) ? bottom[0]->shape().end() : (shape_start + num_axes);
-    vector<int> scale_shape(shape_start, shape_end);
+    std::vector<int> scale_shape(shape_start, shape_end);
     this->blobs_[0].reset(new Blob<Dtype>(scale_shape));
     FillerParameter filler_param(param.filler());
     if (!param.has_filler()) {
@@ -41,7 +41,7 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
       filler_param.set_type("constant");
       filler_param.set_value(1);
     }
-    shared_ptr<Filler<Dtype> > filler(GetFiller<Dtype>(filler_param));
+    std::shared_ptr<Filler<Dtype> > filler(GetFiller<Dtype>(filler_param));
     filler->Fill(this->blobs_[0].get());
   }
   if (param.bias_term()) {
@@ -76,8 +76,8 @@ void ScaleLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ScaleLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const ScaleParameter& param = this->layer_param_->scale_param();
   Blob<Dtype>* scale = (bottom.size() > 1) ? bottom[1] : this->blobs_[0].get();
   // Always set axis_ == 0 in special case where scale is a scalar
@@ -104,9 +104,9 @@ void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   } else {
     top[0]->ReshapeLike(*bottom[0]);
   }
-  sum_result_.Reshape(vector<int>(1, outer_dim_ * scale_dim_));
+  sum_result_.Reshape(std::vector<int>(1, outer_dim_ * scale_dim_));
   const int sum_mult_size = std::max(outer_dim_, inner_dim_);
-  sum_multiplier_.Reshape(vector<int>(1, sum_mult_size));
+  sum_multiplier_.Reshape(std::vector<int>(1, sum_mult_size));
   if (sum_multiplier_.cpu_data()[sum_mult_size - 1] != Dtype(1)) {
     caffe_set(sum_mult_size, Dtype(1), sum_multiplier_.mutable_cpu_data());
   }
@@ -118,7 +118,7 @@ void ScaleLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 
 template <typename Dtype>
 void ScaleLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   if (bottom[0] == top[0]) {
     // In-place computation; need to store bottom data before overwriting it.
@@ -145,8 +145,8 @@ void ScaleLayer<Dtype>::Forward_cpu(
 }
 
 template <typename Dtype>
-void ScaleLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void ScaleLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   if (bias_layer_ &&
       this->param_propagate_down_[this->param_propagate_down_.size() - 1]) {
     bias_layer_->Backward(top, bias_propagate_down_, bias_bottom_vec_);

@@ -19,7 +19,7 @@ namespace caffe {
  */
 template <typename Dtype>
 void CuDNNDeconvolutionLayer<Dtype>::LayerSetUp(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   DeconvolutionLayer<Dtype>::LayerSetUp(bottom, top);
   // Initialize CUDA streams and cuDNN.
   stream_         = new cudaStream_t[this->group_ * CUDNN_STREAMS_PER_GROUP];
@@ -234,7 +234,7 @@ void CuDNNDeconvolutionLayer<Dtype>::getWorkSpaces(int index) {
 
 template <typename Dtype>
 void CuDNNDeconvolutionLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   DeconvolutionLayer<Dtype>::Reshape(bottom, top);
   CHECK_EQ(2, this->num_spatial_axes_)
       << "CuDNNDeconvolutionLayer input must have 2 spatial axes "

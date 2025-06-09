@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void Im2colLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   ConvolutionParameter conv_param = this->layer_param_->convolution_param();
   force_nd_im2col_ = conv_param.force_nd_im2col();
   const int input_num_dims = static_cast<int>(bottom[0]->shape().size());
@@ -17,7 +17,7 @@ void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const int first_spatial_dim = channel_axis_ + 1;
   num_spatial_axes_ = input_num_dims - first_spatial_dim;
   CHECK_GE(num_spatial_axes_, 1);
-  vector<int> dim_blob_shape(1, num_spatial_axes_);
+  std::vector<int> dim_blob_shape(1, num_spatial_axes_);
   // Setup filter kernel dimensions (kernel_shape_).
   kernel_shape_.Reshape(dim_blob_shape);
   int* kernel_shape_data = kernel_shape_.mutable_cpu_data();
@@ -106,9 +106,9 @@ void Im2colLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void Im2colLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
-  vector<int> top_shape = bottom[0]->shape();
+void Im2colLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
+  std::vector<int> top_shape = bottom[0]->shape();
   const int* kernel_shape_data = kernel_shape_.cpu_data();
   const int* stride_data = stride_.cpu_data();
   const int* pad_data = pad_.cpu_data();
@@ -130,8 +130,8 @@ void Im2colLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void Im2colLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   for (int n = 0; n < num_; ++n) {
@@ -161,8 +161,8 @@ void Im2colLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void Im2colLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void Im2colLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   const Dtype* top_diff = top[0]->cpu_diff();
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();
   for (int n = 0; n < num_; ++n) {
@@ -188,7 +188,58 @@ void Im2colLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(Im2colLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(Im2colLayer);
+template <typename Dtype>
+void Im2colLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+    const int num_kernels = channels_ * top[0]->count(channel_axis_ + 1);
+    for (int n = 0; n < num_; ++n) {
+        if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
+            im2col_gpu(bottom_data + n * bottom_dim_, channels_,
+                bottom[0]->shape(channel_axis_ + 1),
+                bottom[0]->shape(channel_axis_ + 2),
+                kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
+                pad_.cpu_data()[0], pad_.cpu_data()[1],
+                stride_.cpu_data()[0], stride_.cpu_data()[1],
+                dilation_.cpu_data()[0], dilation_.cpu_data()[1],
+                top_data + n * top_dim_);
+        }
+        else {
+            im2col_nd_gpu(bottom_data + n * bottom_dim_, num_spatial_axes_,
+                num_kernels, bottom[0]->gpu_shape() + channel_axis_,
+                top[0]->gpu_shape() + channel_axis_,
+                kernel_shape_.gpu_data(), pad_.gpu_data(), stride_.gpu_data(),
+                dilation_.gpu_data(), top_data + n * top_dim_);
+        }
+    }
+}
+
+template <typename Dtype>
+void Im2colLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
+    const Dtype* top_diff = top[0]->gpu_diff();
+    Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+    for (int n = 0; n < num_; ++n) {
+        if (!force_nd_im2col_ && num_spatial_axes_ == 2) {
+            col2im_gpu(top_diff + n * top_dim_, channels_,
+                bottom[0]->shape(channel_axis_ + 1),
+                bottom[0]->shape(channel_axis_ + 2),
+                kernel_shape_.cpu_data()[0], kernel_shape_.cpu_data()[1],
+                pad_.cpu_data()[0], pad_.cpu_data()[1],
+                stride_.cpu_data()[0], stride_.cpu_data()[1],
+                dilation_.cpu_data()[0], dilation_.cpu_data()[1],
+                bottom_diff + n * bottom_dim_);
+        }
+        else {
+            col2im_nd_gpu(top_diff + n * top_dim_, num_spatial_axes_, bottom_dim_,
+                bottom[0]->gpu_shape() + channel_axis_,
+                top[0]->gpu_shape() + channel_axis_,
+                kernel_shape_.gpu_data(), pad_.gpu_data(), stride_.gpu_data(),
+                dilation_.gpu_data(), bottom_diff + n * bottom_dim_);
+        }
+    }
+}
 #endif
 
 INSTANTIATE_CLASS(Im2colLayer);

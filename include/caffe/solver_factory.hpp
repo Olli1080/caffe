@@ -55,30 +55,30 @@ template <typename Dtype>
 class CAFFE_EXPORT SolverRegistry {
  public:
   typedef Solver<Dtype>* (*Creator)(const SolverParameter&);
-  typedef std::map<string, Creator> CreatorRegistry;
+  typedef std::map<std::string, Creator> CreatorRegistry;
 
   static CreatorRegistry& Registry();
 
   // Adds a creator.
-  static void AddCreator(const string& type, Creator creator);
+  static void AddCreator(const std::string& type, Creator creator);
 
   // Get a solver using a SolverParameter.
   static Solver<Dtype>* CreateSolver(const SolverParameter& param);
 
-  static vector<string> SolverTypeList();
+  static std::vector<std::string> SolverTypeList();
 
  private:
   // Solver registry should never be instantiated - everything is done with its
   // static variables.
   SolverRegistry();  // {}
 
-  static string SolverTypeListString();
+  static std::string SolverTypeListString();
 };
 
 template <typename Dtype>
 class CAFFE_EXPORT SolverRegisterer {
  public:
-  SolverRegisterer(const string& type,
+  SolverRegisterer(const std::string& type,
                    Solver<Dtype>* (*creator)(const SolverParameter&));
 };
 

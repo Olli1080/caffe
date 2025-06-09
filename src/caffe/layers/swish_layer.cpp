@@ -9,8 +9,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void SwishLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void SwishLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
   sigmoid_bottom_vec_.clear();
   sigmoid_bottom_vec_.push_back(sigmoid_input_.get());
@@ -20,16 +20,16 @@ void SwishLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SwishLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void SwishLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::Reshape(bottom, top);
   sigmoid_input_->ReshapeLike(*bottom[0]);
   sigmoid_layer_->Reshape(sigmoid_bottom_vec_, sigmoid_top_vec_);
 }
 
 template <typename Dtype>
-void SwishLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void SwishLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* sigmoid_input_data = sigmoid_input_->mutable_cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
@@ -42,9 +42,9 @@ void SwishLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SwishLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void SwishLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
     const Dtype* top_data = top[0]->cpu_data();
     const Dtype* top_diff = top[0]->cpu_diff();
@@ -64,8 +64,8 @@ void SwishLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 STUB_GPU(SwishLayer);
 #else
 template <typename Dtype>
-void SwishLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void SwishLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
     const Dtype* bottom_data = bottom[0]->gpu_data();
     Dtype* sigmoid_input_data = sigmoid_input_->mutable_gpu_data();
     Dtype* top_data = top[0]->mutable_gpu_data();
@@ -78,9 +78,9 @@ void SwishLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SwishLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void SwishLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
     if (propagate_down[0]) {
         const Dtype* top_data = top[0]->gpu_data();
         const Dtype* top_diff = top[0]->gpu_diff();

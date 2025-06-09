@@ -55,10 +55,10 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
   explicit SoftmaxWithLossLayer(const LayerParameter& param)
       : LossLayer<Dtype>(param) {}
 
-   void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-   void Reshape(const vector<Blob<Dtype>*>& bottom,
-                const vector<Blob<Dtype>*>& top) override;
+   void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+   void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+                const std::vector<Blob<Dtype>*>& top) override;
 
    [[nodiscard]] const char* type() const override { return "SoftmaxWithLoss"; }
    [[nodiscard]] int ExactNumTopBlobs() const override { return -1; }
@@ -66,10 +66,10 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
    [[nodiscard]] int MaxTopBlobs() const override { return 2; }
 
  protected:
-   void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                    const vector<Blob<Dtype>*>& top) override;
-   void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                    const vector<Blob<Dtype>*>& top) override;
+   void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                    const std::vector<Blob<Dtype>*>& top) override;
+   void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                    const std::vector<Blob<Dtype>*>& top) override;
   /**
    * @brief Computes the softmax loss error gradient w.r.t. the predictions.
    *
@@ -97,10 +97,10 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
    *   -# @f$ (N \times 1 \times 1 \times 1) @f$
    *      the labels -- ignored as we can't compute their error gradients
    */
-   void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-   void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                     const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+   void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                     const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+   void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                     const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   /// Read the normalization mode parameter and compute the normalizer based
   /// on the blob size.  If normalization_mode is VALID, the count of valid
@@ -110,13 +110,13 @@ class SoftmaxWithLossLayer : public LossLayer<Dtype> {
       LossParameter_NormalizationMode normalization_mode, int valid_count);
 
   /// The internal SoftmaxLayer used to map predictions to a distribution.
-  shared_ptr<Layer<Dtype> > softmax_layer_;
+  std::shared_ptr<Layer<Dtype> > softmax_layer_;
   /// prob stores the output probability predictions from the SoftmaxLayer.
   Blob<Dtype> prob_;
   /// bottom vector holder used in call to the underlying SoftmaxLayer::Forward
-  vector<Blob<Dtype>*> softmax_bottom_vec_;
+  std::vector<Blob<Dtype>*> softmax_bottom_vec_;
   /// top vector holder used in call to the underlying SoftmaxLayer::Forward
-  vector<Blob<Dtype>*> softmax_top_vec_;
+  std::vector<Blob<Dtype>*> softmax_top_vec_;
   /// Whether to ignore instances with a certain label.
   bool has_ignore_label_;
   /// The label indicating that an instance should be ignored.

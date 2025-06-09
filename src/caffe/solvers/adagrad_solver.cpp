@@ -14,8 +14,8 @@ void adagrad_update_gpu(int N, Dtype* g, Dtype* h, Dtype delta,
 
 template <typename Dtype>
 void AdaGradSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
-  const vector<float>& net_params_lr = this->net_->params_lr();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<float>& net_params_lr = this->net_->params_lr();
   Dtype delta = this->param_->delta();
   Dtype local_rate = rate * net_params_lr[param_id];
   switch (Caffe::mode()) {

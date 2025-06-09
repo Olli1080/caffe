@@ -30,7 +30,7 @@ namespace caffe {
 template <typename Dtype>
 Dtype SGDSolver<Dtype>::GetLearningRate() {
   Dtype rate;
-  const string& lr_policy = this->param_->lr_policy();
+  const std::string& lr_policy = this->param_->lr_policy();
   if (lr_policy == "fixed") {
     rate = this->param_->base_lr();
   } else if (lr_policy == "step") {
@@ -76,12 +76,12 @@ Dtype SGDSolver<Dtype>::GetLearningRate() {
 template <typename Dtype>
 void SGDSolver<Dtype>::PreSolve() {
   // Initialize the history
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   history_.clear();
   update_.clear();
   temp_.clear();
   for (int i = 0; i < net_params.size(); ++i) {
-    const vector<int>& shape = net_params[i]->shape();
+    const std::vector<int>& shape = net_params[i]->shape();
     history_.push_back(std::make_shared<Blob<Dtype>>(shape));
     update_.push_back(std::make_shared<Blob<Dtype>>(shape));
     temp_.push_back(std::make_shared<Blob<Dtype>>(shape));
@@ -92,7 +92,7 @@ template <typename Dtype>
 void SGDSolver<Dtype>::ClipGradients() {
   const Dtype clip_gradients = this->param_->clip_gradients();
   if (clip_gradients < 0) { return; }
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   Dtype sumsq_diff = 0;
   for (int i = 0; i < net_params.size(); ++i) {
     sumsq_diff += net_params[i]->sumsq_diff();
@@ -134,7 +134,7 @@ template <typename Dtype>
 void SGDSolver<Dtype>::Normalize(int param_id) {
   if (this->param_->iter_size() == 1) { return; }
   // Scale gradient to counterbalance accumulation.
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   const Dtype accum_normalization = Dtype(1.) / this->param_->iter_size();
   switch (Caffe::mode()) {
   case Caffe::CPU: {
@@ -158,11 +158,11 @@ void SGDSolver<Dtype>::Normalize(int param_id) {
 
 template <typename Dtype>
 void SGDSolver<Dtype>::Regularize(int param_id) {
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
-  const vector<float>& net_params_weight_decay =
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<float>& net_params_weight_decay =
       this->net_->params_weight_decay();
   Dtype weight_decay = this->param_->weight_decay();
-  string regularization_type = this->param_->regularization_type();
+  std::string regularization_type = this->param_->regularization_type();
   Dtype local_decay = weight_decay * net_params_weight_decay[param_id];
   switch (Caffe::mode()) {
   case Caffe::CPU: {
@@ -226,8 +226,8 @@ void sgd_update_gpu(int N, Dtype* g, Dtype* h, Dtype momentum,
 
 template <typename Dtype>
 void SGDSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
-  const vector<float>& net_params_lr = this->net_->params_lr();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<float>& net_params_lr = this->net_->params_lr();
   Dtype momentum = this->param_->momentum();
   Dtype local_rate = rate * net_params_lr[param_id];
   // Compute the update to history, then copy it to the parameter diff.
@@ -258,7 +258,7 @@ void SGDSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
 }
 
 template <typename Dtype>
-void SGDSolver<Dtype>::SnapshotSolverState(const string& model_filename) {
+void SGDSolver<Dtype>::SnapshotSolverState(const std::string& model_filename) {
   switch (this->param_->snapshot_format()) {
     case caffe::SolverParameter_SnapshotFormat_BINARYPROTO:
       SnapshotSolverStateToBinaryProto(model_filename);
@@ -273,7 +273,7 @@ void SGDSolver<Dtype>::SnapshotSolverState(const string& model_filename) {
 
 template <typename Dtype>
 void SGDSolver<Dtype>::SnapshotSolverStateToBinaryProto(
-    const string& model_filename) {
+    const std::string& model_filename) {
   SolverState state;
   state.set_iter(this->iter_);
   state.set_learned_net(model_filename);
@@ -284,7 +284,7 @@ void SGDSolver<Dtype>::SnapshotSolverStateToBinaryProto(
     BlobProto* history_blob = state.add_history();
     history_[i]->ToProto(history_blob);
   }
-  string snapshot_filename = Solver<Dtype>::SnapshotFilename(".solverstate");
+  std::string snapshot_filename = Solver<Dtype>::SnapshotFilename(".solverstate");
   LOG(INFO)
     << "Snapshotting solver state to binary proto file " << snapshot_filename;
   WriteProtoToBinaryFile(state, snapshot_filename.c_str());
@@ -292,10 +292,10 @@ void SGDSolver<Dtype>::SnapshotSolverStateToBinaryProto(
 
 template <typename Dtype>
 void SGDSolver<Dtype>::SnapshotSolverStateToHDF5(
-    const string& model_filename) {
+    const std::string& model_filename) {
 // This code is taken from https://github.com/sh1r0/caffe-android-lib
 #ifdef USE_HDF5
-  string snapshot_filename =
+  std::string snapshot_filename =
       Solver<Dtype>::SnapshotFilename(".solverstate.h5");
   LOG(INFO) << "Snapshotting solver state to HDF5 file " << snapshot_filename;
   hid_t file_hid = H5Fcreate(snapshot_filename.c_str(), H5F_ACC_TRUNC,
@@ -310,7 +310,7 @@ void SGDSolver<Dtype>::SnapshotSolverStateToHDF5(
   CHECK_GE(history_hid, 0)
       << "Error saving solver state to " << snapshot_filename << ".";
   for (int i = 0; i < history_.size(); ++i) {
-    ostringstream oss;
+    std::ostringstream oss;
     oss << i;
     hdf5_save_nd_dataset<Dtype>(history_hid, oss.str(), *history_[i]);
   }
@@ -325,13 +325,13 @@ void SGDSolver<Dtype>::SnapshotSolverStateToHDF5(
 
 template <typename Dtype>
 void SGDSolver<Dtype>::RestoreSolverStateFromBinaryProto(
-    const string& state_file) {
+    const std::string& state_file) {
   SolverState state;
   ReadProtoFromBinaryFile(state_file, &state);
   this->iter_ = state.iter();
   if (state.has_learned_net()) {
     NetParameter net_param;
-    ReadNetParamsFromBinaryFileOrDie(state.learned_net().c_str(), &net_param);
+    ReadNetParamsFromBinaryFileOrDie(state.learned_net(), &net_param);
     this->net_->CopyTrainedLayersFrom(net_param);
   }
   this->current_step_ = state.current_step();
@@ -344,13 +344,13 @@ void SGDSolver<Dtype>::RestoreSolverStateFromBinaryProto(
 }
 
 template <typename Dtype>
-void SGDSolver<Dtype>::RestoreSolverStateFromHDF5(const string& state_file) {
+void SGDSolver<Dtype>::RestoreSolverStateFromHDF5(const std::string& state_file) {
 #ifdef USE_HDF5
   hid_t file_hid = H5Fopen(state_file.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
   CHECK_GE(file_hid, 0) << "Couldn't open solver state file " << state_file;
   this->iter_ = hdf5_load_int(file_hid, "iter");
   if (H5LTfind_dataset(file_hid, "learned_net")) {
-    string learned_net = hdf5_load_string(file_hid, "learned_net");
+    std::string learned_net = hdf5_load_string(file_hid, "learned_net");
     this->net_->CopyTrainedLayersFrom(learned_net);
   }
   this->current_step_ = hdf5_load_int(file_hid, "current_step");
@@ -360,7 +360,7 @@ void SGDSolver<Dtype>::RestoreSolverStateFromHDF5(const string& state_file) {
   CHECK_EQ(state_history_size, history_.size())
       << "Incorrect length of history blobs.";
   for (int i = 0; i < history_.size(); ++i) {
-    ostringstream oss;
+    std::ostringstream oss;
     oss << i;
     hdf5_load_nd_dataset<Dtype>(history_hid, oss.str().c_str(), 0,
                                 kMaxBlobAxes, history_[i].get());

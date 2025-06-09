@@ -40,7 +40,7 @@ class RecurrentLayer : public Layer<Dtype> {
   {
     int min_bottoms = 2;
     if (this->layer_param_->recurrent_param().expose_hidden()) {
-      std::vector<string> inputs;
+      std::vector<std::string> inputs;
       this->RecurrentInputBlobNames(&inputs);
       min_bottoms += static_cast<int>(inputs.size());
     }
@@ -53,7 +53,7 @@ class RecurrentLayer : public Layer<Dtype> {
   {
     int num_tops = 1;
     if (this->layer_param_->recurrent_param().expose_hidden()) {
-      std::vector<string> outputs;
+      std::vector<std::string> outputs;
       this->RecurrentOutputBlobNames(&outputs);
       num_tops += static_cast<int>(outputs.size());
     }
@@ -78,7 +78,7 @@ class RecurrentLayer : public Layer<Dtype> {
    *        Blob&s.  Subclasses should define this -- see RNNLayer and LSTMLayer
    *        for examples.
    */
-  virtual void RecurrentInputBlobNames(std::vector<string>* names) const = 0;
+  virtual void RecurrentInputBlobNames(std::vector<std::string>* names) const = 0;
 
   /**
    * @brief Fills shapes with the shapes of the recurrent input Blob&s.
@@ -92,7 +92,7 @@ class RecurrentLayer : public Layer<Dtype> {
    *        Blob&s.  Subclasses should define this -- see RNNLayer and LSTMLayer
    *        for examples.
    */
-  virtual void RecurrentOutputBlobNames(std::vector<string>* names) const = 0;
+  virtual void RecurrentOutputBlobNames(std::vector<std::string>* names) const = 0;
 
   /**
    * @brief Fills names with the names of the output blobs, concatenated across
@@ -100,7 +100,7 @@ class RecurrentLayer : public Layer<Dtype> {
    *        Subclasses should define this -- see RNNLayer and LSTMLayer for
    *        examples.
    */
-  virtual void OutputBlobNames(std::vector<string>* names) const = 0;
+  virtual void OutputBlobNames(std::vector<std::string>* names) const = 0;
 
   /**
    * @param bottom input Blob vector (length 2-3)
@@ -155,7 +155,7 @@ class RecurrentLayer : public Layer<Dtype> {
                     const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   /// @brief A Net to implement the Recurrent functionality.
-  shared_ptr<Net<Dtype> > unrolled_net_;
+  std::shared_ptr<Net<Dtype> > unrolled_net_;
 
   /// @brief The number of independent streams to process simultaneously.
   int N_;

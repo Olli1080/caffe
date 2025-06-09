@@ -7,8 +7,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void ReshapeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void ReshapeLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   CHECK_NE(top[0], bottom[0]) << this->type() << " Layer does not "
       "allow in-place computation.";
   inferred_axis_ = -1;
@@ -31,8 +31,8 @@ void ReshapeLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ReshapeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void ReshapeLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const int input_start_axis = this->layer_param_->reshape_param().axis();
   const int start_axis = (input_start_axis >= 0) ? input_start_axis :
       bottom[0]->num_axes() + input_start_axis + 1;
@@ -49,7 +49,7 @@ void ReshapeLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   const int num_axes_retained = bottom[0]->num_axes() - num_axes_replaced;
   const BlobShape& top_blob_shape = this->layer_param_->reshape_param().shape();
   const int num_new_axes = top_blob_shape.dim_size();
-  vector<int> top_shape(num_axes_retained + num_new_axes);
+  std::vector<int> top_shape(num_axes_retained + num_new_axes);
   int top_shape_index = 0;
   for (int i = 0; i < start_axis; ++i) {
     top_shape[top_shape_index++] = bottom[0]->shape(i);

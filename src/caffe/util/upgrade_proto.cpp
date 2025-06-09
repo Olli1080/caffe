@@ -20,7 +20,7 @@ bool NetNeedsUpgrade(const NetParameter& net_param) {
       || NetNeedsBatchNormUpgrade(net_param);
 }
 
-bool UpgradeNetAsNeeded(const string& param_file, NetParameter* param) {
+bool UpgradeNetAsNeeded(const std::string& param_file, NetParameter* param) {
   bool success = true;
   if (NetNeedsV0ToV1Upgrade(*param)) {
     // NetParameter was specified using the old style (V0LayerParameter); try to
@@ -85,14 +85,14 @@ bool UpgradeNetAsNeeded(const string& param_file, NetParameter* param) {
   return success;
 }
 
-void ReadNetParamsFromTextFileOrDie(const string& param_file,
+void ReadNetParamsFromTextFileOrDie(const std::string& param_file,
                                     NetParameter* param) {
   CHECK(ReadProtoFromTextFile(param_file, param))
       << "Failed to parse NetParameter file: " << param_file;
   UpgradeNetAsNeeded(param_file, param);
 }
 
-void ReadNetParamsFromBinaryFileOrDie(const string& param_file,
+void ReadNetParamsFromBinaryFileOrDie(const std::string& param_file,
                                       NetParameter* param) {
   CHECK(ReadProtoFromBinaryFile(param_file, param))
       << "Failed to parse NetParameter file: " << param_file;
@@ -146,9 +146,9 @@ void UpgradeV0PaddingLayers(const NetParameter& param,
   param_upgraded_pad->CopyFrom(param);
   param_upgraded_pad->clear_layers();
   // Figure out which layer each bottom blob comes from.
-  map<string, int> blob_name_to_last_top_idx;
+  std::map<std::string, int> blob_name_to_last_top_idx;
   for (int i = 0; i < param.input_size(); ++i) {
-    const string& blob_name = param.input(i);
+    const std::string& blob_name = param.input(i);
     blob_name_to_last_top_idx[blob_name] = -1;
   }
   for (int i = 0; i < param.layers_size(); ++i) {
@@ -159,9 +159,8 @@ void UpgradeV0PaddingLayers(const NetParameter& param,
       param_upgraded_pad->add_layers()->CopyFrom(layer_connection);
     }
     for (int j = 0; j < layer_connection.bottom_size(); ++j) {
-      const string& blob_name = layer_connection.bottom(j);
-      if (blob_name_to_last_top_idx.find(blob_name) ==
-          blob_name_to_last_top_idx.end()) {
+      const std::string& blob_name = layer_connection.bottom(j);
+      if (!blob_name_to_last_top_idx.contains(blob_name)) {
         LOG(FATAL) << "Unknown blob input " << blob_name << " to layer " << j;
       }
       const int top_idx = blob_name_to_last_top_idx[blob_name];
@@ -192,7 +191,7 @@ void UpgradeV0PaddingLayers(const NetParameter& param,
       }
     }
     for (int j = 0; j < layer_connection.top_size(); ++j) {
-      const string& blob_name = layer_connection.top(j);
+      const std::string& blob_name = layer_connection.top(j);
       blob_name_to_last_top_idx[blob_name] = i;
     }
   }
@@ -213,7 +212,7 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
     if (v0_layer_param.has_name()) {
       layer_param->set_name(v0_layer_param.name());
     }
-    const string& type = v0_layer_param.type();
+    const std::string& type = v0_layer_param.type();
     if (v0_layer_param.has_type()) {
       layer_param->set_type(UpgradeV0LayerType(type));
     }
@@ -550,7 +549,7 @@ bool UpgradeV0LayerParameter(const V1LayerParameter& v0_layer_connection,
   return is_fully_compatible;
 }
 
-V1LayerParameter_LayerType UpgradeV0LayerType(const string& type) {
+V1LayerParameter_LayerType UpgradeV0LayerType(const std::string& type) {
   if (type == "accuracy") {
     return V1LayerParameter_LayerType_ACCURACY;
   } else if (type == "bnll") {
@@ -1044,7 +1043,7 @@ bool UpgradeSolverType(SolverParameter* solver_param) {
       << "Failed to upgrade solver: old solver_type field (enum) and new type "
       << "field (string) cannot be both specified in solver proto text.";
   if (solver_param->has_solver_type()) {
-    string type;
+    std::string type;
     switch (solver_param->solver_type()) {
     case SolverParameter_SolverType_SGD:
       type = "SGD";
@@ -1077,7 +1076,7 @@ bool UpgradeSolverType(SolverParameter* solver_param) {
 }
 
 // Check for deprecations and upgrade the SolverParameter as needed.
-bool UpgradeSolverAsNeeded(const string& param_file, SolverParameter* param) {
+bool UpgradeSolverAsNeeded(const std::string& param_file, SolverParameter* param) {
   bool success = true;
   // Try to upgrade old style solver_type enum fields into new string type
   if (SolverNeedsTypeUpgrade(*param)) {
@@ -1099,7 +1098,7 @@ bool UpgradeSolverAsNeeded(const string& param_file, SolverParameter* param) {
 
 // Replaces snapshot_prefix of SolverParameter if it is not specified
 // or is set to directory
-void UpgradeSnapshotPrefixProperty(const string& param_file,
+void UpgradeSnapshotPrefixProperty(const std::string& param_file,
                                    SolverParameter* param) {
   if (!param->has_snapshot_prefix()) {
     param->set_snapshot_prefix(std::filesystem::path(param_file).replace_extension().string());
@@ -1114,7 +1113,7 @@ void UpgradeSnapshotPrefixProperty(const string& param_file,
 }
 
 // Read parameters from a file into a SolverParameter proto message.
-void ReadSolverParamsFromTextFileOrDie(const string& param_file,
+void ReadSolverParamsFromTextFileOrDie(const std::string& param_file,
                                        SolverParameter* param) {
   CHECK(ReadProtoFromTextFile(param_file, param))
       << "Failed to parse SolverParameter file: " << param_file;

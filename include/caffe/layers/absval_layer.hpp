@@ -27,8 +27,8 @@ class AbsValLayer : public NeuronLayer<Dtype> {
   explicit AbsValLayer(const LayerParameter& param)
       : NeuronLayer<Dtype>(param) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "AbsVal"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
@@ -36,10 +36,10 @@ class AbsValLayer : public NeuronLayer<Dtype> {
 
  protected:
   /// @copydoc AbsValLayer
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the absolute value inputs.
@@ -58,10 +58,10 @@ class AbsValLayer : public NeuronLayer<Dtype> {
    *            \mathrm{sign}(x) \frac{\partial E}{\partial y}
    *      @f$ if propagate_down[0]
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 };
 
 }  // namespace caffe

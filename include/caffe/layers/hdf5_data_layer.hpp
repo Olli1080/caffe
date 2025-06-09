@@ -26,11 +26,11 @@ class HDF5DataLayer : public Layer<Dtype> {
       : Layer<Dtype>(param), offset_() {}
 
   ~HDF5DataLayer() override;
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
   // Data layers have no bottoms, so reshaping is trivial.
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override {}
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override {}
 
   [[nodiscard]] const char* type() const override { return "HDF5Data"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
@@ -40,23 +40,23 @@ class HDF5DataLayer : public Layer<Dtype> {
   void Next();
   bool Skip();
 
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override {}
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override {}
 
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override {}
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override {}
   virtual void LoadHDF5FileData(const char* filename);
 
   std::vector<std::string> hdf_filenames_;
   unsigned int num_files_;
   unsigned int current_file_;
   hsize_t current_row_;
-  std::vector<shared_ptr<Blob<Dtype> > > hdf_blobs_;
+  std::vector<std::shared_ptr<Blob<Dtype> > > hdf_blobs_;
   std::vector<unsigned int> data_permutation_;
   std::vector<unsigned int> file_permutation_;
   uint64_t offset_;

@@ -25,8 +25,8 @@ class FlattenLayer : public Layer<Dtype> {
   explicit FlattenLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "Flatten"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
@@ -41,8 +41,8 @@ class FlattenLayer : public Layer<Dtype> {
    *   -# @f$ (N \times CHW \times 1 \times 1) @f$
    *      the outputs -- i.e., the (virtually) copied, flattened inputs
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the concatenate inputs.
@@ -53,8 +53,8 @@ class FlattenLayer : public Layer<Dtype> {
    * @param bottom input Blob vector (length K), into which the top error
    *        gradient is (virtually) copied
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 };
 
 }  // namespace caffe

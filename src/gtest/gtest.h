@@ -10351,7 +10351,7 @@ class ParameterizedTestCaseInfoBase {
   virtual ~ParameterizedTestCaseInfoBase() {}
 
   // Base part of test case name for display purposes.
-  virtual const string& GetTestCaseName() const = 0;
+  virtual const std::string& GetTestCaseName() const = 0;
   // Test case id to verify identity.
   virtual TypeId GetTestCaseTypeId() const = 0;
   // UnitTest class invokes this method to register tests in this
@@ -10388,7 +10388,7 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
       : test_case_name_(name) {}
 
   // Test case base name for display purposes.
-  virtual const string& GetTestCaseName() const { return test_case_name_; }
+  virtual const std::string& GetTestCaseName() const { return test_case_name_; }
   // Test case id to verify identity.
   virtual TypeId GetTestCaseTypeId() const { return GetTypeId<TestCase>(); }
   // TEST_P macro uses AddTestPattern() to record information
@@ -10406,7 +10406,7 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
   }
   // INSTANTIATE_TEST_CASE_P macro uses AddGenerator() to record information
   // about a generator.
-  int AddTestCaseInstantiation(const string& instantiation_name,
+  int AddTestCaseInstantiation(const std::string& instantiation_name,
                                GeneratorCreationFunc* func,
                                const char* /* file */,
                                int /* line */) {
@@ -10425,7 +10425,7 @@ class ParameterizedTestCaseInfo : public ParameterizedTestCaseInfoBase {
       for (typename InstantiationContainer::iterator gen_it =
                instantiations_.begin(); gen_it != instantiations_.end();
                ++gen_it) {
-        const string& instantiation_name = gen_it->first;
+        const std::string& instantiation_name = gen_it->first;
         ParamGenerator<ParamType> generator((*gen_it->second)());
 
         Message test_case_name_stream;

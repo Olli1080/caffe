@@ -54,10 +54,10 @@ class LSTMLayer : public RecurrentLayer<Dtype> {
 
  protected:
   void FillUnrolledNet(NetParameter* net_param) const override;
-  void RecurrentInputBlobNames(vector<string>* names) const override;
-  void RecurrentOutputBlobNames(vector<string>* names) const override;
-  void RecurrentInputShapes(vector<BlobShape>* shapes) const override;
-  void OutputBlobNames(vector<string>* names) const override;
+  void RecurrentInputBlobNames(std::vector<std::string>* names) const override;
+  void RecurrentOutputBlobNames(std::vector<std::string>* names) const override;
+  void RecurrentInputShapes(std::vector<BlobShape>* shapes) const override;
+  void OutputBlobNames(std::vector<std::string>* names) const override;
 };
 
 /**
@@ -71,8 +71,8 @@ class LSTMUnitLayer : public Layer<Dtype> {
   explicit LSTMUnitLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] const char* type() const override { return "LSTMUnit"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 3; }
@@ -105,10 +105,10 @@ class LSTMUnitLayer : public Layer<Dtype> {
    *      the updated hidden state @f$ h_t @f$, computed as:
    *          h_t := o_t .* \tanh[c_t]
    */
-  void Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
-  void Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-                   const vector<Blob<Dtype>*>& top) override;
+  void Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
+  void Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+                   const std::vector<Blob<Dtype>*>& top) override;
 
   /**
    * @brief Computes the error gradient w.r.t. the LSTMUnit inputs.
@@ -141,10 +141,10 @@ class LSTMUnitLayer : public Layer<Dtype> {
    *      the gradient w.r.t. the sequence continuation indicators
    *      @f$ \delta_t @f$ is currently not computed.
    */
-  void Backward_cpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
-  void Backward_gpu(const vector<Blob<Dtype>*>& top,
-                    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) override;
+  void Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
+  void Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+                    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) override;
 
   /// @brief The hidden and output dimension.
   int hidden_dim_;

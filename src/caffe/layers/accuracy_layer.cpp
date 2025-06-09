@@ -12,7 +12,7 @@ namespace caffe {
 
 template <typename Dtype>
 void AccuracyLayer<Dtype>::LayerSetUp(
-  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+  const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   top_k_ = this->layer_param_->accuracy_param().top_k();
 
   has_ignore_label_ =
@@ -24,7 +24,7 @@ void AccuracyLayer<Dtype>::LayerSetUp(
 
 template <typename Dtype>
 void AccuracyLayer<Dtype>::Reshape(
-  const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+  const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   CHECK_LE(top_k_, bottom[0]->count() / bottom[1]->count())
       << "top_k must be less than or equal to the number of classes.";
   label_axis_ =
@@ -36,11 +36,11 @@ void AccuracyLayer<Dtype>::Reshape(
       << "e.g., if label axis == 1 and prediction shape is (N, C, H, W), "
       << "label count (number of labels) must be N*H*W, "
       << "with integer values in {0, 1, ..., C-1}.";
-  vector<int> top_shape(0);  // Accuracy is a scalar; 0 axes.
+  std::vector<int> top_shape(0);  // Accuracy is a scalar; 0 axes.
   top[0]->Reshape(top_shape);
   if (top.size() > 1) {
     // Per-class accuracy is a vector; 1 axes.
-    vector<int> top_shape_per_class(1);
+    std::vector<int> top_shape_per_class(1);
     top_shape_per_class[0] = bottom[0]->shape(label_axis_);
     top[1]->Reshape(top_shape_per_class);
     nums_buffer_.Reshape(top_shape_per_class);
@@ -48,8 +48,8 @@ void AccuracyLayer<Dtype>::Reshape(
 }
 
 template <typename Dtype>
-void AccuracyLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void AccuracyLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   Dtype accuracy = 0;
   const Dtype* bottom_data = bottom[0]->cpu_data();
   const Dtype* bottom_label = bottom[1]->cpu_data();

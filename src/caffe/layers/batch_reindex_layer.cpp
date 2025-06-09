@@ -8,10 +8,10 @@
 namespace caffe {
 
 template<typename Dtype>
-void BatchReindexLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-                                       const vector<Blob<Dtype>*>& top) {
+void BatchReindexLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+                                       const std::vector<Blob<Dtype>*>& top) {
   CHECK_EQ(1, bottom[1]->num_axes());
-  vector<int> newshape;
+  std::vector<int> newshape;
   newshape.push_back(bottom[1]->shape(0));
   for (int i = 1; i < bottom[0]->shape().size(); ++i) {
     newshape.push_back(bottom[0]->shape()[i]);
@@ -32,8 +32,8 @@ void BatchReindexLayer<Dtype>::check_batch_reindex(int initial_num,
 }
 
 template<typename Dtype>
-void BatchReindexLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-                                           const vector<Blob<Dtype>*>& top) {
+void BatchReindexLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+                                           const std::vector<Blob<Dtype>*>& top) {
   check_batch_reindex(bottom[0]->shape(0), bottom[1]->count(),
                       bottom[1]->cpu_data());
   if (top[0]->count() == 0) {
@@ -52,8 +52,8 @@ void BatchReindexLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 
 template<typename Dtype>
 void BatchReindexLayer<Dtype>::Backward_cpu(
-    const vector<Blob<Dtype>*>& top, const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+    const std::vector<Blob<Dtype>*>& top, const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   CHECK(!propagate_down[1]) << "Cannot backprop to index.";
   if (!propagate_down[0]) {
     return;

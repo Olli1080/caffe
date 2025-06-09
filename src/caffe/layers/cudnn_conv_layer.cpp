@@ -18,7 +18,7 @@ namespace caffe {
  */
 template <typename Dtype>
 void CuDNNConvolutionLayer<Dtype>::LayerSetUp(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   ConvolutionLayer<Dtype>::LayerSetUp(bottom, top);
   // Initialize CUDA streams and cuDNN.
   stream_         = new cudaStream_t[this->group_ * CUDNN_STREAMS_PER_GROUP];
@@ -208,7 +208,7 @@ void CuDNNConvolutionLayer<Dtype>::findOptimalAlgorithm(int index,
 
 template <typename Dtype>
 void CuDNNConvolutionLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   ConvolutionLayer<Dtype>::Reshape(bottom, top);
 
   CHECK_EQ(2, this->num_spatial_axes_)

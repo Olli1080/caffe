@@ -9,9 +9,9 @@ template <typename Dtype>
 void AdaDeltaSolver<Dtype>::AdaDeltaPreSolve() {
   // Add the extra history entries for AdaDelta after those from
   // SGDSolver::PreSolve
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
   for (int i = 0; i < net_params.size(); ++i) {
-        const vector<int>& shape = net_params[i]->shape();
+        const std::vector<int>& shape = net_params[i]->shape();
         this->history_.push_back(
 	        std::make_shared<Blob<Dtype>>(shape));
   }
@@ -25,8 +25,8 @@ void adadelta_update_gpu(int N, Dtype* g, Dtype* h, Dtype* h2, Dtype momentum,
 
 template <typename Dtype>
 void AdaDeltaSolver<Dtype>::ComputeUpdateValue(int param_id, Dtype rate) {
-  const vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
-  const vector<float>& net_params_lr = this->net_->params_lr();
+  const std::vector<Blob<Dtype>*>& net_params = this->net_->learnable_params();
+  const std::vector<float>& net_params_lr = this->net_->params_lr();
   Dtype delta = this->param_->delta();
   Dtype momentum = this->param_->momentum();
   Dtype local_rate = rate * net_params_lr[param_id];

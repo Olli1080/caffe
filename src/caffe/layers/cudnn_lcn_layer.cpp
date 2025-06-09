@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void CuDNNLCNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void CuDNNLCNLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   LRNLayer<Dtype>::LayerSetUp(bottom, top);
 
   CUDNN_CHECK(cudnnCreate(&handle_));
@@ -28,8 +28,8 @@ void CuDNNLCNLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CuDNNLCNLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void CuDNNLCNLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   LRNLayer<Dtype>::Reshape(bottom, top);
   cudnn::setTensor4dDesc<Dtype>(&bottom_desc_, bottom[0]->num(),
       this->channels_, this->height_, this->width_);
@@ -71,7 +71,40 @@ CuDNNLCNLayer<Dtype>::~CuDNNLCNLayer() {
 #ifdef CPU_ONLY
 STUB_GPU(CuDNNLCNLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNLCNLayer);
+template <typename Dtype>
+void CuDNNLCNLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+
+    CUDNN_CHECK(cudnnDivisiveNormalizationForward(
+        handle_, norm_desc_, CUDNN_DIVNORM_PRECOMPUTED_MEANS,
+        cudnn::dataType<Dtype>::one,
+        bottom_desc_, bottom_data,
+        NULL,  // srcMeansData
+        this->tempData1, this->tempData2,
+        cudnn::dataType<Dtype>::zero,
+        top_desc_, top_data));
+}
+
+template <typename Dtype>
+void CuDNNLCNLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
+    const Dtype* top_diff = top[0]->gpu_diff();
+    const Dtype* top_data = top[0]->gpu_data();
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+
+    CUDNN_CHECK(cudnnDivisiveNormalizationBackward(
+        handle_, norm_desc_, CUDNN_DIVNORM_PRECOMPUTED_MEANS,
+        cudnn::dataType<Dtype>::one,
+        bottom_desc_, bottom_data,
+        NULL, top_diff,  // NULL - srcMeansData
+        this->tempData1, this->tempData2,
+        cudnn::dataType<Dtype>::zero,
+        bottom_desc_, bottom_diff,
+        NULL));
+}
 #endif
 
 INSTANTIATE_CLASS(CuDNNLCNLayer);

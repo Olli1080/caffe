@@ -14,21 +14,21 @@
 namespace caffe {
 
 template <typename Dtype>
-void LSTMLayer<Dtype>::RecurrentInputBlobNames(vector<string>* names) const {
+void LSTMLayer<Dtype>::RecurrentInputBlobNames(std::vector<std::string>* names) const {
   names->resize(2);
   (*names)[0] = "h_0";
   (*names)[1] = "c_0";
 }
 
 template <typename Dtype>
-void LSTMLayer<Dtype>::RecurrentOutputBlobNames(vector<string>* names) const {
+void LSTMLayer<Dtype>::RecurrentOutputBlobNames(std::vector<std::string>* names) const {
   names->resize(2);
   (*names)[0] = "h_" + format_int(this->T_);
   (*names)[1] = "c_T";
 }
 
 template <typename Dtype>
-void LSTMLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
+void LSTMLayer<Dtype>::RecurrentInputShapes(std::vector<BlobShape>* shapes) const {
   const int num_output = this->layer_param_->recurrent_param().num_output();
   const int num_blobs = 2;
   shapes->resize(num_blobs);
@@ -41,7 +41,7 @@ void LSTMLayer<Dtype>::RecurrentInputShapes(vector<BlobShape>* shapes) const {
 }
 
 template <typename Dtype>
-void LSTMLayer<Dtype>::OutputBlobNames(vector<string>* names) const {
+void LSTMLayer<Dtype>::OutputBlobNames(std::vector<std::string>* names) const {
   names->resize(1);
   (*names)[0] = "h";
 }
@@ -86,7 +86,7 @@ void LSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   LayerParameter split_param;
   split_param.set_type("Split");
 
-  vector<BlobShape> input_shapes;
+  std::vector<BlobShape> input_shapes;
   RecurrentInputShapes(&input_shapes);
   CHECK_EQ(2, input_shapes.size());
 
@@ -157,8 +157,8 @@ void LSTMLayer<Dtype>::FillUnrolledNet(NetParameter* net_param) const {
   output_concat_layer.mutable_concat_param()->set_axis(0);
 
   for (int t = 1; t <= this->T_; ++t) {
-    string tm1s = format_int(t - 1);
-    string ts = format_int(t);
+    std::string tm1s = format_int(t - 1);
+    std::string ts = format_int(t);
 
     cont_slice_param->add_top("cont_" + ts);
     x_slice_param->add_top("W_xc_x_" + ts);

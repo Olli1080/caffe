@@ -11,8 +11,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void PReLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void PReLULayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom[0]->num_axes(), 2)
       << "Number of axes of bottom blob must be >=2.";
   PReLUParameter prelu_param = this->layer_param().prelu_param();
@@ -23,11 +23,11 @@ void PReLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   } else {
     this->blobs_.resize(1);
     if (channel_shared_) {
-      this->blobs_[0].reset(new Blob<Dtype>(vector<int>(0)));
+      this->blobs_[0].reset(new Blob<Dtype>(std::vector<int>(0)));
     } else {
-      this->blobs_[0].reset(new Blob<Dtype>(vector<int>(1, channels)));
+      this->blobs_[0].reset(new Blob<Dtype>(std::vector<int>(1, channels)));
     }
-    shared_ptr<Filler<Dtype> > filler;
+    std::shared_ptr<Filler<Dtype> > filler;
     if (prelu_param.has_filler()) {
       filler.reset(GetFiller<Dtype>(prelu_param.filler()));
     } else {
@@ -48,14 +48,14 @@ void PReLULayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   // Propagate gradients to the parameters (as directed by backward pass).
   this->param_propagate_down_.resize(this->blobs_.size(), true);
-  multiplier_.Reshape(vector<int>(1, bottom[0]->count(1)));
-  backward_buff_.Reshape(vector<int>(1, bottom[0]->count(1)));
+  multiplier_.Reshape(std::vector<int>(1, bottom[0]->count(1)));
+  backward_buff_.Reshape(std::vector<int>(1, bottom[0]->count(1)));
   caffe_set(multiplier_.count(), Dtype(1), multiplier_.mutable_cpu_data());
 }
 
 template <typename Dtype>
-void PReLULayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void PReLULayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   CHECK_GE(bottom[0]->num_axes(), 2)
       << "Number of axes of bottom blob must be >=2.";
   top[0]->ReshapeLike(*bottom[0]);
@@ -66,8 +66,8 @@ void PReLULayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void PReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void PReLULayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
   const int count = bottom[0]->count();
@@ -91,9 +91,9 @@ void PReLULayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void PReLULayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void PReLULayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   const Dtype* bottom_data = bottom[0]->cpu_data();
   const Dtype* slope_data = this->blobs_[0]->cpu_data();
   const Dtype* top_diff = top[0]->cpu_diff();

@@ -21,8 +21,8 @@ class CAFFE_EXPORT NeuronLayer : public Layer<Dtype> {
   explicit NeuronLayer(const LayerParameter& param)
      : Layer<Dtype>(param) {}
 
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 1; }
   [[nodiscard]] int ExactNumTopBlobs() const override { return 1; }

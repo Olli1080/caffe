@@ -5,7 +5,7 @@
 namespace caffe {
 
 template<typename Dtype>
-void ParameterLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+void ParameterLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top)
 {
     if (this->blobs_.size() > 0) {
         LOG(INFO) << "Skipping parameter initialization";
@@ -19,7 +19,7 @@ void ParameterLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom, const
 }
 
 template <typename Dtype>
-void ParameterLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top)
+void ParameterLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top)
 {
     top[0]->ShareData(*(this->blobs_[0]));
     top[0]->ShareDiff(*(this->blobs_[0]));

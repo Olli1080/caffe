@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void CuDNNPoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void CuDNNPoolingLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   PoolingLayer<Dtype>::LayerSetUp(bottom, top);
   CUDNN_CHECK(cudnnCreate(&handle_));
   cudnn::createTensor4dDesc<Dtype>(&bottom_desc_);
@@ -22,8 +22,8 @@ void CuDNNPoolingLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CuDNNPoolingLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void CuDNNPoolingLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   PoolingLayer<Dtype>::Reshape(bottom, top);
   cudnn::setTensor4dDesc<Dtype>(&bottom_desc_, bottom[0]->num(),
       this->channels_, this->height_, this->width_);
@@ -44,7 +44,35 @@ CuDNNPoolingLayer<Dtype>::~CuDNNPoolingLayer() {
 #ifdef CPU_ONLY
 STUB_GPU(CuDNNPoolingLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(CuDNNPoolingLayer);
+template <typename Dtype>
+void CuDNNPoolingLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+    CUDNN_CHECK(cudnnPoolingForward(handle_, pooling_desc_,
+        cudnn::dataType<Dtype>::one,
+        bottom_desc_, bottom_data,
+        cudnn::dataType<Dtype>::zero,
+        top_desc_, top_data));
+}
+
+template <typename Dtype>
+void CuDNNPoolingLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
+    if (!propagate_down[0]) {
+        return;
+    }
+    const Dtype* top_diff = top[0]->gpu_diff();
+    const Dtype* top_data = top[0]->gpu_data();
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+    CUDNN_CHECK(cudnnPoolingBackward(handle_, pooling_desc_,
+        cudnn::dataType<Dtype>::one,
+        top_desc_, top_data, top_desc_, top_diff,
+        bottom_desc_, bottom_data,
+        cudnn::dataType<Dtype>::zero,
+        bottom_desc_, bottom_diff));
+}
 #endif
 
 INSTANTIATE_CLASS(CuDNNPoolingLayer);

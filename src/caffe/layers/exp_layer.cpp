@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void ExpLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void ExpLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   NeuronLayer<Dtype>::LayerSetUp(bottom, top);
   const Dtype base = this->layer_param_->exp_param().base();
   if (base != Dtype(-1)) {
@@ -30,8 +30,8 @@ void ExpLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ExpLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void ExpLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const int count = bottom[0]->count();
   const Dtype* bottom_data = bottom[0]->cpu_data();
   Dtype* top_data = top[0]->mutable_cpu_data();
@@ -47,8 +47,8 @@ void ExpLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void ExpLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void ExpLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   if (!propagate_down[0]) { return; }
   const int count = bottom[0]->count();
   const Dtype* top_data = top[0]->cpu_data();
@@ -63,7 +63,37 @@ void ExpLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 #ifdef CPU_ONLY
 STUB_GPU(ExpLayer);
 #else
-INSTANTIATE_LAYER_GPU_FUNCS_EXTERN(ExpLayer);
+template <typename Dtype>
+void ExpLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
+    const int count = bottom[0]->count();
+    const Dtype* bottom_data = bottom[0]->gpu_data();
+    Dtype* top_data = top[0]->mutable_gpu_data();
+    if (inner_scale_ == Dtype(1)) {
+        caffe_gpu_exp(count, bottom_data, top_data);
+    }
+    else {
+        caffe_gpu_scale(count, inner_scale_, bottom_data, top_data);
+        caffe_gpu_exp(count, top_data, top_data);
+    }
+    if (outer_scale_ != Dtype(1)) {
+        caffe_gpu_scal(count, outer_scale_, top_data);
+    }
+}
+
+template <typename Dtype>
+void ExpLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
+    if (!propagate_down[0]) { return; }
+    const int count = bottom[0]->count();
+    const Dtype* top_data = top[0]->gpu_data();
+    const Dtype* top_diff = top[0]->gpu_diff();
+    Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();
+    caffe_gpu_mul(count, top_data, top_diff, bottom_diff);
+    if (inner_scale_ != Dtype(1)) {
+        caffe_gpu_scal(count, inner_scale_, bottom_diff);
+    }
+}
 #endif
 
 INSTANTIATE_CLASS(ExpLayer);

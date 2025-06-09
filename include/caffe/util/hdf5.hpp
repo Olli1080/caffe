@@ -24,17 +24,17 @@ void hdf5_load_nd_dataset(
 
 template <typename Dtype>
 void hdf5_save_nd_dataset(
-    const hid_t file_id, const string& dataset_name, const Blob<Dtype>& blob,
+    const hid_t file_id, const std::string& dataset_name, const Blob<Dtype>& blob,
     bool write_diff = false);
 
-int hdf5_load_int(hid_t loc_id, const string& dataset_name);
-void hdf5_save_int(hid_t loc_id, const string& dataset_name, int i);
-string hdf5_load_string(hid_t loc_id, const string& dataset_name);
-void hdf5_save_string(hid_t loc_id, const string& dataset_name,
-                      const string& s);
+int hdf5_load_int(hid_t loc_id, const std::string& dataset_name);
+void hdf5_save_int(hid_t loc_id, const std::string& dataset_name, int i);
+std::string hdf5_load_string(hid_t loc_id, const std::string& dataset_name);
+void hdf5_save_string(hid_t loc_id, const std::string& dataset_name,
+                      const std::string& s);
 
 int hdf5_get_num_links(hid_t loc_id);
-string hdf5_get_name_by_idx(hid_t loc_id, int idx);
+std::string hdf5_get_name_by_idx(hid_t loc_id, int idx);
 
 }  // namespace caffe
 

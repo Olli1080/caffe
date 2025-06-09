@@ -113,7 +113,7 @@ private:\
 namespace cv { class Mat; }
 
 namespace caffe {
-
+/*
 // We will use the boost shared_ptr instead of the new C++11 one mainly
 // because cuda does not work (at least now) well with C++11 features.
 using std::shared_ptr;
@@ -132,7 +132,7 @@ using std::set;
 using std::string;
 using std::stringstream;
 using std::vector;
-
+*/
 // A global initialization function that you should call in your main function.
 // Currently it initializes google flags and google logging.
 CAFFE_EXPORT void GlobalInit(int* pargc, char*** pargv);
@@ -163,7 +163,7 @@ class CAFFE_EXPORT Caffe {
     [[nodiscard]] void* generator() const;
    private:
     class Generator;
-    shared_ptr<Generator> generator_;
+    std::shared_ptr<Generator> generator_;
   };
 
   // Getters for boost rng, curand, and cublas handles
@@ -215,7 +215,7 @@ class CAFFE_EXPORT Caffe {
   cublasHandle_t cublas_handle_;
   curandGenerator_t curand_generator_;
 #endif
-  shared_ptr<RNG> random_generator_;
+  std::shared_ptr<RNG> random_generator_;
 
   Brew mode_;
 

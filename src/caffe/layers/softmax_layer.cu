@@ -1,10 +1,9 @@
+#include "caffe/layers/softmax_layer.hpp"
+
 #include <algorithm>
 #include <cfloat>
 #include <vector>
 
-//#include "thrust/device_vector.h"
-
-#include "caffe/layers/softmax_layer.hpp"
 #include "caffe/util/math_functions.hpp"
 
 namespace caffe {
@@ -83,8 +82,8 @@ __global__ void kernel_channel_dot(const int num, const int channels,
 }
 
 template <typename Dtype>
-void SoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void SoftmaxLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->gpu_data();
   Dtype* top_data = top[0]->mutable_gpu_data();
   Dtype* scale_data = scale_.mutable_gpu_data();
@@ -120,8 +119,8 @@ void SoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SoftmaxLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void SoftmaxLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   const Dtype* top_diff = top[0]->gpu_diff();
   const Dtype* top_data = top[0]->gpu_data();
   Dtype* bottom_diff = bottom[0]->mutable_gpu_diff();

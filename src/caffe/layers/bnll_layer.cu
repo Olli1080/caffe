@@ -17,8 +17,8 @@ __global__ void BNLLForward(const int n, const Dtype* in, Dtype* out) {
 }
 
 template <typename Dtype>
-void BNLLLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void BNLLLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   const Dtype* bottom_data = bottom[0]->gpu_data();
   Dtype* top_data = top[0]->mutable_gpu_data();
   const int count = bottom[0]->count();
@@ -38,9 +38,9 @@ __global__ void BNLLBackward(const int n, const Dtype* in_diff,
 }
 
 template <typename Dtype>
-void BNLLLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void BNLLLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[0]) {
     const Dtype* bottom_data = bottom[0]->gpu_data();
     const Dtype* top_diff = top[0]->gpu_diff();

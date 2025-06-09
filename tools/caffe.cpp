@@ -20,10 +20,10 @@ using caffe::Caffe;
 using caffe::Net;
 using caffe::Layer;
 using caffe::Solver;
-using caffe::shared_ptr;
-using caffe::string;
+//using caffe::shared_ptr;
+//using std::string;
 using caffe::Timer;
-using caffe::vector;
+//using caffe::vector;
 using std::ostringstream;
 
 DEFINE_string(gpu, "",
@@ -57,7 +57,7 @@ DEFINE_string(sighup_effect, "snapshot",
 
 // A simple registry for caffe commands.
 typedef int (*BrewFunction)();
-typedef std::map<caffe::string, BrewFunction> BrewMap;
+typedef std::map<std::string, BrewFunction> BrewMap;
 BrewMap g_brew_map;
 
 #define RegisterBrewFunction(func) \
@@ -71,13 +71,14 @@ class __Registerer_##func { \
 __Registerer_##func g_registerer_##func; \
 }
 
-static BrewFunction GetBrewFunction(const caffe::string& name) {
+static BrewFunction GetBrewFunction(const std::string& name) {
   if (g_brew_map.contains(name)) {
     return g_brew_map[name];
   } else {
     LOG(ERROR) << "Available caffe actions:";
-    for (auto it = g_brew_map.begin(); it != g_brew_map.end(); ++it) {
-      LOG(ERROR) << "\t" << it->first;
+    for (auto& it : g_brew_map)
+    {
+      LOG(ERROR) << "\t" << it.first;
     }
     LOG(FATAL) << "Unknown action: " << name;
     return nullptr;  // not reachable, just to suppress old compiler warnings.
@@ -85,7 +86,7 @@ static BrewFunction GetBrewFunction(const caffe::string& name) {
 }
 
 // Parse GPU ids or use all available devices
-static void get_gpus(vector<int>* gpus) {
+static void get_gpus(std::vector<int>* gpus) {
   if (FLAGS_gpu == "all") {
     int count = 0;
 #ifndef CPU_ONLY
@@ -96,7 +97,7 @@ static void get_gpus(vector<int>* gpus) {
     for (int i = 0; i < count; ++i) {
       gpus->push_back(i);
     }
-  } else if (FLAGS_gpu.size()) {
+  } else if (!FLAGS_gpu.empty()) {
       for (const auto word : FLAGS_gpu | std::views::split(','))
       {
           int id;
@@ -110,7 +111,7 @@ static void get_gpus(vector<int>* gpus) {
 
 // Parse phase from flags
 caffe::Phase get_phase_from_flags(caffe::Phase default_value) {
-  if (FLAGS_phase == "")
+  if (FLAGS_phase.empty())
     return default_value;
   if (FLAGS_phase == "TRAIN")
     return caffe::TRAIN;
@@ -121,10 +122,10 @@ caffe::Phase get_phase_from_flags(caffe::Phase default_value) {
 }
 
 // Parse stages from flags
-vector<string> get_stages_from_flags() {
-  vector<string> stages;
+std::vector<std::string> get_stages_from_flags() {
+  std::vector<std::string> stages;
   for (const auto word : FLAGS_stage | std::views::split(','))
-      stages.emplace_back(std::string{ word.begin(), word.end() });
+      stages.emplace_back(word.begin(), word.end());
   return stages;
 }
 
@@ -137,10 +138,11 @@ vector<string> get_stages_from_flags() {
 // Device Query: show diagnostic information for a GPU device.
 int device_query() {
   LOG(INFO) << "Querying GPUs " << FLAGS_gpu;
-  vector<int> gpus;
+  std::vector<int> gpus;
   get_gpus(&gpus);
-  for (int i = 0; i < gpus.size(); ++i) {
-    caffe::Caffe::SetDevice(gpus[i]);
+  for (int gpu : gpus)
+  {
+    caffe::Caffe::SetDevice(gpu);
     caffe::Caffe::DeviceQuery();
   }
   return 0;
@@ -167,23 +169,24 @@ caffe::SolverAction::Enum GetRequestedAction(
 // Train / Finetune a model.
 int train() {
   CHECK_GT(FLAGS_solver.size(), 0) << "Need a solver definition to train.";
-  CHECK(!FLAGS_snapshot.size() || !FLAGS_weights.size())
+  CHECK(FLAGS_snapshot.empty() || FLAGS_weights.empty())
       << "Give a snapshot to resume training or weights to finetune "
       "but not both.";
-  vector<string> stages = get_stages_from_flags();
+  std::vector<std::string> stages = get_stages_from_flags();
 
   caffe::SolverParameter solver_param;
   caffe::ReadSolverParamsFromTextFileOrDie(FLAGS_solver, &solver_param);
 
   solver_param.mutable_train_state()->set_level(FLAGS_level);
-  for (int i = 0; i < stages.size(); i++) {
-    solver_param.mutable_train_state()->add_stage(stages[i]);
+  for (auto& stage : stages)
+  {
+    solver_param.mutable_train_state()->add_stage(stage);
   }
 
   // If the gpus flag is not provided, allow the mode and device to be set
   // in the solver prototxt.
-  if (FLAGS_gpu.size() == 0
-      && solver_param.has_solver_mode()
+  if (FLAGS_gpu.empty()
+	  && solver_param.has_solver_mode()
       && solver_param.solver_mode() == caffe::SolverParameter_SolverMode_GPU) {
       if (solver_param.has_device_id()) {
           FLAGS_gpu = "" +
@@ -193,9 +196,9 @@ int train() {
       }
   }
 
-  vector<int> gpus;
+  std::vector<int> gpus;
   get_gpus(&gpus);
-  if (gpus.size() == 0) {
+  if (gpus.empty()) {
     LOG(INFO) << "Use CPU.";
     Caffe::set_mode(Caffe::CPU);
   } else {
@@ -206,9 +209,10 @@ int train() {
     LOG(INFO) << "Using GPUs " << s.str();
 #ifndef CPU_ONLY
     cudaDeviceProp device_prop;
-    for (int i = 0; i < gpus.size(); ++i) {
-      cudaGetDeviceProperties(&device_prop, gpus[i]);
-      LOG(INFO) << "GPU " << gpus[i] << ": " << device_prop.name;
+    for (int gpu : gpus)
+    {
+      cudaGetDeviceProperties(&device_prop, gpu);
+      LOG(INFO) << "GPU " << gpu << ": " << device_prop.name;
     }
 #endif
     solver_param.set_device_id(gpus[0]);
@@ -221,19 +225,19 @@ int train() {
         GetRequestedAction(FLAGS_sigint_effect),
         GetRequestedAction(FLAGS_sighup_effect));
 
-  if (FLAGS_snapshot.size()) {
+  if (!FLAGS_snapshot.empty()) {
     solver_param.clear_weights();
-  } else if (FLAGS_weights.size()) {
+  } else if (!FLAGS_weights.empty()) {
     solver_param.clear_weights();
     solver_param.add_weights(FLAGS_weights);
   }
 
-  shared_ptr<caffe::Solver<float> >
+  std::shared_ptr<caffe::Solver<float> >
       solver(caffe::SolverRegistry<float>::CreateSolver(solver_param));
 
   solver->SetActionFunction(signal_handler.GetActionFunction());
 
-  if (FLAGS_snapshot.size()) {
+  if (!FLAGS_snapshot.empty()) {
     LOG(INFO) << "Resuming from " << FLAGS_snapshot;
     solver->Restore(FLAGS_snapshot.c_str());
   }
@@ -259,12 +263,12 @@ RegisterBrewFunction(train);
 int test() {
   CHECK_GT(FLAGS_model.size(), 0) << "Need a model definition to score.";
   CHECK_GT(FLAGS_weights.size(), 0) << "Need model weights to score.";
-  vector<string> stages = get_stages_from_flags();
+  std::vector<std::string> stages = get_stages_from_flags();
 
   // Set device id and mode
-  vector<int> gpus;
+  std::vector<int> gpus;
   get_gpus(&gpus);
-  if (gpus.size() != 0) {
+  if (!gpus.empty()) {
     LOG(INFO) << "Use GPU with device ID " << gpus[0];
 #ifndef CPU_ONLY
     cudaDeviceProp device_prop;
@@ -282,12 +286,12 @@ int test() {
   caffe_net.CopyTrainedLayersFrom(FLAGS_weights);
   LOG(INFO) << "Running for " << FLAGS_iterations << " iterations.";
 
-  vector<int> test_score_output_id;
-  vector<float> test_score;
+  std::vector<int> test_score_output_id;
+  std::vector<float> test_score;
   float loss = 0;
   for (int i = 0; i < FLAGS_iterations; ++i) {
     float iter_loss;
-    const vector<Blob<float>*>& result =
+    const std::vector<Blob<float>*>& result =
         caffe_net.Forward(&iter_loss);
     loss += iter_loss;
     int idx = 0;
@@ -332,12 +336,12 @@ RegisterBrewFunction(test);
 int time() {
   CHECK_GT(FLAGS_model.size(), 0) << "Need a model definition to time.";
   caffe::Phase phase = get_phase_from_flags(caffe::TRAIN);
-  vector<string> stages = get_stages_from_flags();
+  std::vector<std::string> stages = get_stages_from_flags();
 
   // Set device id and mode
-  vector<int> gpus;
+  std::vector<int> gpus;
   get_gpus(&gpus);
-  if (gpus.size() != 0) {
+  if (!gpus.empty()) {
     LOG(INFO) << "Use GPU with device ID " << gpus[0];
     Caffe::SetDevice(gpus[0]);
     Caffe::set_mode(Caffe::GPU);
@@ -359,10 +363,10 @@ int time() {
   LOG(INFO) << "Performing Backward";
   caffe_net.Backward();
 
-  const vector<shared_ptr<Layer<float> > >& layers = caffe_net.layers();
-  const vector<vector<Blob<float>*> >& bottom_vecs = caffe_net.bottom_vecs();
-  const vector<vector<Blob<float>*> >& top_vecs = caffe_net.top_vecs();
-  const vector<vector<bool> >& bottom_need_backward =
+  const std::vector<std::shared_ptr<Layer<float> > >& layers = caffe_net.layers();
+  const std::vector<std::vector<Blob<float>*> >& bottom_vecs = caffe_net.bottom_vecs();
+  const std::vector<std::vector<Blob<float>*> >& top_vecs = caffe_net.top_vecs();
+  const std::vector<std::vector<bool> >& bottom_need_backward =
       caffe_net.bottom_need_backward();
   LOG(INFO) << "*** Benchmark begins ***";
   LOG(INFO) << "Testing for " << FLAGS_iterations << " iterations.";
@@ -398,7 +402,7 @@ int time() {
   }
   LOG(INFO) << "Average time per layer: ";
   for (int i = 0; i < layers.size(); ++i) {
-    const caffe::string& layername = layers[i]->layer_param().name();
+    const std::string& layername = layers[i]->layer_param().name();
     LOG(INFO) << std::setfill(' ') << std::setw(10) << layername <<
       "\tforward: " << forward_time_per_layer[i] / 1000 /
       FLAGS_iterations << " ms.";
@@ -438,7 +442,7 @@ int main(int argc, char** argv) {
 #ifdef WITH_PYTHON_LAYER
     try {
 #endif
-      return GetBrewFunction(caffe::string(argv[1]))();
+      return GetBrewFunction(std::string(argv[1]))();
 #ifdef WITH_PYTHON_LAYER
     } catch (bp::error_already_set) {
       PyErr_Print();

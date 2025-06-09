@@ -11,7 +11,7 @@ namespace caffe {
 
 template <typename Dtype>
 void SoftmaxWithLossLayer<Dtype>::LayerSetUp(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   LayerParameter softmax_param(*this->layer_param_);
   softmax_param.set_type("Softmax");
@@ -39,7 +39,7 @@ void SoftmaxWithLossLayer<Dtype>::LayerSetUp(
 
 template <typename Dtype>
 void SoftmaxWithLossLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::Reshape(bottom, top);
   softmax_layer_->Reshape(softmax_bottom_vec_, softmax_top_vec_);
   softmax_axis_ =
@@ -89,7 +89,7 @@ Dtype SoftmaxWithLossLayer<Dtype>::get_normalizer(
 
 template <typename Dtype>
 void SoftmaxWithLossLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   // The forward pass computes the softmax prob values.
   softmax_layer_->Forward(softmax_bottom_vec_, softmax_top_vec_);
   const Dtype* prob_data = prob_.cpu_data();
@@ -117,8 +117,8 @@ void SoftmaxWithLossLayer<Dtype>::Forward_cpu(
 }
 
 template <typename Dtype>
-void SoftmaxWithLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void SoftmaxWithLossLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[1]) {
     LOG(FATAL) << this->type()
                << " Layer cannot backpropagate to label inputs.";
@@ -155,7 +155,7 @@ STUB_GPU(SoftmaxWithLossLayer);
 #else
 template <typename Dtype>
 void SoftmaxWithLossLayer<Dtype>::Forward_gpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
     softmax_layer_->Forward(softmax_bottom_vec_, softmax_top_vec_);
     const Dtype* prob_data = prob_.gpu_data();
     const Dtype* label = bottom[1]->gpu_data();
@@ -189,8 +189,8 @@ void SoftmaxWithLossLayer<Dtype>::Forward_gpu(
 }
 
 template <typename Dtype>
-void SoftmaxWithLossLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void SoftmaxWithLossLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
     if (propagate_down[1]) {
         LOG(FATAL) << this->type()
             << " Layer cannot backpropagate to label inputs.";

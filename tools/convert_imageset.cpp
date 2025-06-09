@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 #ifdef USE_OPENCV
   ::google::InitGoogleLogging(argv[0]);
   // Print output to stderr (while still logging)
-  FLAGS_alsologtostderr = 1;
+  FLAGS_alsologtostderr = true;
 
 #ifndef GFLAGS_GFLAGS_H_
   namespace gflags = google;
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
   const bool is_color = !FLAGS_gray;
   const bool check_size = FLAGS_check_size;
   const bool encoded = FLAGS_encoded;
-  const string encode_type = FLAGS_encode_type;
+  const std::string encode_type = FLAGS_encode_type;
 
   std::ifstream infile(argv[2]);
   std::vector<std::pair<std::string, int> > lines;
@@ -78,7 +78,7 @@ int main(int argc, char** argv) {
   while (std::getline(infile, line)) {
     pos = line.find_last_of(' ');
     label = atoi(line.substr(pos + 1).c_str());
-    lines.push_back(std::make_pair(line.substr(0, pos), label));
+    lines.emplace_back(line.substr(0, pos), label);
   }
   if (FLAGS_shuffle) {
     // randomly shuffle data
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   }
   LOG(INFO) << "A total of " << lines.size() << " images.";
 
-  if (encode_type.size() && !encoded)
+  if (!encode_type.empty() && !encoded)
     LOG(INFO) << "encode_type specified, assuming encoded=true.";
 
   int resize_height = std::max<int>(0, FLAGS_resize_height);
@@ -108,14 +108,14 @@ int main(int argc, char** argv) {
   for (int line_id = 0; line_id < lines.size(); ++line_id) {
     bool status;
     std::string enc = encode_type;
-    if (encoded && !enc.size()) {
+    if (encoded && enc.empty()) {
       // Guess the encoding type from the file name
-      string fn = lines[line_id].first;
+      std::string fn = lines[line_id].first;
       size_t p = fn.rfind('.');
-      if ( p == fn.npos )
+      if ( p == std::string::npos )
         LOG(WARNING) << "Failed to guess the encoding of '" << fn << "'";
       enc = fn.substr(p+1);
-      std::transform(enc.begin(), enc.end(), enc.begin(), ::tolower);
+      std::ranges::transform(enc, enc.begin(), ::tolower);
     }
     status = ReadImageToDatum(root_folder + lines[line_id].first,
         lines[line_id].second, resize_height, resize_width, is_color,
@@ -132,10 +132,10 @@ int main(int argc, char** argv) {
       }
     }
     // sequential
-    string key_str = caffe::format_int(line_id, 8) + "_" + lines[line_id].first;
+    std::string key_str = caffe::format_int(line_id, 8) + "_" + lines[line_id].first;
 
     // Put in db
-    string out;
+    std::string out;
     CHECK(datum.SerializeToString(&out));
     txn->Put(key_str, out);
 

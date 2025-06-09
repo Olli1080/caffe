@@ -17,12 +17,12 @@ class CAFFE_EXPORT SGDSolver : public Solver<Dtype> {
  public:
   explicit SGDSolver(const SolverParameter& param)
       : Solver<Dtype>(param) { PreSolve(); }
-  explicit SGDSolver(const string& param_file)
+  explicit SGDSolver(const std::string& param_file)
       : Solver<Dtype>(param_file) { PreSolve(); }
 
   inline const char* type() const override { return "SGD"; }
 
-  const vector<shared_ptr<Blob<Dtype> > >& history() { return history_; }
+  const std::vector<std::shared_ptr<Blob<Dtype> > >& history() { return history_; }
 
   void ApplyUpdate() override;
   Dtype GetLearningRate();
@@ -33,16 +33,16 @@ class CAFFE_EXPORT SGDSolver : public Solver<Dtype> {
   virtual void Regularize(int param_id);
   virtual void ComputeUpdateValue(int param_id, Dtype rate);
   virtual void ClipGradients();
-  void SnapshotSolverState(const string& model_filename) override;
-  virtual void SnapshotSolverStateToBinaryProto(const string& model_filename);
-  virtual void SnapshotSolverStateToHDF5(const string& model_filename);
-  void RestoreSolverStateFromHDF5(const string& state_file) override;
-  void RestoreSolverStateFromBinaryProto(const string& state_file) override;
+  void SnapshotSolverState(const std::string& model_filename) override;
+  virtual void SnapshotSolverStateToBinaryProto(const std::string& model_filename);
+  virtual void SnapshotSolverStateToHDF5(const std::string& model_filename);
+  void RestoreSolverStateFromHDF5(const std::string& state_file) override;
+  void RestoreSolverStateFromBinaryProto(const std::string& state_file) override;
   // history maintains the historical momentum data.
   // update maintains update related data and is not needed in snapshots.
   // temp maintains other information that might be needed in computation
   //   of gradients/updates and is not needed in snapshots
-  vector<shared_ptr<Blob<Dtype> > > history_, update_, temp_;
+  std::vector<std::shared_ptr<Blob<Dtype> > > history_, update_, temp_;
 
   DISABLE_COPY_AND_ASSIGN(SGDSolver);
 };
@@ -52,7 +52,7 @@ class CAFFE_EXPORT NesterovSolver : public SGDSolver<Dtype> {
  public:
   explicit NesterovSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) {}
-  explicit NesterovSolver(const string& param_file)
+  explicit NesterovSolver(const std::string& param_file)
       : SGDSolver<Dtype>(param_file) {}
 
   inline const char* type() const override { return "Nesterov"; }
@@ -68,7 +68,7 @@ class CAFFE_EXPORT AdaGradSolver : public SGDSolver<Dtype> {
  public:
   explicit AdaGradSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { constructor_sanity_check(); }
-  explicit AdaGradSolver(const string& param_file)
+  explicit AdaGradSolver(const std::string& param_file)
       : SGDSolver<Dtype>(param_file) { constructor_sanity_check(); }
 
   inline const char* type() const override { return "AdaGrad"; }
@@ -89,7 +89,7 @@ class CAFFE_EXPORT RMSPropSolver : public SGDSolver<Dtype> {
  public:
   explicit RMSPropSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { constructor_sanity_check(); }
-  explicit RMSPropSolver(const string& param_file)
+  explicit RMSPropSolver(const std::string& param_file)
       : SGDSolver<Dtype>(param_file) { constructor_sanity_check(); }
 
   inline const char* type() const override { return "RMSProp"; }
@@ -113,7 +113,7 @@ class CAFFE_EXPORT AdaDeltaSolver : public SGDSolver<Dtype> {
  public:
   explicit AdaDeltaSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { AdaDeltaPreSolve(); }
-  explicit AdaDeltaSolver(const string& param_file)
+  explicit AdaDeltaSolver(const std::string& param_file)
       : SGDSolver<Dtype>(param_file) { AdaDeltaPreSolve(); }
 
   inline const char* type() const override { return "AdaDelta"; }
@@ -138,7 +138,7 @@ class CAFFE_EXPORT AdamSolver : public SGDSolver<Dtype> {
  public:
   explicit AdamSolver(const SolverParameter& param)
       : SGDSolver<Dtype>(param) { AdamPreSolve();}
-  explicit AdamSolver(const string& param_file)
+  explicit AdamSolver(const std::string& param_file)
       : SGDSolver<Dtype>(param_file) { AdamPreSolve(); }
 
   inline const char* type() const override { return "Adam"; }

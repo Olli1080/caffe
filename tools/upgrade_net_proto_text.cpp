@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
   }
 
   NetParameter net_param;
-  string input_filename(argv[1]);
+  std::string input_filename(argv[1]);
   if (!ReadProtoFromTextFile(input_filename, &net_param)) {
     LOG(ERROR) << "Failed to parse input text file as NetParameter: "
                << input_filename;

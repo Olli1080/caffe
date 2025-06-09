@@ -23,8 +23,8 @@ template <typename Dtype>
 BaseDataLayer<Dtype>::~BaseDataLayer() = default;
 
 template <typename Dtype>
-void BaseDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void BaseDataLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   if (top.size() == 1) {
     output_labels_ = false;
   } else {
@@ -51,7 +51,7 @@ BasePrefetchingDataLayer<Dtype>::BasePrefetchingDataLayer(
 
 template <typename Dtype>
 void BasePrefetchingDataLayer<Dtype>::LayerSetUp(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   BaseDataLayer<Dtype>::LayerSetUp(bottom, top);
 
   // Before starting the prefetch thread, we make cpu_data and gpu_data
@@ -112,7 +112,7 @@ void BasePrefetchingDataLayer<Dtype>::InternalThreadEntry() {
 
 template <typename Dtype>
 void BasePrefetchingDataLayer<Dtype>::Forward_cpu(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   if (prefetch_current_) {
     prefetch_free_.push(prefetch_current_);
   }
@@ -130,7 +130,22 @@ void BasePrefetchingDataLayer<Dtype>::Forward_cpu(
 #ifdef CPU_ONLY
 STUB_GPU_FORWARD(BasePrefetchingDataLayer, Forward);
 #else
-INSTANTIATE_LAYER_GPU_FORWARD_EXTERN_NAMED(BasePrefetchingDataLayer, Forward);
+template <typename Dtype>
+void BasePrefetchingDataLayer<Dtype>::Forward_gpu(
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
+    if (prefetch_current_) {
+        prefetch_free_.push(prefetch_current_);
+    }
+    prefetch_current_ = prefetch_full_.pop("Waiting for data");
+    // Reshape to loaded data.
+    top[0]->ReshapeLike(prefetch_current_->data_);
+    top[0]->set_gpu_data(prefetch_current_->data_.mutable_gpu_data());
+    if (this->output_labels_) {
+        // Reshape to loaded labels.
+        top[1]->ReshapeLike(prefetch_current_->label_);
+        top[1]->set_gpu_data(prefetch_current_->label_.mutable_gpu_data());
+    }
+}
 #endif
 
 INSTANTIATE_CLASS(BaseDataLayer);

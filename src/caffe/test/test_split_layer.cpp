@@ -88,7 +88,7 @@ TYPED_TEST(SplitLayerTest, TestGradient) {
 class SplitLayerInsertionTest : public ::testing::Test {
  protected:
   void RunInsertionTest(
-      const string& input_param_string, const string& output_param_string) {
+      const std::string& input_param_string, const std::string& output_param_string) {
     // Test that InsertSplits called on the proto specified by
     // input_param_string results in the proto specified by
     // output_param_string.
@@ -111,7 +111,7 @@ class SplitLayerInsertionTest : public ::testing::Test {
 };
 
 TEST_F(SplitLayerInsertionTest, TestNoInsertion1) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -135,7 +135,7 @@ TEST_F(SplitLayerInsertionTest, TestNoInsertion1) {
 }
 
 TEST_F(SplitLayerInsertionTest, TestNoInsertion2) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -172,7 +172,7 @@ TEST_F(SplitLayerInsertionTest, TestNoInsertion2) {
 }
 
 TEST_F(SplitLayerInsertionTest, TestNoInsertionImageNet) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'CaffeNet' "
       "layer { "
       "  name: 'data' "
@@ -527,7 +527,7 @@ TEST_F(SplitLayerInsertionTest, TestNoInsertionImageNet) {
 }
 
 TEST_F(SplitLayerInsertionTest, TestNoInsertionWithInPlace) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -557,7 +557,7 @@ TEST_F(SplitLayerInsertionTest, TestNoInsertionWithInPlace) {
 }
 
 TEST_F(SplitLayerInsertionTest, TestLossInsertion) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'UnsharedWeightsNetwork' "
       "force_backward: true "
       "layer { "
@@ -612,7 +612,7 @@ TEST_F(SplitLayerInsertionTest, TestLossInsertion) {
       "  bottom: 'innerproduct1' "
       "  bottom: 'innerproduct2' "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'UnsharedWeightsNetwork' "
       "force_backward: true "
       "layer { "
@@ -686,7 +686,7 @@ TEST_F(SplitLayerInsertionTest, TestLossInsertion) {
 }
 
 TEST_F(SplitLayerInsertionTest, TestInsertion) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -724,7 +724,7 @@ TEST_F(SplitLayerInsertionTest, TestInsertion) {
       "  bottom: 'innerprod2' "
       "  bottom: 'innerprod3' "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -781,7 +781,7 @@ TEST_F(SplitLayerInsertionTest, TestInsertion) {
 }
 
 TEST_F(SplitLayerInsertionTest, TestInsertionTwoTop) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -825,7 +825,7 @@ TEST_F(SplitLayerInsertionTest, TestInsertionTwoTop) {
       "  bottom: 'innerprod2' "
       "  bottom: 'innerprod4' "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -887,7 +887,7 @@ TEST_F(SplitLayerInsertionTest, TestInsertionTwoTop) {
 }
 
 TEST_F(SplitLayerInsertionTest, TestWithInPlace) {
-  const string& input_proto =
+  const std::string& input_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "
@@ -925,7 +925,7 @@ TEST_F(SplitLayerInsertionTest, TestWithInPlace) {
       "  bottom: 'innerprod2' "
       "  bottom: 'data' "
       "} ";
-  const string& expected_output_proto =
+  const std::string& expected_output_proto =
       "name: 'TestNetwork' "
       "layer { "
       "  name: 'data' "

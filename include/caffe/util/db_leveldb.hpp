@@ -32,7 +32,7 @@ class LevelDBCursor : public Cursor {
 class LevelDBTransaction : public Transaction {
  public:
   explicit LevelDBTransaction(leveldb::DB* db) : db_(db) { CHECK_NOTNULL(db_); }
-  virtual void Put(const string& key, const string& value) {
+  virtual void Put(const std::string& key, const std::string& value) {
     batch_.Put(key, value);
   }
   virtual void Commit() {
@@ -52,7 +52,7 @@ class LevelDB : public DB {
  public:
   LevelDB() : db_(NULL) { }
   virtual ~LevelDB() { Close(); }
-  virtual void Open(const string& source, Mode mode);
+  virtual void Open(const std::string& source, Mode mode);
   virtual void Close() {
     if (db_ != NULL) {
       delete db_;

@@ -94,12 +94,12 @@ bool ReadProtoFromBinaryFile(const char* filename, Message* proto) {
 }
 
 void WriteProtoToBinaryFile(const Message& proto, const char* filename) {
-  fstream output(filename, ios::out | ios::trunc | ios::binary);
+  std::fstream output(filename, std::ios::out | std::ios::trunc | std::ios::binary);
   CHECK(proto.SerializeToOstream(&output));
 }
 
 #ifdef USE_OPENCV
-cv::Mat ReadImageToCVMat(const string& filename,
+cv::Mat ReadImageToCVMat(const std::string& filename,
     const int height, const int width, const bool is_color) {
   cv::Mat cv_img;
   int cv_read_flag = (is_color ? cv::IMREAD_COLOR :
@@ -117,17 +117,17 @@ cv::Mat ReadImageToCVMat(const string& filename,
   return cv_img;
 }
 
-cv::Mat ReadImageToCVMat(const string& filename,
+cv::Mat ReadImageToCVMat(const std::string& filename,
     const int height, const int width) {
   return ReadImageToCVMat(filename, height, width, true);
 }
 
-cv::Mat ReadImageToCVMat(const string& filename,
+cv::Mat ReadImageToCVMat(const std::string& filename,
     const bool is_color) {
   return ReadImageToCVMat(filename, 0, 0, is_color);
 }
 
-cv::Mat ReadImageToCVMat(const string& filename) {
+cv::Mat ReadImageToCVMat(const std::string& filename) {
   return ReadImageToCVMat(filename, 0, 0, true);
 }
 
@@ -145,7 +145,7 @@ static bool matchExt(const std::string & fn,
   return false;
 }
 
-bool ReadImageToDatum(const string& filename, const int label,
+bool ReadImageToDatum(const std::string& filename, const int label,
     const int height, const int width, const bool is_color,
     const std::string & encoding, Datum* datum) {
   cv::Mat cv_img = ReadImageToCVMat(filename, height, width, is_color);
@@ -171,13 +171,13 @@ bool ReadImageToDatum(const string& filename, const int label,
 }
 #endif  // USE_OPENCV
 
-bool ReadFileToDatum(const string& filename, const int label,
+bool ReadFileToDatum(const std::string& filename, const int label,
     Datum* datum) {
-  fstream file(filename.c_str(), ios::in|ios::binary|ios::ate);
+  std::fstream file(filename.c_str(), std::ios::in| std::ios::binary| std::ios::ate);
   if (file.is_open()) {
 	const std::streampos size = file.tellg();
     std::string buffer(size, ' ');
-    file.seekg(0, ios::beg);
+    file.seekg(0, std::ios::beg);
     file.read(buffer.data(), size);
     file.close();
     datum->set_data(buffer);
@@ -192,7 +192,7 @@ bool ReadFileToDatum(const string& filename, const int label,
 #ifdef USE_OPENCV
 cv::Mat DecodeDatumToCVMatNative(const Datum& datum) {
 	CHECK(datum.encoded()) << "Datum not encoded";
-  const string& data = datum.data();
+  const std::string& data = datum.data();
   std::vector<char> vec_data(data.c_str(), data.c_str() + data.size());
   cv::Mat cv_img = cv::imdecode(vec_data, -1);
   if (!cv_img.data) {
@@ -202,7 +202,7 @@ cv::Mat DecodeDatumToCVMatNative(const Datum& datum) {
 }
 cv::Mat DecodeDatumToCVMat(const Datum& datum, bool is_color) {
 	CHECK(datum.encoded()) << "Datum not encoded";
-  const string& data = datum.data();
+  const std::string& data = datum.data();
   std::vector<char> vec_data(data.c_str(), data.c_str() + data.size());
   int cv_read_flag = (is_color ? cv::IMREAD_COLOR :
     cv::IMREAD_GRAYSCALE);

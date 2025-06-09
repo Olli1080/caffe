@@ -50,7 +50,7 @@ class DataTransformer {
    *    This is destination blob. It can be part of top blob's data if
    *    set_cpu_data() is used. See memory_layer.cpp for an example.
    */
-  void Transform(const vector<Datum> & datum_vector,
+  void Transform(const std::vector<Datum> & datum_vector,
                 Blob<Dtype>* transformed_blob);
 
 #ifdef USE_OPENCV
@@ -64,7 +64,7 @@ class DataTransformer {
    *    This is destination blob. It can be part of top blob's data if
    *    set_cpu_data() is used. See memory_layer.cpp for an example.
    */
-  void Transform(const vector<cv::Mat> & mat_vector,
+  void Transform(const std::vector<cv::Mat> & mat_vector,
                 Blob<Dtype>* transformed_blob);
 
   /**
@@ -100,7 +100,7 @@ class DataTransformer {
    * @param datum
    *    Datum containing the data to be transformed.
    */
-  vector<int> InferBlobShape(const Datum& datum);
+  std::vector<int> InferBlobShape(const Datum& datum);
   /**
    * @brief Infers the shape of transformed_blob will have when
    *    the transformation is applied to the data.
@@ -109,7 +109,7 @@ class DataTransformer {
    * @param datum_vector
    *    A vector of Datum containing the data to be transformed.
    */
-  vector<int> InferBlobShape(const vector<Datum> & datum_vector);
+  std::vector<int> InferBlobShape(const std::vector<Datum> & datum_vector);
   /**
    * @brief Infers the shape of transformed_blob will have when
    *    the transformation is applied to the data.
@@ -119,7 +119,7 @@ class DataTransformer {
    *    A vector of Mat containing the data to be transformed.
    */
 #ifdef USE_OPENCV
-  vector<int> InferBlobShape(const vector<cv::Mat> & mat_vector);
+  std::vector<int> InferBlobShape(const std::vector<cv::Mat> & mat_vector);
   /**
    * @brief Infers the shape of transformed_blob will have when
    *    the transformation is applied to the data.
@@ -127,7 +127,7 @@ class DataTransformer {
    * @param cv_img
    *    cv::Mat containing the data to be transformed.
    */
-  vector<int> InferBlobShape(const cv::Mat& cv_img);
+  std::vector<int> InferBlobShape(const cv::Mat& cv_img);
 #endif  // USE_OPENCV
 
  protected:
@@ -146,10 +146,10 @@ class DataTransformer {
   std::unique_ptr<TransformationParameter> param_;
 
 
-  shared_ptr<Caffe::RNG> rng_;
+  std::shared_ptr<Caffe::RNG> rng_;
   Phase phase_;
   Blob<Dtype> data_mean_;
-  vector<Dtype> mean_values_;
+  std::vector<Dtype> mean_values_;
 };
 
 }  // namespace caffe

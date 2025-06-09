@@ -18,8 +18,8 @@ class DataLayer : public BasePrefetchingDataLayer<Dtype> {
  public:
   explicit DataLayer(const LayerParameter& param);
   ~DataLayer() override;
-  void DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                      const vector<Blob<Dtype>*>& top) override;
+  void DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                      const std::vector<Blob<Dtype>*>& top) override;
   [[nodiscard]] const char* type() const override { return "Data"; }
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 0; }
   [[nodiscard]] int MinTopBlobs() const override { return 1; }
@@ -30,8 +30,8 @@ class DataLayer : public BasePrefetchingDataLayer<Dtype> {
   bool Skip();
   void load_batch(Batch<Dtype>* batch) override;
 
-  shared_ptr<db::DB> db_;
-  shared_ptr<db::Cursor> cursor_;
+  std::shared_ptr<db::DB> db_;
+  std::shared_ptr<db::Cursor> cursor_;
   uint64_t offset_;
 };
 

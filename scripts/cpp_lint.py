@@ -2275,7 +2275,7 @@ def CheckForNonStandardConstructs(filename, clean_lines, linenum,
     # type_name = r'\w+((\s*::\s*\w+)|(\s*<\s*\w+?\s*>))?'
     # r'\s*const\s*' + type_name + '\s*&\s*\w+\s*;'
     error(filename, linenum, 'runtime/member_string_references', 2,
-          'const string& members are dangerous. It is much better to use '
+          'const std::string& members are dangerous. It is much better to use '
           'alternatives, such as pointers or simple constants.')
 
   # Everything else in this function operates on class declarations.

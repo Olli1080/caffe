@@ -9,8 +9,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void SliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void SliceLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const SliceParameter& slice_param = this->layer_param_->slice_param();
   CHECK(!(slice_param.has_axis() && slice_param.has_slice_dim()))
       << "Either axis or slice_dim should be specified; not both.";
@@ -20,8 +20,8 @@ void SliceLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void SliceLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const int num_axes = bottom[0]->num_axes();
   const SliceParameter& slice_param = this->layer_param_->slice_param();
   if (slice_param.has_slice_dim()) {
@@ -35,7 +35,7 @@ void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   } else {
     slice_axis_ = bottom[0]->CanonicalAxisIndex(slice_param.axis());
   }
-  vector<int> top_shape = bottom[0]->shape();
+  std::vector<int> top_shape = bottom[0]->shape();
   const int bottom_slice_axis = bottom[0]->shape(slice_axis_);
   num_slices_ = bottom[0]->count(0, slice_axis_);
   slice_size_ = bottom[0]->count(slice_axis_ + 1);
@@ -46,7 +46,7 @@ void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
         << "slice axis: " << slice_axis_
         << ", bottom[0] shape: " << bottom[0]->shape_string();
     int prev = 0;
-    vector<int> slices;
+    std::vector<int> slices;
     for (int i : slice_point_)
     {
       CHECK_GT(i, prev);
@@ -77,8 +77,8 @@ void SliceLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SliceLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void SliceLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   if (top.size() == 1) { return; }
   int offset_slice_axis = 0;
   const Dtype* bottom_data = bottom[0]->cpu_data();
@@ -98,8 +98,8 @@ void SliceLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void SliceLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void SliceLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
   if (!propagate_down[0] || top.size() == 1) { return; }
   int offset_slice_axis = 0;
   Dtype* bottom_diff = bottom[0]->mutable_cpu_diff();

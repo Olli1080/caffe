@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void CuDNNSoftmaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void CuDNNSoftmaxLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   SoftmaxLayer<Dtype>::LayerSetUp(bottom, top);
   // Initialize CUDNN.
   CUDNN_CHECK(cudnnCreate(&handle_));
@@ -19,8 +19,8 @@ void CuDNNSoftmaxLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CuDNNSoftmaxLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void CuDNNSoftmaxLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   SoftmaxLayer<Dtype>::Reshape(bottom, top);
   int N = this->outer_num_;
   int K = bottom[0]->shape(this->softmax_axis_);
@@ -43,8 +43,8 @@ CuDNNSoftmaxLayer<Dtype>::~CuDNNSoftmaxLayer() {
 STUB_GPU(CuDNNSoftmaxLayer);
 #else
 template <typename Dtype>
-void CuDNNSoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void CuDNNSoftmaxLayer<Dtype>::Forward_gpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
     const Dtype* bottom_data = bottom[0]->gpu_data();
     Dtype* top_data = top[0]->mutable_gpu_data();
     CUDNN_CHECK(cudnnSoftmaxForward(handle_, CUDNN_SOFTMAX_ACCURATE,
@@ -56,8 +56,8 @@ void CuDNNSoftmaxLayer<Dtype>::Forward_gpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void CuDNNSoftmaxLayer<Dtype>::Backward_gpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void CuDNNSoftmaxLayer<Dtype>::Backward_gpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
     if (propagate_down[0]) {
         const Dtype* top_data = top[0]->gpu_data();
         const Dtype* top_diff = top[0]->gpu_diff();

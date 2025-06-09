@@ -43,6 +43,6 @@ template void DropoutLayer<double>::forward_kernel(int, const double*, unsigned 
 
 template void DropoutLayer<float>::backward_kernel(int, const float*, const unsigned int*, float*);
 template void DropoutLayer<double>::backward_kernel(int, const double*, const unsigned int*, double*);
-INSTANTIATE_LAYER_GPU_FUNCS(DropoutLayer);
+//INSTANTIATE_LAYER_GPU_FUNCS(DropoutLayer);
 
 }  // namespace caffe

@@ -28,12 +28,12 @@ class CAFFE_EXPORT Blob {
   Blob()
        : data_(), diff_(), count_(0), capacity_(0) {}
 
-  /// @brief Deprecated; use <code>Blob(const vector<int>& shape)</code>.
+  /// @brief Deprecated; use <code>Blob(const std::vector<int>& shape)</code>.
   explicit Blob(int num, int channels, int height,
                 int width);
-  explicit Blob(const vector<int>& shape);
+  explicit Blob(const std::vector<int>& shape);
 
-  /// @brief Deprecated; use <code>Reshape(const vector<int>& shape)</code>.
+  /// @brief Deprecated; use <code>Reshape(const std::vector<int>& shape)</code>.
   void Reshape(int num, int channels, int height,
                int width);
   /**
@@ -50,12 +50,12 @@ class CAFFE_EXPORT Blob {
    * an error; either Net::Forward or Net::Reshape need to be called to
    * propagate the new input shape to higher layers.
    */
-  void Reshape(const vector<int>& shape);
+  void Reshape(const std::vector<int>& shape);
   void Reshape(const BlobShape& shape);
   void ReshapeLike(const Blob& other);
 
-  [[nodiscard]] string shape_string() const {
-    ostringstream stream;
+  [[nodiscard]] std::string shape_string() const {
+    std::ostringstream stream;
     for (int i : shape_)
     {
       stream << i << " ";
@@ -64,7 +64,7 @@ class CAFFE_EXPORT Blob {
     return stream.str();
   }
 
-  [[nodiscard]] const vector<int>& shape() const { return shape_; }
+  [[nodiscard]] const std::vector<int>& shape() const { return shape_; }
   /**
    * @brief Returns the dimension of the index-th axis (or the negative index-th
    *        axis from the end, if index is negative).
@@ -170,7 +170,7 @@ class CAFFE_EXPORT Blob {
     return ((n * channels() + c) * height() + h) * width() + w;
   }
 
-  [[nodiscard]] int offset(const vector<int>& indices) const {
+  [[nodiscard]] int offset(const std::vector<int>& indices) const {
     CHECK_LE(indices.size(), num_axes());
     int offset = 0;
     for (int i = 0; i < num_axes(); ++i) {
@@ -205,20 +205,20 @@ class CAFFE_EXPORT Blob {
     return cpu_diff()[offset(n, c, h, w)];
   }
 
-  [[nodiscard]] Dtype data_at(const vector<int>& index) const {
+  [[nodiscard]] Dtype data_at(const std::vector<int>& index) const {
     return cpu_data()[offset(index)];
   }
 
-  [[nodiscard]] Dtype diff_at(const vector<int>& index) const {
+  [[nodiscard]] Dtype diff_at(const std::vector<int>& index) const {
     return cpu_diff()[offset(index)];
   }
 
-  [[nodiscard]] const shared_ptr<SyncedMemory>& data() const {
+  [[nodiscard]] const std::shared_ptr<SyncedMemory>& data() const {
     CHECK(data_);
     return data_;
   }
 
-  [[nodiscard]] const shared_ptr<SyncedMemory>& diff() const {
+  [[nodiscard]] const std::shared_ptr<SyncedMemory>& diff() const {
     CHECK(diff_);
     return diff_;
   }
@@ -274,10 +274,10 @@ class CAFFE_EXPORT Blob {
   bool ShapeEquals(const BlobProto& other);
 
  protected:
-  shared_ptr<SyncedMemory> data_;
-  shared_ptr<SyncedMemory> diff_;
-  shared_ptr<SyncedMemory> shape_data_;
-  vector<int> shape_;
+  std::shared_ptr<SyncedMemory> data_;
+  std::shared_ptr<SyncedMemory> diff_;
+  std::shared_ptr<SyncedMemory> shape_data_;
+  std::vector<int> shape_;
   int count_;
   int capacity_;
 

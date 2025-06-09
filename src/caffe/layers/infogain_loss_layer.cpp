@@ -12,7 +12,7 @@ namespace caffe {
 
 template <typename Dtype>
 void InfogainLossLayer<Dtype>::LayerSetUp(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::LayerSetUp(bottom, top);
   // internal softmax layer
   LayerParameter softmax_layer_param(*this->layer_param_);
@@ -51,7 +51,7 @@ void InfogainLossLayer<Dtype>::LayerSetUp(
 
 template <typename Dtype>
 void InfogainLossLayer<Dtype>::Reshape(
-    const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) {
+    const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) {
   LossLayer<Dtype>::Reshape(bottom, top);
   softmax_layer_->Reshape(softmax_bottom_vec_, softmax_top_vec_);
   infogain_axis_ =
@@ -72,7 +72,7 @@ void InfogainLossLayer<Dtype>::Reshape(
     infogain = bottom[2];
   }
   CHECK_EQ(infogain->count(), num_labels_*num_labels_);
-  sum_rows_H_.Reshape(vector<int>(1, num_labels_));
+  sum_rows_H_.Reshape(std::vector<int>(1, num_labels_));
   if (bottom.size() == 2) {
     // H is provided as a parameter and will not change. sum rows once
     sum_rows_of_H(infogain);
@@ -128,8 +128,8 @@ void InfogainLossLayer<Dtype>::sum_rows_of_H(const Blob<Dtype>* H) {
 }
 
 template <typename Dtype>
-void InfogainLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-    const vector<Blob<Dtype>*>& top) {
+void InfogainLossLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+    const std::vector<Blob<Dtype>*>& top) {
   // The forward pass computes the softmax prob values.
   softmax_layer_->Forward(softmax_bottom_vec_, softmax_top_vec_);
   const Dtype* prob_data = prob_.cpu_data();
@@ -167,9 +167,9 @@ void InfogainLossLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void InfogainLossLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-    const vector<bool>& propagate_down,
-    const vector<Blob<Dtype>*>& bottom) {
+void InfogainLossLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+    const std::vector<bool>& propagate_down,
+    const std::vector<Blob<Dtype>*>& bottom) {
   if (propagate_down[1]) {
     LOG(FATAL) << this->type()
                << " Layer cannot backpropagate to label inputs.";

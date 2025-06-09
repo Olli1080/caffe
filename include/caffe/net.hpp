@@ -38,9 +38,9 @@ class CAFFE_EXPORT Net {
    * @brief Run Forward and return the result.
    *
    */
-  const vector<Blob<Dtype>*>& Forward(Dtype* loss = nullptr);
+  const std::vector<Blob<Dtype>*>& Forward(Dtype* loss = nullptr);
   /// @brief DEPRECATED; use Forward() instead.
-  const vector<Blob<Dtype>*>& ForwardPrefilled(Dtype* loss = nullptr) {
+  const std::vector<Blob<Dtype>*>& ForwardPrefilled(Dtype* loss = nullptr) {
     LOG_EVERY_N(WARNING, 1000) << "DEPRECATED: ForwardPrefilled() "
         << "will be removed in a future version. Use Forward().";
     return Forward(loss);
@@ -58,7 +58,7 @@ class CAFFE_EXPORT Net {
   Dtype ForwardFrom(int start);
   Dtype ForwardTo(int end);
   /// @brief DEPRECATED; set input blobs then use Forward() instead.
-  const vector<Blob<Dtype>*>& Forward(const vector<Blob<Dtype>* > & bottom,
+  const std::vector<Blob<Dtype>*>& Forward(const std::vector<Blob<Dtype>* > & bottom,
       Dtype* loss = nullptr);
 
   /**
@@ -114,26 +114,26 @@ class CAFFE_EXPORT Net {
    *        another Net.
    */
   void CopyTrainedLayersFrom(const NetParameter& param);
-  void CopyTrainedLayersFrom(const string& trained_filename);
-  void CopyTrainedLayersFromBinaryProto(const string& trained_filename);
-  void CopyTrainedLayersFromHDF5(const string& trained_filename);
+  void CopyTrainedLayersFrom(const std::string& trained_filename);
+  void CopyTrainedLayersFromBinaryProto(const std::string& trained_filename);
+  void CopyTrainedLayersFromHDF5(const std::string& trained_filename);
   /// @brief Writes the net to a proto.
   void ToProto(NetParameter* param, bool write_diff = false) const;
   /// @brief Writes the net to an HDF5 file.
-  void ToHDF5(const string& filename, bool write_diff = false) const;
+  void ToHDF5(const std::string& filename, bool write_diff = false) const;
 
   /// @brief returns the network name.
-  [[nodiscard]] const string& name() const { return name_; }
+  [[nodiscard]] const std::string& name() const { return name_; }
   /// @brief returns the layer names
-  [[nodiscard]] const vector<string>& layer_names() const { return layer_names_; }
+  [[nodiscard]] const std::vector<std::string>& layer_names() const { return layer_names_; }
   /// @brief returns the blob names
-  [[nodiscard]] const vector<string>& blob_names() const { return blob_names_; }
+  [[nodiscard]] const std::vector<std::string>& blob_names() const { return blob_names_; }
   /// @brief returns the blobs
-  [[nodiscard]] const vector<shared_ptr<Blob<Dtype> > >& blobs() const {
+  [[nodiscard]] const std::vector<std::shared_ptr<Blob<Dtype> > >& blobs() const {
     return blobs_;
   }
   /// @brief returns the layers
-  [[nodiscard]] const vector<shared_ptr<Layer<Dtype> > >& layers() const {
+  [[nodiscard]] const std::vector<std::shared_ptr<Layer<Dtype> > >& layers() const {
     return layers_;
   }
   /// @brief returns the phase: TRAIN or TEST
@@ -142,93 +142,93 @@ class CAFFE_EXPORT Net {
    * @brief returns the bottom vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
    */
-  [[nodiscard]] const vector<vector<Blob<Dtype>*> >& bottom_vecs() const {
+  [[nodiscard]] const std::vector<std::vector<Blob<Dtype>*> >& bottom_vecs() const {
     return bottom_vecs_;
   }
   /**
    * @brief returns the top vecs for each layer -- usually you won't
    *        need this unless you do per-layer checks such as gradients.
    */
-  [[nodiscard]] const vector<vector<Blob<Dtype>*> >& top_vecs() const {
+  [[nodiscard]] const std::vector<std::vector<Blob<Dtype>*> >& top_vecs() const {
     return top_vecs_;
   }
   /// @brief returns the ids of the top blobs of layer i
-  [[nodiscard]] const vector<int> & top_ids(int i) const {
+  [[nodiscard]] const std::vector<int> & top_ids(int i) const {
     CHECK_GE(i, 0) << "Invalid layer id";
     CHECK_LT(i, top_id_vecs_.size()) << "Invalid layer id";
     return top_id_vecs_[i];
   }
   /// @brief returns the ids of the bottom blobs of layer i
-  [[nodiscard]] const vector<int> & bottom_ids(int i) const {
+  [[nodiscard]] const std::vector<int> & bottom_ids(int i) const {
     CHECK_GE(i, 0) << "Invalid layer id";
     CHECK_LT(i, bottom_id_vecs_.size()) << "Invalid layer id";
     return bottom_id_vecs_[i];
   }
 
-  [[nodiscard]] const vector<vector<bool> >& bottom_need_backward() const {
+  [[nodiscard]] const std::vector<std::vector<bool> >& bottom_need_backward() const {
     return bottom_need_backward_;
   }
 
-  [[nodiscard]] const vector<Dtype>& blob_loss_weights() const {
+  [[nodiscard]] const std::vector<Dtype>& blob_loss_weights() const {
     return blob_loss_weights_;
   }
 
-  [[nodiscard]] const vector<bool>& layer_need_backward() const {
+  [[nodiscard]] const std::vector<bool>& layer_need_backward() const {
     return layer_need_backward_;
   }
   /// @brief returns the parameters
-  [[nodiscard]] const vector<shared_ptr<Blob<Dtype> > >& params() const {
+  [[nodiscard]] const std::vector<std::shared_ptr<Blob<Dtype> > >& params() const {
     return params_;
   }
 
-  [[nodiscard]] const vector<Blob<Dtype>*>& learnable_params() const {
+  [[nodiscard]] const std::vector<Blob<Dtype>*>& learnable_params() const {
     return learnable_params_;
   }
   /// @brief returns the learnable parameter learning rate multipliers
-  [[nodiscard]] const vector<float>& params_lr() const { return params_lr_; }
-  [[nodiscard]] const vector<bool>& has_params_lr() const { return has_params_lr_; }
+  [[nodiscard]] const std::vector<float>& params_lr() const { return params_lr_; }
+  [[nodiscard]] const std::vector<bool>& has_params_lr() const { return has_params_lr_; }
   /// @brief returns the learnable parameter decay multipliers
-  [[nodiscard]] const vector<float>& params_weight_decay() const {
+  [[nodiscard]] const std::vector<float>& params_weight_decay() const {
     return params_weight_decay_;
   }
 
-  [[nodiscard]] const vector<bool>& has_params_decay() const {
+  [[nodiscard]] const std::vector<bool>& has_params_decay() const {
     return has_params_decay_;
   }
 
-  [[nodiscard]] const map<string, int>& param_names_index() const {
+  [[nodiscard]] const std::map<std::string, int>& param_names_index() const {
     return param_names_index_;
   }
 
-  [[nodiscard]] const vector<int>& param_owners() const { return param_owners_; }
+  [[nodiscard]] const std::vector<int>& param_owners() const { return param_owners_; }
 
-  [[nodiscard]] const vector<string>& param_display_names() const {
+  [[nodiscard]] const std::vector<std::string>& param_display_names() const {
     return param_display_names_;
   }
   /// @brief Input and output blob numbers
   [[nodiscard]] int num_inputs() const { return static_cast<int>(net_input_blobs_.size()); }
   [[nodiscard]] int num_outputs() const { return static_cast<int>(net_output_blobs_.size()); }
 
-  [[nodiscard]] const vector<Blob<Dtype>*>& input_blobs() const {
+  [[nodiscard]] const std::vector<Blob<Dtype>*>& input_blobs() const {
     return net_input_blobs_;
   }
 
-  [[nodiscard]] const vector<Blob<Dtype>*>& output_blobs() const {
+  [[nodiscard]] const std::vector<Blob<Dtype>*>& output_blobs() const {
     return net_output_blobs_;
   }
 
-  [[nodiscard]] const vector<int>& input_blob_indices() const {
+  [[nodiscard]] const std::vector<int>& input_blob_indices() const {
     return net_input_blob_indices_;
   }
 
-  [[nodiscard]] const vector<int>& output_blob_indices() const {
+  [[nodiscard]] const std::vector<int>& output_blob_indices() const {
     return net_output_blob_indices_;
   }
 
-  [[nodiscard]] bool has_blob(const string& blob_name) const;
-  shared_ptr<Blob<Dtype> > blob_by_name(const string& blob_name) const;
-  [[nodiscard]] bool has_layer(const string& layer_name) const;
-  const shared_ptr<Layer<Dtype> > layer_by_name(const string& layer_name) const;
+  [[nodiscard]] bool has_blob(const std::string& blob_name) const;
+  std::shared_ptr<Blob<Dtype> > blob_by_name(const std::string& blob_name) const;
+  [[nodiscard]] bool has_layer(const std::string& layer_name) const;
+  const std::shared_ptr<Layer<Dtype> > layer_by_name(const std::string& layer_name) const;
 
   void set_debug_info(const bool value) { debug_info_ = value; }
 
@@ -241,7 +241,7 @@ class CAFFE_EXPORT Net {
       NetParameter* param_filtered);
   /// @brief return whether NetState state meets NetStateRule rule
   static bool StateMeetsRule(const NetState& state, const NetStateRule& rule,
-      const string& layer_name);
+      const std::string& layer_name);
 
   // Invoked at specific points during an iteration
   class Callback {
@@ -276,12 +276,12 @@ class CAFFE_EXPORT Net {
   // Helpers for Init.
   /// @brief Append a new top blob to the net.
   void AppendTop(const NetParameter& param, int layer_id,
-                 int top_id, set<string>* available_blobs,
-                 map<string, int>* blob_name_to_idx);
+                 int top_id, std::set<std::string>* available_blobs,
+                 std::map<std::string, int>* blob_name_to_idx);
   /// @brief Append a new bottom blob to the net.
   int AppendBottom(const NetParameter& param, int layer_id,
-                   int bottom_id, set<string>* available_blobs,
-                   map<string, int>* blob_name_to_idx);
+                   int bottom_id, std::set<std::string>* available_blobs,
+                   std::map<std::string, int>* blob_name_to_idx);
   /// @brief Append a new parameter blob to the net.
   void AppendParam(const NetParameter& param, int layer_id,
                    int param_id);

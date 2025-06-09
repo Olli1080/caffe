@@ -37,8 +37,8 @@ WindowDataLayer<Dtype>::~WindowDataLayer<Dtype>() {
 }
 
 template <typename Dtype>
-void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void WindowDataLayer<Dtype>::DataLayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   // LayerSetUp runs through the window_file and creates two structures
   // that hold windows: one for foreground (object) windows and one
   // for background (non-object) windows. We use an overlap threshold
@@ -67,7 +67,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << this->layer_param_->window_data_param().root_folder();
 
   cache_images_ = this->layer_param_->window_data_param().cache_images();
-  string root_folder = this->layer_param_->window_data_param().root_folder();
+  std::string root_folder = this->layer_param_->window_data_param().root_folder();
 
   const bool prefetch_needs_rand =
       this->transform_param_->mirror() ||
@@ -83,10 +83,10 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   CHECK(infile.good()) << "Failed to open window file "
       << this->layer_param_->window_data_param().source() << std::endl;
 
-  map<int, int> label_hist;
+  std::map<int, int> label_hist;
   label_hist.insert(std::make_pair(0, 0));
 
-  string hashtag;
+  std::string hashtag;
   int image_index, channels;
   if (!(infile >> hashtag >> image_index)) {
     LOG(FATAL) << "Window file is empty";
@@ -94,11 +94,11 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   do {
     CHECK_EQ(hashtag, "#");
     // read image path
-    string image_path;
+    std::string image_path;
     infile >> image_path;
     image_path = root_folder + image_path;
     // read image dimensions
-    vector<int> image_size(3);
+    std::vector<int> image_size(3);
     infile >> image_size[0] >> image_size[1] >> image_size[2];
     channels = image_size[0];
     image_database_.emplace_back(image_path, image_size);
@@ -123,7 +123,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       float overlap;
       infile >> label >> overlap >> x1 >> y1 >> x2 >> y2;
 
-      vector<float> window(WindowDataLayer::NUM);
+      std::vector<float> window(WindowDataLayer::NUM);
       window[WindowDataLayer::IMAGE_INDEX] = image_index;
       window[WindowDataLayer::LABEL] = label;
       window[WindowDataLayer::OVERLAP] = overlap;
@@ -160,7 +160,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
 
   LOG(INFO) << "Number of images: " << image_index+1;
 
-  for (map<int, int>::iterator it = label_hist.begin();
+  for (std::map<int, int>::iterator it = label_hist.begin();
       it != label_hist.end(); ++it) {
     LOG(INFO) << "class " << it->first << " has " << label_hist[it->first]
               << " samples";
@@ -185,7 +185,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
       << top[0]->channels() << "," << top[0]->height() << ","
       << top[0]->width();
   // label
-  vector<int> label_shape(1, batch_size);
+  std::vector<int> label_shape(1, batch_size);
   top[1]->Reshape(label_shape);
   for (int i = 0; i < this->prefetch_.size(); ++i) {
     this->prefetch_[i]->label_.Reshape(label_shape);
@@ -195,7 +195,7 @@ void WindowDataLayer<Dtype>::DataLayerSetUp(const vector<Blob<Dtype>*>& bottom,
   has_mean_file_ = this->transform_param_->has_mean_file();
   has_mean_values_ = this->transform_param_->mean_value_size() > 0;
   if (has_mean_file_) {
-    const string& mean_file =
+    const std::string& mean_file =
           this->transform_param_->mean_file();
     LOG(INFO) << "Loading mean file from: " << mean_file;
     BlobProto blob_proto;
@@ -257,7 +257,7 @@ void WindowDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
     mean_height = this->data_mean_.height();
   }
   cv::Size cv_crop_size(crop_size, crop_size);
-  const string& crop_mode = this->layer_param_->window_data_param().crop_mode();
+  const std::string& crop_mode = this->layer_param_->window_data_param().crop_mode();
 
   bool use_square = (crop_mode == "square") ? true : false;
 
@@ -278,19 +278,19 @@ void WindowDataLayer<Dtype>::load_batch(Batch<Dtype>* batch) {
       // sample a window
       timer.Start();
       const unsigned int rand_index = PrefetchRand();
-      vector<float> window = (is_fg) ?
+      std::vector<float> window = (is_fg) ?
           fg_windows_[rand_index % fg_windows_.size()] :
           bg_windows_[rand_index % bg_windows_.size()];
 
       bool do_mirror = mirror && PrefetchRand() % 2;
 
       // load the image containing the window
-      pair<std::string, vector<int> > image =
+      std::pair<std::string, std::vector<int> > image =
           image_database_[window[WindowDataLayer<Dtype>::IMAGE_INDEX]];
 
       cv::Mat cv_img;
       if (this->cache_images_) {
-        pair<std::string, Datum> image_cached =
+        std::pair<std::string, Datum> image_cached =
           image_database_cache_[window[WindowDataLayer<Dtype>::IMAGE_INDEX]];
         cv_img = DecodeDatumToCVMat(image_cached.second, true);
       } else {

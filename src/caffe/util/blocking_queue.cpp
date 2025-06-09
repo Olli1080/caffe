@@ -43,7 +43,7 @@ bool BlockingQueue<T>::try_pop(T* t) {
 }
 
 template<typename T>
-T BlockingQueue<T>::pop(const string& log_on_wait) {
+T BlockingQueue<T>::pop(const std::string& log_on_wait) {
   std::unique_lock lock(sync_->mutex_);
 
   while (queue_.empty()) {

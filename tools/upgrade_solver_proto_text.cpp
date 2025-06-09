@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
   }
 
   SolverParameter solver_param;
-  string input_filename(argv[1]);
+  std::string input_filename(argv[1]);
   if (!ReadProtoFromTextFile(input_filename, &solver_param)) {
     LOG(ERROR) << "Failed to parse input text file as SolverParameter: "
                << input_filename;

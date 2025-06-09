@@ -26,7 +26,7 @@ void hdf5_load_nd_dataset_helper(
   std::vector<hsize_t> dims(ndims);
   H5T_class_t class_;
   status = H5LTget_dataset_info(
-      file_id, dataset_name_, dims.data(), &class_, NULL);
+      file_id, dataset_name_, dims.data(), &class_, nullptr);
   CHECK_GE(status, 0) << "Failed to get dataset info for " << dataset_name_;
   switch (class_) {
   case H5T_FLOAT:
@@ -58,7 +58,7 @@ void hdf5_load_nd_dataset_helper(
   }
 
 
-  vector<int> blob_dims(dims.size());
+  std::vector<int> blob_dims(dims.size());
   for (int i = 0; i < dims.size(); ++i) {
     blob_dims[i] = static_cast<int>(dims[i]);
   }
@@ -68,14 +68,14 @@ void hdf5_load_nd_dataset_helper(
   } else {
     if (blob_dims != blob->shape()) {
       // create shape string for error message
-      ostringstream stream;
+      std::ostringstream stream;
       int count = 1;
       for (int i = 0; i < blob_dims.size(); ++i) {
         stream << blob_dims[i] << " ";
         count = count * blob_dims[i];
       }
       stream << "(" << count << ")";
-      string source_shape_string = stream.str();
+      std::string source_shape_string = stream.str();
 
       CHECK(blob_dims == blob->shape()) << "Cannot load blob from hdf5; shape "
             << "mismatch. Source shape is " << source_shape_string
@@ -106,7 +106,7 @@ void hdf5_load_nd_dataset<double>(hid_t file_id, const char* dataset_name_,
 
 template <>
 void hdf5_save_nd_dataset<float>(
-    const hid_t file_id, const string& dataset_name, const Blob<float>& blob,
+    const hid_t file_id, const std::string& dataset_name, const Blob<float>& blob,
     bool write_diff) {
   int num_axes = blob.num_axes();
   hsize_t *dims = new hsize_t[num_axes];
@@ -127,7 +127,7 @@ void hdf5_save_nd_dataset<float>(
 
 template <>
 void hdf5_save_nd_dataset<double>(
-    hid_t file_id, const string& dataset_name, const Blob<double>& blob,
+    hid_t file_id, const std::string& dataset_name, const Blob<double>& blob,
     bool write_diff) {
   int num_axes = blob.num_axes();
   hsize_t *dims = new hsize_t[num_axes];
@@ -146,31 +146,31 @@ void hdf5_save_nd_dataset<double>(
   delete[] dims;
 }
 
-string hdf5_load_string(hid_t loc_id, const string& dataset_name) {
+std::string hdf5_load_string(hid_t loc_id, const std::string& dataset_name) {
   // Get size of dataset
   size_t size;
   H5T_class_t class_;
   herr_t status = \
-    H5LTget_dataset_info(loc_id, dataset_name.c_str(), NULL, &class_, &size);
+    H5LTget_dataset_info(loc_id, dataset_name.c_str(), nullptr, &class_, &size);
   CHECK_GE(status, 0) << "Failed to get dataset info for " << dataset_name;
   char *buf = new char[size];
   status = H5LTread_dataset_string(loc_id, dataset_name.c_str(), buf);
   CHECK_GE(status, 0)
     << "Failed to load int dataset with name " << dataset_name;
-  string val(buf);
+  std::string val(buf);
   delete[] buf;
   return val;
 }
 
-void hdf5_save_string(hid_t loc_id, const string& dataset_name,
-                      const string& s) {
+void hdf5_save_string(hid_t loc_id, const std::string& dataset_name,
+                      const std::string& s) {
   herr_t status = \
     H5LTmake_dataset_string(loc_id, dataset_name.c_str(), s.c_str());
   CHECK_GE(status, 0)
     << "Failed to save string dataset with name " << dataset_name;
 }
 
-int hdf5_load_int(hid_t loc_id, const string& dataset_name) {
+int hdf5_load_int(hid_t loc_id, const std::string& dataset_name) {
   int val;
   herr_t status = H5LTread_dataset_int(loc_id, dataset_name.c_str(), &val);
   CHECK_GE(status, 0)
@@ -178,7 +178,7 @@ int hdf5_load_int(hid_t loc_id, const string& dataset_name) {
   return val;
 }
 
-void hdf5_save_int(hid_t loc_id, const string& dataset_name, int i) {
+void hdf5_save_int(hid_t loc_id, const std::string& dataset_name, int i) {
   hsize_t one = 1;
   herr_t status = \
     H5LTmake_dataset_int(loc_id, dataset_name.c_str(), 1, &one, &i);
@@ -193,16 +193,16 @@ int hdf5_get_num_links(hid_t loc_id) {
   return static_cast<int>(info.nlinks);
 }
 
-string hdf5_get_name_by_idx(hid_t loc_id, int idx) {
+std::string hdf5_get_name_by_idx(hid_t loc_id, int idx) {
   ssize_t str_size = H5Lget_name_by_idx(
-      loc_id, ".", H5_INDEX_NAME, H5_ITER_NATIVE, idx, NULL, 0, H5P_DEFAULT);
+      loc_id, ".", H5_INDEX_NAME, H5_ITER_NATIVE, idx, nullptr, 0, H5P_DEFAULT);
   CHECK_GE(str_size, 0) << "Error retrieving HDF5 dataset at index " << idx;
   char *c_str = new char[str_size+1];
   ssize_t status = H5Lget_name_by_idx(
       loc_id, ".", H5_INDEX_NAME, H5_ITER_NATIVE, idx, c_str, str_size+1,
       H5P_DEFAULT);
   CHECK_GE(status, 0) << "Error retrieving HDF5 dataset at index " << idx;
-  string result(c_str);
+  std::string result(c_str);
   delete[] c_str;
   return result;
 }

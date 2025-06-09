@@ -8,8 +8,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void DummyDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void DummyDataLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const int num_top = static_cast<int>(top.size());
   const DummyDataParameter& param = this->layer_param_->dummy_data_param();
   const int num_data_filler = param.data_filler_size();
@@ -99,8 +99,8 @@ void DummyDataLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void DummyDataLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void DummyDataLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   for (int i = 0; i < top.size(); ++i) {
     const int filler_id = (fillers_.size() > 1) ? i : 0;
     if (refill_[filler_id]) {

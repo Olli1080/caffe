@@ -17,7 +17,7 @@ class BlockingQueue {
 
   // This logs a message if the threads needs to be blocked
   // useful for detecting e.g. when data feeding is too slow
-  T pop(const string& log_on_wait = "");
+  T pop(const std::string& log_on_wait = "");
 
   bool try_peek(T* t);
 
@@ -35,7 +35,7 @@ class BlockingQueue {
   class sync;
 
   std::queue<T> queue_;
-  shared_ptr<sync> sync_;
+  std::shared_ptr<sync> sync_;
 
 DISABLE_COPY_AND_ASSIGN(BlockingQueue);
 };

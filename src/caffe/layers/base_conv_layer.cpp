@@ -13,8 +13,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void BaseConvolutionLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   // Configure the kernel size, padding, stride, and inputs.
   ConvolutionParameter conv_param = this->layer_param_->convolution_param();
   force_nd_im2col_ = conv_param.force_nd_im2col();
@@ -23,7 +23,7 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   const int num_axes = bottom[0]->num_axes();
   num_spatial_axes_ = num_axes - first_spatial_axis;
   CHECK_GE(num_spatial_axes_, 0);
-  vector<int> spatial_dim_blob_shape(1, std::max(num_spatial_axes_, 1));
+  std::vector<int> spatial_dim_blob_shape(1, std::max(num_spatial_axes_, 1));
   // Setup filter kernel dimensions (kernel_shape_).
   kernel_shape_.Reshape(spatial_dim_blob_shape);
   int* kernel_shape_data = kernel_shape_.mutable_cpu_data();
@@ -135,14 +135,14 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
   // Handle the parameters: weights and biases.
   // - blobs_[0] holds the filter weights
   // - blobs_[1] holds the biases (optional)
-  vector<int> weight_shape(2);
+  std::vector<int> weight_shape(2);
   weight_shape[0] = conv_out_channels_;
   weight_shape[1] = conv_in_channels_ / group_;
   for (int i = 0; i < num_spatial_axes_; ++i) {
     weight_shape.push_back(kernel_shape_data[i]);
   }
   bias_term_ = this->layer_param_->convolution_param().bias_term();
-  vector<int> bias_shape(bias_term_, num_output_);
+  std::vector<int> bias_shape(bias_term_, num_output_);
   if (this->blobs_.size() > 0) {
     CHECK_EQ(1 + bias_term_, this->blobs_.size())
         << "Incorrect number of weight blobs.";
@@ -168,13 +168,13 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
     // Initialize and fill the weights:
     // output channels x input channels per-group x kernel height x kernel width
     this->blobs_[0].reset(new Blob<Dtype>(weight_shape));
-    shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
+    std::shared_ptr<Filler<Dtype> > weight_filler(GetFiller<Dtype>(
         this->layer_param_->convolution_param().weight_filler()));
     weight_filler->Fill(this->blobs_[0].get());
     // If necessary, initialize and fill the biases.
     if (bias_term_) {
       this->blobs_[1].reset(new Blob<Dtype>(bias_shape));
-      shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
+      std::shared_ptr<Filler<Dtype> > bias_filler(GetFiller<Dtype>(
           this->layer_param_->convolution_param().bias_filler()));
       bias_filler->Fill(this->blobs_[1].get());
     }
@@ -186,8 +186,8 @@ void BaseConvolutionLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-      const vector<Blob<Dtype>*>& top) {
+void BaseConvolutionLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+      const std::vector<Blob<Dtype>*>& top) {
   const int first_spatial_axis = channel_axis_ + 1;
   CHECK_EQ(bottom[0]->num_axes(), first_spatial_axis + num_spatial_axes_)
       << "bottom num_axes may not change.";
@@ -204,7 +204,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   // Shape the tops.
   bottom_shape_ = &bottom[0]->shape();
   compute_output_shape();
-  vector<int> top_shape(bottom[0]->shape().begin(),
+  std::vector<int> top_shape(bottom[0]->shape().begin(),
       bottom[0]->shape().begin() + channel_axis_);
   top_shape.push_back(num_output_);
   for (int i = 0; i < num_spatial_axes_; ++i) {
@@ -221,7 +221,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   col_offset_ = kernel_dim_ * conv_out_spatial_dim_;
   output_offset_ = conv_out_channels_ * conv_out_spatial_dim_ / group_;
   // Setup input dimensions (conv_input_shape_).
-  vector<int> bottom_dim_blob_shape(1, num_spatial_axes_ + 1);
+  std::vector<int> bottom_dim_blob_shape(1, num_spatial_axes_ + 1);
   conv_input_shape_.Reshape(bottom_dim_blob_shape);
   int* conv_input_shape_data = conv_input_shape_.mutable_cpu_data();
   for (int i = 0; i < num_spatial_axes_ + 1; ++i) {
@@ -251,7 +251,7 @@ void BaseConvolutionLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
   // Set up the all ones "bias multiplier" for adding biases by BLAS
   out_spatial_dim_ = top[0]->count(first_spatial_axis);
   if (bias_term_) {
-    vector<int> bias_multiplier_shape(1, out_spatial_dim_);
+    std::vector<int> bias_multiplier_shape(1, out_spatial_dim_);
     bias_multiplier_.Reshape(bias_multiplier_shape);
     caffe_set(bias_multiplier_.count(), Dtype(1),
         bias_multiplier_.mutable_cpu_data());

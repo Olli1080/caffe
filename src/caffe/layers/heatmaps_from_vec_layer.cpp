@@ -7,8 +7,8 @@
 namespace caffe {
 
 template <typename Dtype>
-void HeatmapsFromVecLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-	const vector<Blob<Dtype>*>& top) { 
+void HeatmapsFromVecLayer<Dtype>::LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+	const std::vector<Blob<Dtype>*>& top) { 
 	range_ = 1.5f;
 	heatmap_size_ = 32;
 	kernel_size_ = 3;
@@ -27,8 +27,8 @@ void HeatmapsFromVecLayer<Dtype>::LayerSetUp(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void HeatmapsFromVecLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
-	const vector<Blob<Dtype>*>& top) { // bottom has N x numJoints x 1 x 3
+void HeatmapsFromVecLayer<Dtype>::Reshape(const std::vector<Blob<Dtype>*>& bottom,
+	const std::vector<Blob<Dtype>*>& top) { // bottom has N x numJoints x 1 x 3
 	std::vector<int> shape = bottom[0]->shape();
 	num_vecs_ = shape[1]; // number of vectors corresponds to channels
 	proj_vecs_.resize(2*num_vecs_);
@@ -38,8 +38,8 @@ void HeatmapsFromVecLayer<Dtype>::Reshape(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void HeatmapsFromVecLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom,
-	const vector<Blob<Dtype>*>& top) {
+void HeatmapsFromVecLayer<Dtype>::Forward_cpu(const std::vector<Blob<Dtype>*>& bottom,
+	const std::vector<Blob<Dtype>*>& top) {
 	const Dtype* bottom_data = bottom[0]->cpu_data();
 	Dtype* top_data = top[0]->mutable_cpu_data();
 	caffe_set(top[0]->count(), (Dtype)0.0, top_data);
@@ -74,8 +74,8 @@ void HeatmapsFromVecLayer<Dtype>::Forward_cpu(const vector<Blob<Dtype>*>& bottom
 }
 
 template <typename Dtype>
-void HeatmapsFromVecLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
-      const vector<bool>& propagate_down, const vector<Blob<Dtype>*>& bottom) {
+void HeatmapsFromVecLayer<Dtype>::Backward_cpu(const std::vector<Blob<Dtype>*>& top,
+      const std::vector<bool>& propagate_down, const std::vector<Blob<Dtype>*>& bottom) {
 	if (propagate_down[0])
 	{
 		const Dtype* top_data = top[0]->cpu_data();
@@ -115,4 +115,4 @@ void HeatmapsFromVecLayer<Dtype>::Backward_cpu(const vector<Blob<Dtype>*>& top,
 INSTANTIATE_CLASS(HeatmapsFromVecLayer); 
 REGISTER_LAYER_CLASS(HeatmapsFromVec);
 
-}  // namespace caffe
+}  // namespace caffe

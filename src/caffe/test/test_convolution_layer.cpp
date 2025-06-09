@@ -20,7 +20,7 @@ namespace caffe {
 // accumulate through explicit loops over input, output, and filters.
 template <typename Dtype>
 void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
-    const vector<shared_ptr<Blob<Dtype> > >& weights,
+    const std::vector<std::shared_ptr<Blob<Dtype> > >& weights,
     Blob<Dtype>* out) {
   const bool has_depth = (out->num_axes() == 5);
   if (!has_depth) { CHECK_EQ(4, out->num_axes()); }
@@ -140,11 +140,11 @@ void caffe_conv(const Blob<Dtype>* in, ConvolutionParameter* conv_param,
 
 template void caffe_conv(const Blob<float>* in,
     ConvolutionParameter* conv_param,
-    const vector<shared_ptr<Blob<float> > >& weights,
+    const std::vector<std::shared_ptr<Blob<float> > >& weights,
     Blob<float>* out);
 template void caffe_conv(const Blob<double>* in,
     ConvolutionParameter* conv_param,
-    const vector<shared_ptr<Blob<double> > >& weights,
+    const std::vector<std::shared_ptr<Blob<double> > >& weights,
     Blob<double>* out);
 
 template <typename TypeParam>

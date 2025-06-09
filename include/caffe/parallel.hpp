@@ -75,7 +75,7 @@ class NCCL : public GPUParams<Dtype>,
    * In multi-process settings, first create a NCCL id (new_uid), then
    * pass it to each process to create connected instances.
    */
-  NCCL(shared_ptr<Solver<Dtype> > solver, const string& uid);
+  NCCL(shared_ptr<Solver<Dtype> > solver, const std::string& uid);
   ~NCCL();
 
   std::barrier* barrier();
@@ -97,7 +97,7 @@ class NCCL : public GPUParams<Dtype>,
   /**
    * Single process multi-GPU.
    */
-  void Run(const vector<int>& gpus, const char* restore);
+  void Run(const std::vector<int>& gpus, const char* restore);
 
  protected:
   void Init();

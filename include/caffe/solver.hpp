@@ -43,7 +43,7 @@ template <typename Dtype>
 class CAFFE_EXPORT Solver {
  public:
   explicit Solver(const SolverParameter& param);
-  explicit Solver(const string& param_file);
+  explicit Solver(const std::string& param_file);
   void Init(const SolverParameter& param);
   void InitTrainNet();
   void InitTestNets();
@@ -56,7 +56,7 @@ class CAFFE_EXPORT Solver {
   // The main entry of the solver function. In default, iter will be zero. Pass
   // in a non-zero iter number to resume training for a pre-trained net.
   virtual void Solve(const char* resume_file = nullptr);
-  inline void Solve(const string& resume_file) { Solve(resume_file.c_str()); }
+  inline void Solve(const std::string& resume_file) { Solve(resume_file.c_str()); }
   void Step(int iters);
   // The Restore method simply dispatches to one of the
   // RestoreSolverStateFrom___ protected methods. You should implement these
@@ -69,8 +69,8 @@ class CAFFE_EXPORT Solver {
   void Snapshot();
   virtual ~Solver();
   inline const SolverParameter& param() const;
-  inline shared_ptr<Net<Dtype> > net() { return net_; }
-  inline const vector<shared_ptr<Net<Dtype> > >& test_nets() {
+  inline std::shared_ptr<Net<Dtype> > net() { return net_; }
+  inline const std::vector<std::shared_ptr<Net<Dtype> > >& test_nets() {
     return test_nets_;
   }
   int iter() const { return iter_; }
@@ -84,7 +84,7 @@ class CAFFE_EXPORT Solver {
     template <typename T>
     friend class Solver;
   };
-  const vector<Callback*>& callbacks() const { return callbacks_; }
+  const std::vector<Callback*>& callbacks() const { return callbacks_; }
   void add_callback(Callback* value) {
     callbacks_.push_back(value);
   }
@@ -99,25 +99,25 @@ class CAFFE_EXPORT Solver {
   virtual void ApplyUpdate() = 0;
 
  protected:
-  string SnapshotFilename(const string& extension);
-  string SnapshotToBinaryProto();
-  string SnapshotToHDF5();
+  std::string SnapshotFilename(const std::string& extension);
+  std::string SnapshotToBinaryProto();
+  std::string SnapshotToHDF5();
   // The test routine
   void TestAll();
   void Test(const int test_net_id = 0);
-  virtual void SnapshotSolverState(const string& model_filename) = 0;
-  virtual void RestoreSolverStateFromHDF5(const string& state_file) = 0;
-  virtual void RestoreSolverStateFromBinaryProto(const string& state_file) = 0;
+  virtual void SnapshotSolverState(const std::string& model_filename) = 0;
+  virtual void RestoreSolverStateFromHDF5(const std::string& state_file) = 0;
+  virtual void RestoreSolverStateFromBinaryProto(const std::string& state_file) = 0;
   //void DisplayOutputBlobs(const int net_id);
   void UpdateSmoothedLoss(Dtype loss, int start_iter, int average_loss);
 
   std::unique_ptr<SolverParameter> param_;
   int iter_;
   int current_step_;
-  shared_ptr<Net<Dtype> > net_;
-  vector<shared_ptr<Net<Dtype> > > test_nets_;
-  vector<Callback*> callbacks_;
-  vector<Dtype> losses_;
+  std::shared_ptr<Net<Dtype> > net_;
+  std::vector<std::shared_ptr<Net<Dtype> > > test_nets_;
+  std::vector<Callback*> callbacks_;
+  std::vector<Dtype> losses_;
   Dtype smoothed_loss_;
 
   // A function that can be set by a client of the Solver to provide indication

@@ -27,8 +27,8 @@ Layer<Dtype>::~Layer()
 // gpu specific implementations instead, and should not change these
 // functions.
 template <typename Dtype>
-Dtype Layer<Dtype>::Forward(const vector<Blob<Dtype>*>& bottom,
-                            const vector<Blob<Dtype>*>& top) {
+Dtype Layer<Dtype>::Forward(const std::vector<Blob<Dtype>*>& bottom,
+                            const std::vector<Blob<Dtype>*>& top) {
   Dtype loss = 0;
   Reshape(bottom, top);
   switch (Caffe::mode()) {
@@ -63,9 +63,9 @@ Dtype Layer<Dtype>::Forward(const vector<Blob<Dtype>*>& bottom,
 }
 
 template <typename Dtype>
-void Layer<Dtype>::Backward(const vector<Blob<Dtype>*>& top,
-                            const vector<bool>& propagate_down,
-                            const vector<Blob<Dtype>*>& bottom) {
+void Layer<Dtype>::Backward(const std::vector<Blob<Dtype>*>& top,
+                            const std::vector<bool>& propagate_down,
+                            const std::vector<Blob<Dtype>*>& bottom) {
   switch (Caffe::mode()) {
   case Caffe::CPU:
     Backward_cpu(top, propagate_down, bottom);
@@ -96,7 +96,7 @@ void Layer<Dtype>::ToProto(LayerParameter* param, bool write_diff) {
 }
 
 template <typename Dtype>
-void Layer<Dtype>::SetLossWeights(const vector<Blob<Dtype>*>& top)
+void Layer<Dtype>::SetLossWeights(const std::vector<Blob<Dtype>*>& top)
 {
     const int num_loss_weights = layer_param_->loss_weight_size();
     if (num_loss_weights) {

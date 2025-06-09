@@ -35,8 +35,8 @@ void read_image(std::ifstream* file, int* label, char* buffer) {
   return;
 }
 
-void convert_dataset(const string& input_folder, const string& output_folder,
-    const string& db_type) {
+void convert_dataset(const std::string& input_folder, const std::string& output_folder,
+    const std::string& db_type) {
   std::unique_ptr<db::DB> train_db(db::GetDB(db_type));
   train_db->Open(output_folder + "/cifar10_train_" + db_type, db::NEW);
   std::unique_ptr<db::Transaction> txn(train_db->NewTransaction());

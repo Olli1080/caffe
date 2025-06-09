@@ -20,10 +20,10 @@ class CAFFE_EXPORT BaseConvolutionLayer : public Layer<Dtype> {
   explicit BaseConvolutionLayer(const LayerParameter& param)
       : Layer<Dtype>(param) {}
 
-  void LayerSetUp(const vector<Blob<Dtype>*>& bottom,
-                  const vector<Blob<Dtype>*>& top) override;
-  void Reshape(const vector<Blob<Dtype>*>& bottom,
-               const vector<Blob<Dtype>*>& top) override;
+  void LayerSetUp(const std::vector<Blob<Dtype>*>& bottom,
+                  const std::vector<Blob<Dtype>*>& top) override;
+  void Reshape(const std::vector<Blob<Dtype>*>& bottom,
+               const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] int MinBottomBlobs() const override { return 1; }
   [[nodiscard]] int MinTopBlobs() const override { return 1; }
@@ -74,10 +74,10 @@ class CAFFE_EXPORT BaseConvolutionLayer : public Layer<Dtype> {
   /// @brief The spatial dimensions of the convolution input.
   Blob<int> conv_input_shape_;
   /// @brief The spatial dimensions of the col_buffer.
-  vector<int> col_buffer_shape_;
+  std::vector<int> col_buffer_shape_;
   /// @brief The spatial dimensions of the output.
-  vector<int> output_shape_;
-  const vector<int>* bottom_shape_;
+  std::vector<int> output_shape_;
+  const std::vector<int>* bottom_shape_;
 
   int num_spatial_axes_;
   int bottom_dim_;

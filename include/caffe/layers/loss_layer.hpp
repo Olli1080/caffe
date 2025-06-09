@@ -26,9 +26,9 @@ class LossLayer : public Layer<Dtype> {
      : Layer<Dtype>(param) {}
 
   void LayerSetUp(
-      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) override;
+      const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) override;
   void Reshape(
-      const vector<Blob<Dtype>*>& bottom, const vector<Blob<Dtype>*>& top) override;
+      const std::vector<Blob<Dtype>*>& bottom, const std::vector<Blob<Dtype>*>& top) override;
 
   [[nodiscard]] int ExactNumBottomBlobs() const override { return 2; }
 

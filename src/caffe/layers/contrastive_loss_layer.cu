@@ -35,7 +35,7 @@ __global__ void CLLBackward(const int count, const int channels,
 }
 
 template<typename Dtype>
-void ContrastiveLossLayer<Dtype>::backward_kernel(int count, int channels, Dtype margin, bool legacy_version, Dtype alpha, const vector<Blob<Dtype>*>& bottom, int i)
+void ContrastiveLossLayer<Dtype>::backward_kernel(int count, int channels, Dtype margin, bool legacy_version, Dtype alpha, const std::vector<Blob<Dtype>*>& bottom, int i)
 {
 	CLLBackward<Dtype><<<CAFFE_GET_BLOCKS(count), CAFFE_CUDA_NUM_THREADS>>>(
           count, channels, margin, legacy_version, alpha,
@@ -44,8 +44,8 @@ void ContrastiveLossLayer<Dtype>::backward_kernel(int count, int channels, Dtype
           dist_sq_.gpu_data(),  // the cached square distance between a and b
           bottom[i]->mutable_gpu_diff());
 }
-template void ContrastiveLossLayer<float>::backward_kernel(int, int, float, bool, float, const vector<Blob<float>*>&, int);
-template void ContrastiveLossLayer<double>::backward_kernel(int, int, double, bool, double, const vector<Blob<double>*>&, int);
+template void ContrastiveLossLayer<float>::backward_kernel(int, int, float, bool, float, const std::vector<Blob<float>*>&, int);
+template void ContrastiveLossLayer<double>::backward_kernel(int, int, double, bool, double, const std::vector<Blob<double>*>&, int);
 //INSTANTIATE_LAYER_GPU_FUNCS(ContrastiveLossLayer);
 
 }  // namespace caffe
